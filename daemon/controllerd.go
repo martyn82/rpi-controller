@@ -5,6 +5,7 @@ import (
     "net"
     "os"
     "os/signal"
+    "strings"
     "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/device"
 )
@@ -37,13 +38,7 @@ func CreateDeviceEventHandler() device.EventHandler {
     }
 }
 
-func DeviceListener(
-    deviceName string,
-    protocol string,
-    address string,
-    dialer communication.Dialer,
-    handler device.EventHandler
-) {
+func DeviceListener(deviceName string, protocol string, address string, dialer communication.Dialer, handler device.EventHandler) {
     d := device.NewDevice(deviceName, communication.NewSocket(protocol, address, dialer))
     d.Connect(handler)
 }
@@ -55,6 +50,8 @@ func ControllerListener() {
         log.Fatal("Listen error:", err)
     }
     
+    defer server.Close()
+
     for {
         client, err := server.Accept()
 
@@ -81,13 +78,13 @@ func StartSession(connection net.Conn) {
 }
 
 func ExecuteCommand(command string) {
-    parts := strings.SplitAfter(command, ":")
+    parts := strings.SplitAfter(command, " ")
     deviceName := parts[0]
     deviceCmd := parts[1]
 
     switch deviceName {
         case "denon":
-            
+            println("Got command for denon: ", deviceCmd)
             break
     }
 }
