@@ -79,12 +79,15 @@ func StartSession(connection net.Conn) {
 
 func ExecuteCommand(command string) {
     parts := strings.SplitAfter(command, " ")
-    deviceName := parts[0]
-    deviceCmd := parts[1]
+    deviceName := strings.TrimSpace(parts[0])
+    deviceCmd := strings.TrimSpace(parts[1])
 
     switch deviceName {
         case "denon":
-            println("Got command for denon: ", deviceCmd)
+            println("Got command for denon:", deviceCmd)
+            break
+        default:
+            println("Unknown device:", deviceName)
             break
     }
 }
