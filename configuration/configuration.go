@@ -5,6 +5,8 @@ import (
     "os"
 )
 
+const COMMAND_SEPARATOR = ":"
+
 type SocketConfiguration struct {
     Type string
     Address string

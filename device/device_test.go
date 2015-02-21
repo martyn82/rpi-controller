@@ -2,7 +2,9 @@ package device
 
 import (
     "testing"
+    "github.com/martyn82/rpi-controller/commands"
     "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/device/model/denon"
 )
 
 func TestNewDeviceArgumentsCanBeRetrievedWithAccessors(t *testing.T) {
@@ -22,5 +24,17 @@ func TestNewDeviceArgumentsCanBeRetrievedWithAccessors(t *testing.T) {
 
     if device.GetSocket() != socket {
         t.Errorf("Device.GetSocket() was not equal to expectation")
+    }
+}
+
+func TestMapCommandMapsGenericCommandToDeviceSpecific(t *testing.T) {
+    inputCmd := commands.CMD_POWER_ON
+    expected := denon.CMD_POWER_ON
+
+    device := NewDevice("", denon.MODEL_NAME, nil)
+    cmd := device.MapCommand(inputCmd)
+
+    if cmd != expected {
+        t.Errorf("Device.MapCommand() expected %q, actual %q", expected, cmd)
     }
 }

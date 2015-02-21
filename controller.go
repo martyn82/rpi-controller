@@ -7,10 +7,12 @@ import (
     "github.com/martyn82/rpi-controller/configuration"
 )
 
+const CONFIG_FILE = "conf.json"
+
 var Config configuration.Configuration
 
 func main() {
-    config, configErr := configuration.Load("conf.json")
+    config, configErr := configuration.Load(CONFIG_FILE)
     Config = config
 
     if configErr != nil {
@@ -32,5 +34,5 @@ func SendCommand(deviceName string, command string) {
     }
 
     defer client.Close()
-    client.Write([]byte(deviceName + ":" + command))
+    client.Write([]byte(deviceName + configuration.COMMAND_SEPARATOR + command))
 }

@@ -13,10 +13,12 @@ import (
     "github.com/martyn82/rpi-controller/device"
 )
 
+const CONFIG_FILE = "conf.json"
+
 var Config configuration.Configuration
 
 func main() {
-    config, configErr := configuration.Load("conf.json")
+    config, configErr := configuration.Load(CONFIG_FILE)
     Config = config
 
     if configErr != nil {
@@ -112,18 +114,17 @@ func StartSession(client net.Conn) {
 }
 
 func ExecuteCommand(command string) {
-    parts := strings.Split(command, ":")
+    parts := strings.Split(command, configuration.COMMAND_SEPARATOR)
     deviceName := parts[0]
     deviceCmd := parts[1]
 
-    switch deviceName {
-        case "denon":
-            log.Println("Got command for denon:", deviceCmd)
-            dev := device.DeviceRegistry.GetDeviceByName(deviceName)
-            dev.SendCommand(deviceCmd)
-            break
-        default:
-            log.Fatal("Unknown device:", deviceName)
-            break
+    dev := device.DeviceRegistry.GetDeviceByName(deviceName)
+
+    if dev == nil {
+        log.Fatal("Unknown device:", deviceName)
+        return
     }
+
+    log.Println("Command[", deviceName, "]:", deviceCmd)
+    dev.SendCommand(deviceCmd)
 }

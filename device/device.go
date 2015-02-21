@@ -3,7 +3,9 @@ package device
 import (
     "errors"
     "strings"
+
     "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/device/model"
 )
 
 type EventHandler func(sender *Device, event string)
@@ -77,7 +79,14 @@ func (device *Device) SendCommand(command string) error {
         return errors.New("Device is disconnected.")
     }
 
+    deviceCommand := device.MapCommand(command)
+
     connection := device.socket.GetConnection()
-    _, writeError := connection.Write([]byte(command + "\r"))
+    _, writeError := connection.Write([]byte(deviceCommand))
+
     return writeError
+}
+
+func (device *Device) MapCommand(command string) string {
+    return model.LookupCommand(device.GetModel(), command)
 }
