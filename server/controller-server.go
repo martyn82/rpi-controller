@@ -18,6 +18,17 @@ const CONFIG_FILE = "conf.json"
 var Config configuration.Configuration
 
 func main() {
+    LoadConfiguration()
+    SetupDevices()
+    serverErr := RunServer()
+
+    if serverErr != nil {
+        log.Fatal("Listen error:", serverErr)
+        os.Exit(1)
+    }
+}
+
+func LoadConfiguration() {
     config, configErr := configuration.Load(CONFIG_FILE)
     Config = config
 
@@ -27,14 +38,6 @@ func main() {
 
     if len(Config.Devices) == 0 {
         log.Fatal("No devices configured.")
-        os.Exit(1)
-    }
-
-    SetupDevices()
-    serverErr := RunServer()
-
-    if serverErr != nil {
-        log.Fatal("Listen error:", serverErr)
         os.Exit(1)
     }
 }
@@ -47,6 +50,8 @@ func SetupDevices() {
     for i := 0; i < len(Config.Devices); i++ {
         dev := Config.Devices[i]
         go DeviceListener(dev.Name, dev.Model, dev.Protocol, dev.Address, dialer, deviceEventHandler)
+
+        log.Println("Device added:", dev.Name, dev.Model, dev.Protocol, dev.Address)
     }
 }
 
@@ -59,6 +64,8 @@ func RunServer() error {
 
     defer server.Close()
     go ControllerListener(server)
+
+    log.Println("Listening on socket [", Config.Socket.Type, "]:", Config.Socket.Address)
 
     // Wait for interrupt/kill/terminate signals
     sigc := make(chan os.Signal, 1)
