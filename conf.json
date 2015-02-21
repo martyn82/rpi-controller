@@ -7,7 +7,6 @@
         {
             "Name": "denon",
             "Model": "DENON-AVR",
-            "Type": "network",
             "Protocol": "tcp",
             "Address": "10.0.0.46:23"
         }

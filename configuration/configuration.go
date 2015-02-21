@@ -13,7 +13,6 @@ type SocketConfiguration struct {
 type DeviceConfiguration struct {
     Name string
     Model string
-    Type string
     Protocol string
     Address string
 }

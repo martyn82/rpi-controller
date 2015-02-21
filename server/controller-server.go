@@ -74,7 +74,7 @@ func CreateSocketDialer() communication.Dialer {
 
 func CreateDeviceEventHandler() device.EventHandler {
     return func (sender *device.Device, event string) {
-        println("Got event from ", sender.GetName(), " :: ", event)
+        log.Println("Event[", sender.GetName(), "]:", event)
     }
 }
 
@@ -103,7 +103,6 @@ func StartSession(client net.Conn) {
         bytesRead, readErr := client.Read(buffer)
 
         if readErr != nil {
-            log.Fatal("Session read failure.")
             return
         }
 
@@ -113,9 +112,9 @@ func StartSession(client net.Conn) {
 }
 
 func ExecuteCommand(command string) {
-    parts := strings.SplitAfter(command, " ")
-    deviceName := strings.TrimSpace(parts[0])
-    deviceCmd := strings.TrimSpace(parts[1])
+    parts := strings.Split(command, ":")
+    deviceName := parts[0]
+    deviceCmd := parts[1]
 
     switch deviceName {
         case "denon":
