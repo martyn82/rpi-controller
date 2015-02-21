@@ -7,7 +7,7 @@ import (
     "github.com/martyn82/rpi-controller/configuration"
 )
 
-const CONFIG_FILE = "conf.json"
+const CONFIG_FILE = "/etc/rpi-controller/conf.json"
 
 var Config configuration.Configuration
 
