@@ -6,24 +6,32 @@ import (
     "os"
     "os/signal"
     "strings"
+    "syscall"
+
     "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/device"
 )
 
 func main() {
+    device.CreateDeviceRegistry()
+
     dialer := CreateSocketDialer()
     deviceEventHandler := CreateDeviceEventHandler()
-
     go DeviceListener("denon", "tcp", "10.0.0.46:23", dialer, deviceEventHandler)
 
-    ControllerListener()
+    server, err := net.Listen("unix", "/tmp/rpi-controller.sock")
 
-    c := make(chan os.Signal, 1)
-    signal.Notify(c, os.Interrupt)
-
-    for range c {
-        os.Exit(0)
+    if err != nil {
+        log.Fatal("Listen error:", err)
+        os.Exit(1)
     }
+
+    defer server.Close()
+    go ControllerListener(server)
+
+    sigc := make(chan os.Signal, 1)
+    signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+    _ = <-sigc
 }
 
 func CreateSocketDialer() communication.Dialer {
@@ -40,18 +48,11 @@ func CreateDeviceEventHandler() device.EventHandler {
 
 func DeviceListener(deviceName string, protocol string, address string, dialer communication.Dialer, handler device.EventHandler) {
     d := device.NewDevice(deviceName, communication.NewSocket(protocol, address, dialer))
+    device.DeviceRegistry.Register(d)
     d.Connect(handler)
 }
 
-func ControllerListener() {
-    server, err := net.Listen("unix", "/tmp/rpi-controller.sock")
-
-    if err != nil {
-        log.Fatal("Listen error:", err)
-    }
-    
-    defer server.Close()
-
+func ControllerListener(server net.Listener) {
     for {
         client, err := server.Accept()
 
@@ -63,10 +64,10 @@ func ControllerListener() {
     }
 }
 
-func StartSession(connection net.Conn) {
+func StartSession(client net.Conn) {
     for {
         buffer := make([]byte, 512)
-        bytesRead, readErr := connection.Read(buffer)
+        bytesRead, readErr := client.Read(buffer)
 
         if readErr != nil {
             return
@@ -85,6 +86,8 @@ func ExecuteCommand(command string) {
     switch deviceName {
         case "denon":
             println("Got command for denon:", deviceCmd)
+            dev := device.DeviceRegistry.GetDeviceByName(deviceName)
+            dev.SendCommand(deviceCmd)
             break
         default:
             println("Unknown device:", deviceName)

@@ -65,3 +65,13 @@ func (device *Device) Connect(handler EventHandler) error {
 
     return nil
 }
+
+func (device *Device) SendCommand(command string) error {
+    if !device.socket.IsConnected() {
+        return errors.New("Device is disconnected.")
+    }
+
+    connection := device.socket.GetConnection()
+    _, writeError := connection.Write([]byte(command + "\r"))
+    return writeError
+}
