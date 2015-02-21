@@ -14,7 +14,7 @@ func TestRegisterIsEmptyByDefault(t *testing.T) {
 
 func TestRegisterAddsDeviceToRegistry(t *testing.T) {
     CreateDeviceRegistry()
-    DeviceRegistry.Register(NewDevice("", nil))
+    DeviceRegistry.Register(NewDevice("", "", nil))
 
     if DeviceRegistry.IsEmpty() {
         t.Errorf("Registry is still empty after registering device.")
@@ -24,7 +24,7 @@ func TestRegisterAddsDeviceToRegistry(t *testing.T) {
 func TestRegisteredDeviceCanBeRetrievedByName(t *testing.T) {
     CreateDeviceRegistry()
 
-    d := NewDevice("name", nil)
+    d := NewDevice("name", "", nil)
     DeviceRegistry.Register(d)
 
     dev := DeviceRegistry.GetDeviceByName("name")

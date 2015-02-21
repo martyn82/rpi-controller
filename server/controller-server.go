@@ -9,29 +9,61 @@ import (
     "syscall"
 
     "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
 )
 
-func main() {
-    device.CreateDeviceRegistry()
+var Config configuration.Configuration
 
+func main() {
+    config, configErr := configuration.Load("conf.json")
+    Config = config
+
+    if configErr != nil {
+        panic(configErr)
+    }
+
+    if len(Config.Devices) == 0 {
+        log.Fatal("No devices configured.")
+        os.Exit(1)
+    }
+
+    SetupDevices()
+    serverErr := RunServer()
+
+    if serverErr != nil {
+        log.Fatal("Listen error:", serverErr)
+        os.Exit(1)
+    }
+}
+
+func SetupDevices() {
+    device.CreateDeviceRegistry()
     dialer := CreateSocketDialer()
     deviceEventHandler := CreateDeviceEventHandler()
-    go DeviceListener("denon", "tcp", "10.0.0.46:23", dialer, deviceEventHandler)
 
-    server, err := net.Listen("unix", "/tmp/rpi-controller.sock")
+    for i := 0; i < len(Config.Devices); i++ {
+        dev := Config.Devices[i]
+        go DeviceListener(dev.Name, dev.Model, dev.Protocol, dev.Address, dialer, deviceEventHandler)
+    }
+}
+
+func RunServer() error {
+    server, err := net.Listen(Config.Socket.Type, Config.Socket.Address)
 
     if err != nil {
-        log.Fatal("Listen error:", err)
-        os.Exit(1)
+        return err
     }
 
     defer server.Close()
     go ControllerListener(server)
 
+    // Wait for interrupt/kill/terminate signals
     sigc := make(chan os.Signal, 1)
     signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
     _ = <-sigc
+
+    return nil
 }
 
 func CreateSocketDialer() communication.Dialer {
@@ -46,8 +78,8 @@ func CreateDeviceEventHandler() device.EventHandler {
     }
 }
 
-func DeviceListener(deviceName string, protocol string, address string, dialer communication.Dialer, handler device.EventHandler) {
-    d := device.NewDevice(deviceName, communication.NewSocket(protocol, address, dialer))
+func DeviceListener(deviceName string, deviceModel string, protocol string, address string, dialer communication.Dialer, handler device.EventHandler) {
+    d := device.NewDevice(deviceName, deviceModel, communication.NewSocket(protocol, address, dialer))
     device.DeviceRegistry.Register(d)
     d.Connect(handler)
 }
@@ -58,6 +90,7 @@ func ControllerListener(server net.Listener) {
 
         if err != nil {
             log.Fatal("Accept error:", err)
+            continue
         }
 
         go StartSession(client)
@@ -70,6 +103,7 @@ func StartSession(client net.Conn) {
         bytesRead, readErr := client.Read(buffer)
 
         if readErr != nil {
+            log.Fatal("Session read failure.")
             return
         }
 
@@ -85,12 +119,12 @@ func ExecuteCommand(command string) {
 
     switch deviceName {
         case "denon":
-            println("Got command for denon:", deviceCmd)
+            log.Println("Got command for denon:", deviceCmd)
             dev := device.DeviceRegistry.GetDeviceByName(deviceName)
             dev.SendCommand(deviceCmd)
             break
         default:
-            println("Unknown device:", deviceName)
+            log.Fatal("Unknown device:", deviceName)
             break
     }
 }

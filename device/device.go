@@ -10,18 +10,24 @@ type EventHandler func(sender *Device, event string)
 
 type Device struct {
     name string
+    model string
     socket *communication.Socket
 }
 
-func NewDevice(name string, socket *communication.Socket) *Device {
+func NewDevice(name string, model string, socket *communication.Socket) *Device {
     device := new(Device)
     device.name = name
+    device.model = model
     device.socket = socket
     return device
 }
 
 func (device *Device) GetName() string {
     return device.name
+}
+
+func (device *Device) GetModel() string {
+    return device.model
 }
 
 func (device *Device) GetSocket() *communication.Socket {
