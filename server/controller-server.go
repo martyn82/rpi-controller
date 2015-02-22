@@ -7,6 +7,7 @@ import (
     "os/signal"
     "syscall"
 
+    "github.com/martyn82/rpi-controller/actions"
     "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
@@ -17,6 +18,8 @@ const CONFIG_FILE = "conf.json"
 var Config configuration.Configuration
 var SocketDialer communication.Dialer
 var DeviceEventHandler device.EventHandler
+var DeviceRegistry *device.DeviceRegistry
+var ActionRegistry *actions.ActionRegistry
 
 /* main entry point */
 func main() {
@@ -46,7 +49,7 @@ func LoadConfiguration() {
 
 /* initialize app */
 func Setup() {
-    device.CreateDeviceRegistry()
+    DeviceRegistry = device.CreateDeviceRegistry()
 
     SocketDialer = func (protocol string, address string) (net.Conn, error) {
         return net.Dial(protocol, address)
@@ -62,6 +65,7 @@ func Setup() {
 
     LoadConfiguration()
     SetupDevices()
+    SetupActions()
 }
 
 /* setup devices and listen to them */
@@ -70,7 +74,7 @@ func SetupDevices() {
         dev := Config.Devices[i]
 
         d := device.NewDevice(dev.Name, dev.Model, communication.NewSocket(dev.Protocol, dev.Address, SocketDialer))
-        device.DeviceRegistry.Register(d)
+        DeviceRegistry.Register(d)
 
         go func () {
             connectErr := d.Connect(DeviceEventHandler)
@@ -79,6 +83,29 @@ func SetupDevices() {
                 log.Println(connectErr)
             }
         }()
+    }
+}
+
+/* setup actions to be taken on events */
+func SetupActions() {
+    ActionRegistry = actions.CreateActionRegistry()
+
+    for i := 0; i < len(Config.Actions); i++ {
+        actionConfig := Config.Actions[i]
+        msgWhen, parseErr := communication.ParseMessage(communication.MSG_TYPE_EVENT + " " + actionConfig.When)
+
+        if parseErr != nil {
+            log.Fatal(parseErr)
+        }
+
+        msgThen, err := communication.ParseMessage(actionConfig.Then)
+
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        action := actions.NewAction(msgWhen, msgThen)
+        ActionRegistry.Register(action)
     }
 }
 
@@ -140,6 +167,8 @@ func HandleMessage(message string, client net.Conn) {
         log.Fatal(parseErr)
         return
     }
+    
+    log.Println("Handling message", message)
 
     if msg.IsCommand() {
         SendCommand(msg)
@@ -163,7 +192,7 @@ func HandleMessage(message string, client net.Conn) {
 
 /* lookup device by name */
 func GetDevice(name string) *device.Device {
-    dev := device.DeviceRegistry.GetDeviceByName(name)
+    dev := DeviceRegistry.GetDeviceByName(name)
 
     if dev == nil {
         log.Println("Unknown device:", name)
@@ -199,5 +228,11 @@ func SendQuery(query *communication.Message, responseHandler device.ResponseHand
 
 /* handles an event notification */
 func HandleEvent(event *communication.Message) {
-    log.Println("Client sent event", "device=" + event.DeviceName, "property=" + event.Property, "value=" + event.Value)
+    thenMsg := ActionRegistry.GetByWhen(event)
+
+    if thenMsg == nil {
+        return
+    }
+
+    HandleMessage(thenMsg.Then.ToString(), nil)
 }

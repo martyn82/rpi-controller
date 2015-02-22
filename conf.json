@@ -9,6 +9,18 @@
             "Model": "DENON-AVR",
             "Protocol": "tcp",
             "Address": "10.0.0.46:23"
+        },
+        {
+            "Name": "shairport",
+            "Model": "SHAIRPORT-SYNC",
+            "Protocol": "unix",
+            "Address": "/tmp/shairport.sock"
+        }
+    ],
+    "Actions": [
+        {
+            "When": "shairport:PLAY:START",
+            "Then": "SET denon:PW:ON"
         }
     ]
 }

@@ -6,7 +6,6 @@ import (
 )
 
 const CONFIG_LOCATION = "/etc/rpi-controller/"
-const COMMAND_SEPARATOR = ":"
 
 type SocketConfiguration struct {
     Type string
@@ -20,9 +19,15 @@ type DeviceConfiguration struct {
     Address string
 }
 
+type ActionConfiguration struct {
+    When string
+    Then string
+}
+
 type Configuration struct {
     Socket SocketConfiguration
     Devices []DeviceConfiguration
+    Actions []ActionConfiguration
 }
 
 func Load(configFile string) (Configuration, error) {

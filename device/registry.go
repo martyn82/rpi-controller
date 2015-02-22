@@ -1,28 +1,23 @@
 package device
 
-type Registry struct {
+type DeviceRegistry struct {
     devices map[string]*Device
 }
 
-var DeviceRegistry *Registry
-
-func CreateDeviceRegistry() {
-    DeviceRegistry = new(Registry)
-    DeviceRegistry.devices = make(map[string]*Device)
+func CreateDeviceRegistry() *DeviceRegistry {
+    reg := new(DeviceRegistry)
+    reg.devices = make(map[string]*Device)
+    return reg
 }
 
-func (registry *Registry) IsEmpty() bool {
+func (registry *DeviceRegistry) IsEmpty() bool {
     return len(registry.devices) == 0
 }
 
-func (registry *Registry) Register(device *Device) {
-    DeviceRegistry.devices[device.GetName()] = device
+func (registry *DeviceRegistry) Register(device *Device) {
+    registry.devices[device.GetName()] = device
 }
 
-func (registry *Registry) GetDeviceByName(name string) *Device {
-    if DeviceRegistry.devices[name] == nil {
-        return nil
-    }
-
-    return DeviceRegistry.devices[name]
+func (registry *DeviceRegistry) GetDeviceByName(name string) *Device {
+    return registry.devices[name]
 }

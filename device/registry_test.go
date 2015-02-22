@@ -5,29 +5,29 @@ import (
 )
 
 func TestRegisterIsEmptyByDefault(t *testing.T) {
-    CreateDeviceRegistry()
+    registry := CreateDeviceRegistry()
 
-    if !DeviceRegistry.IsEmpty() {
+    if !registry.IsEmpty() {
         t.Errorf("New registry is not empty by default.")
     }
 }
 
 func TestRegisterAddsDeviceToRegistry(t *testing.T) {
-    CreateDeviceRegistry()
-    DeviceRegistry.Register(NewDevice("", "", nil))
+    registry := CreateDeviceRegistry()
+    registry.Register(NewDevice("", "", nil))
 
-    if DeviceRegistry.IsEmpty() {
+    if registry.IsEmpty() {
         t.Errorf("Registry is still empty after registering device.")
     }
 }
 
 func TestRegisteredDeviceCanBeRetrievedByName(t *testing.T) {
-    CreateDeviceRegistry()
+    registry := CreateDeviceRegistry()
 
     d := NewDevice("name", "", nil)
-    DeviceRegistry.Register(d)
+    registry.Register(d)
 
-    dev := DeviceRegistry.GetDeviceByName("name")
+    dev := registry.GetDeviceByName("name")
 
     if dev != d {
         t.Errorf("GetDeviceByName() was expected to return registered device.")
@@ -35,9 +35,9 @@ func TestRegisteredDeviceCanBeRetrievedByName(t *testing.T) {
 }
 
 func TestAttemptToRetrieveNonExistingDeviceReturnsNil(t *testing.T) {
-    CreateDeviceRegistry()
+    registry := CreateDeviceRegistry()
 
-    if DeviceRegistry.GetDeviceByName("") != nil {
+    if registry.GetDeviceByName("") != nil {
         t.Errorf("Non-existing device retrieval did not return NIL")
     }
 }
