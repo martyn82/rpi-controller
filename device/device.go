@@ -2,6 +2,7 @@ package device
 
 import (
     "errors"
+    "fmt"
     "strings"
 
     "github.com/martyn82/rpi-controller/communication"
@@ -74,13 +75,12 @@ func (device *Device) Connect(handler EventHandler) error {
     return nil
 }
 
-func (device *Device) SendCommand(command string) error {
+func (device *Device) SendCommand(command *communication.Message) error {
     if !device.socket.IsConnected() {
-        return errors.New("Device is disconnected.")
+        return errors.New(fmt.Sprintf("Device is disconnected: '%s'.", device.GetName()))
     }
 
-    deviceCommand := device.MapCommand(command)
-
+    deviceCommand := device.MapCommand(command.Property + ":" + command.Value)
     connection := device.socket.GetConnection()
     _, writeError := connection.Write([]byte(deviceCommand))
 

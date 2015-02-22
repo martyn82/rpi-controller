@@ -1,6 +1,6 @@
 package commands
 
 const (
-    CMD_POWER_ON = "on"
-    CMD_POWER_OFF = "off"
+    CMD_POWER_ON = "PW:ON"
+    CMD_POWER_OFF = "PW:OFF"
 )

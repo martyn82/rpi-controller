@@ -5,7 +5,6 @@ import (
     "net"
     "os"
     "os/signal"
-    "strings"
     "syscall"
 
     "github.com/martyn82/rpi-controller/communication"
@@ -13,7 +12,7 @@ import (
     "github.com/martyn82/rpi-controller/device"
 )
 
-const CONFIG_FILE = "/etc/rpi-controller/conf.json"
+const CONFIG_FILE = "conf.json"
 
 var Config configuration.Configuration
 
@@ -51,7 +50,7 @@ func SetupDevices() {
         dev := Config.Devices[i]
         go DeviceListener(dev.Name, dev.Model, dev.Protocol, dev.Address, dialer, deviceEventHandler)
 
-        log.Println("Device added:", dev.Name, dev.Model, dev.Protocol, dev.Address)
+        log.Println("Device added:", "name=" + dev.Name, "model=" + dev.Model, "proto=" + dev.Protocol, "addr=" + dev.Address)
     }
 }
 
@@ -115,23 +114,41 @@ func StartSession(client net.Conn) {
             return
         }
 
-        command := string(buffer[:bytesRead])
-        ExecuteCommand(command)
+        message := string(buffer[:bytesRead])
+        HandleMessage(message)
     }
 }
 
-func ExecuteCommand(command string) {
-    parts := strings.Split(command, configuration.COMMAND_SEPARATOR)
-    deviceName := parts[0]
-    deviceCmd := parts[1]
+func HandleMessage(message string) {
+    msg, _ := communication.ParseMessage(message)
 
-    dev := device.DeviceRegistry.GetDeviceByName(deviceName)
+    switch msg.Type {
+        case communication.MSG_TYPE_WRITE:
+            SendCommand(msg)
+            break
+
+        case communication.MSG_TYPE_READ:
+            //SendQuery(msg, callback)
+            break
+
+        case communication.MSG_TYPE_NOTIFY:
+            //SendEvent(msg)
+            break
+
+        default:
+            log.Fatal("Unsupported message type: '%s'.", msg.Type)
+            break
+    }
+}
+
+func SendCommand(command *communication.Message) {
+    dev := device.DeviceRegistry.GetDeviceByName(command.DeviceName)
 
     if dev == nil {
-        log.Fatal("Unknown device:", deviceName)
+        log.Fatal("Unknown device:", command.DeviceName)
         return
     }
 
-    log.Println("Command[", deviceName, "]:", deviceCmd)
-    dev.SendCommand(deviceCmd)
+    log.Println("Command[", command.DeviceName, "]:", command.Property, ":", command.Value)
+    dev.SendCommand(command)
 }

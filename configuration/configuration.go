@@ -5,6 +5,7 @@ import (
     "os"
 )
 
+const CONFIG_LOCATION = "/etc/rpi-controller/"
 const COMMAND_SEPARATOR = ":"
 
 type SocketConfiguration struct {
@@ -26,6 +27,11 @@ type Configuration struct {
 
 func Load(configFile string) (Configuration, error) {
     config := Configuration{}
+
+    if _, fileErr := os.Stat(configFile); os.IsNotExist(fileErr) {
+        configFile = CONFIG_LOCATION + configFile
+    }
+
     file, err := os.Open(configFile)
 
     if err != nil {
