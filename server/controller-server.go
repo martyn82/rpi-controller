@@ -228,7 +228,7 @@ func SendQuery(query *communication.Message, responseHandler device.ResponseHand
 
 /* handles an event notification */
 func HandleEvent(event *communication.Message) {
-    thenMsg := ActionRegistry.GetByWhen(event)
+    thenMsg := ActionRegistry.GetActionByWhen(event)
 
     if thenMsg == nil {
         return

@@ -12,10 +12,14 @@ func CreateActionRegistry() *ActionRegistry {
     return reg
 }
 
+func (registry *ActionRegistry) IsEmpty() bool {
+    return len(registry.actions) == 0
+}
+
 func (registry *ActionRegistry) Register(action *Action) {
     registry.actions[action.When.ToString()] = action
 }
 
-func (registry *ActionRegistry) GetByWhen(when *communication.Message) *Action {
+func (registry *ActionRegistry) GetActionByWhen(when *communication.Message) *Action {
     return registry.actions[when.ToString()]
 }

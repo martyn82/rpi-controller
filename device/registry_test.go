@@ -4,7 +4,7 @@ import (
     "testing"
 )
 
-func TestRegisterIsEmptyByDefault(t *testing.T) {
+func TestRegistryIsEmptyByDefault(t *testing.T) {
     registry := CreateDeviceRegistry()
 
     if !registry.IsEmpty() {
@@ -12,7 +12,7 @@ func TestRegisterIsEmptyByDefault(t *testing.T) {
     }
 }
 
-func TestRegisterAddsDeviceToRegistry(t *testing.T) {
+func TestRegistryAddsDeviceToRegistry(t *testing.T) {
     registry := CreateDeviceRegistry()
     registry.Register(NewDevice("", "", nil))
 
