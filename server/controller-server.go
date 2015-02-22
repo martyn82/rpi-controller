@@ -154,22 +154,28 @@ func HandleMessage(message string, client net.Conn) {
     }
 
     if msg.IsEvent() {
-//        SendEvent(msg)
+        HandleEvent(msg)
         return
     }
 
     log.Fatal("Unsupported message type: '%s'.", msg.Type)
 }
 
-/* send command to device */
-func SendCommand(command *communication.Message) {
-    dev := device.DeviceRegistry.GetDeviceByName(command.DeviceName)
+/* lookup device by name */
+func GetDevice(name string) *device.Device {
+    dev := device.DeviceRegistry.GetDeviceByName(name)
 
     if dev == nil {
-        log.Fatal("Unknown device:", command.DeviceName)
-        return
+        log.Println("Unknown device:", name)
+        return nil
     }
 
+    return dev
+}
+
+/* send command to device */
+func SendCommand(command *communication.Message) {
+    dev := GetDevice(command.DeviceName)
     log.Println("Command[", command.DeviceName, "]:", command.Property, ":", command.Value)
     err := dev.SendCommand(command)
 
@@ -180,13 +186,7 @@ func SendCommand(command *communication.Message) {
 
 /* send query to device */
 func SendQuery(query *communication.Message, responseHandler device.ResponseHandler) {
-    dev := device.DeviceRegistry.GetDeviceByName(query.DeviceName)
-
-    if dev == nil {
-        log.Println("Unknown device:", query.DeviceName)
-        return
-    }
-
+    dev := GetDevice(query.DeviceName)
     log.Println("Query[", query.DeviceName, "]:", query.Property)
     err := dev.SendQuery(query, responseHandler)
 
@@ -195,4 +195,9 @@ func SendQuery(query *communication.Message, responseHandler device.ResponseHand
         query.Value = err.Error()
         responseHandler(dev, query)
     }
+}
+
+/* handles an event notification */
+func HandleEvent(event *communication.Message) {
+    log.Println("Client sent event", "device=" + event.DeviceName, "property=" + event.Property, "value=" + event.Value)
 }
