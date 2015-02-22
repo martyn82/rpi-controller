@@ -9,7 +9,7 @@ import (
 const (
     MSG_TYPE_WRITE = "SET"
     MSG_TYPE_READ = "GET"
-    MSG_TYPE_NOTIFY = "EVT"
+    MSG_TYPE_EVENT = "EVT"
 )
 
 type Message struct {
@@ -17,6 +17,28 @@ type Message struct {
     DeviceName string
     Property string
     Value string
+}
+
+func (msg *Message) IsCommand() bool {
+    return msg.Type == MSG_TYPE_WRITE
+}
+
+func (msg *Message) IsQuery() bool {
+    return msg.Type == MSG_TYPE_READ
+}
+
+func (msg *Message) IsEvent() bool {
+    return msg.Type == MSG_TYPE_EVENT
+}
+
+func (msg *Message) ToString() string {
+    msgString := msg.Type + " " + msg.DeviceName + ":" + msg.Property
+
+    if msg.IsEvent() || msg.IsCommand() {
+        msgString += ":" + msg.Value
+    }
+
+    return msgString
 }
 
 func ParseMessage(message string) (*Message, error) {
@@ -31,6 +53,11 @@ func ParseMessage(message string) (*Message, error) {
 
     switch msgType {
         case MSG_TYPE_READ:
+
+            if len(msgBodyParts) < 2 {
+                return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': Invalid message format.", message))
+            }
+
             msg := new(Message)
             msg.Type = msgType
             msg.DeviceName = msgBodyParts[0]
@@ -38,7 +65,7 @@ func ParseMessage(message string) (*Message, error) {
             return msg, nil
 
         case MSG_TYPE_WRITE,
-             MSG_TYPE_NOTIFY:
+             MSG_TYPE_EVENT:
 
             if len(msgBodyParts) < 3 {
                 return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': Invalid message format.", message))

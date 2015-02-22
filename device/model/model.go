@@ -12,3 +12,12 @@ func LookupCommand(modelName string, command string) string {
 
     return command
 }
+
+func LookupQuery(modelName string, query string) string {
+    switch modelName {
+        case denon.MODEL_NAME:
+            return denon.LookupQuery(query)
+    }
+
+    return query
+}

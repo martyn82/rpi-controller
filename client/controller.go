@@ -1,10 +1,12 @@
 package main
 
 import (
+    "log"
     "net"
     "os"
     "syscall"
 
+    "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/configuration"
 )
 
@@ -12,12 +14,13 @@ const CONFIG_FILE = "conf.json"
 
 var Config configuration.Configuration
 
+/* main entry point */
 func main() {
     config, configErr := configuration.Load(CONFIG_FILE)
     Config = config
 
     if configErr != nil {
-        panic(configErr)
+        log.Fatal(configErr)
     }
 
     args := os.Args[1:]
@@ -27,20 +30,64 @@ func main() {
         os.Exit(1)
     }
 
-    SendCommand(args[0], args[1])
+    msg, parseErr := communication.ParseMessage(args[0] + " " + args[1])
+
+    if parseErr != nil {
+        log.Fatal(parseErr)
+    }
+
+    client := ConnectToServer()
+    defer client.Close()
+
+    if msg.IsCommand() {
+        SendMessage(client, msg)
+        return
+    }
+
+    if msg.IsQuery() {
+        SendQuery(client, msg)
+        return
+    }
+
+    if msg.IsEvent() {
+        SendMessage(client, msg)
+        return
+    }
 }
 
-func SendCommand(commandHead string, commandBody string) {
+/* connect to server */
+func ConnectToServer() net.Conn {
     client, err := net.Dial(Config.Socket.Type, Config.Socket.Address)
 
     if err != nil {
-        panic(err)
+        log.Fatal(err)
     }
 
-    defer client.Close()
-    client.Write([]byte(commandHead + " " + commandBody))
+    return client
 }
 
+/* fire-and-forget */
+func SendMessage(client net.Conn, message *communication.Message) {
+    client.Write([]byte(message.ToString()))
+}
+
+/* query server and wait for response */
+func SendQuery(client net.Conn, query *communication.Message) {
+    client.Write([]byte(query.ToString()))
+
+    buffer := make([]byte, 512)
+    bytesRead, readErr := client.Read(buffer)
+
+    if readErr != nil {
+        log.Fatal(readErr)
+    }
+
+    if bytesRead > 0 {
+        log.Println(string(buffer[:bytesRead]))
+    }
+}
+
+/* output usage instructions */
 func PrintHelp() {
     help := "Usage: controller command\n" +
         "  command:\n" +

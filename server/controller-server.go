@@ -15,10 +15,12 @@ import (
 const CONFIG_FILE = "conf.json"
 
 var Config configuration.Configuration
+var SocketDialer communication.Dialer
+var DeviceEventHandler device.EventHandler
 
+/* main entry point */
 func main() {
-    LoadConfiguration()
-    SetupDevices()
+    Setup()
     serverErr := RunServer()
 
     if serverErr != nil {
@@ -27,6 +29,7 @@ func main() {
     }
 }
 
+/* loads configuration from file */
 func LoadConfiguration() {
     config, configErr := configuration.Load(CONFIG_FILE)
     Config = config
@@ -41,19 +44,45 @@ func LoadConfiguration() {
     }
 }
 
-func SetupDevices() {
+/* initialize app */
+func Setup() {
     device.CreateDeviceRegistry()
-    dialer := CreateSocketDialer()
-    deviceEventHandler := CreateDeviceEventHandler()
 
+    SocketDialer = func (protocol string, address string) (net.Conn, error) {
+        return net.Dial(protocol, address)
+    }
+
+    DeviceEventHandler = func (sender *device.Device, event string) {
+        if event == "connected" {
+            log.Println("Device up:", "name=" + sender.GetName(), "model=" + sender.GetModel())
+        }
+
+        log.Println("Event[", sender.GetName(), "]:", event)
+    }
+
+    LoadConfiguration()
+    SetupDevices()
+}
+
+/* setup devices and listen to them */
+func SetupDevices() {
     for i := 0; i < len(Config.Devices); i++ {
         dev := Config.Devices[i]
-        go DeviceListener(dev.Name, dev.Model, dev.Protocol, dev.Address, dialer, deviceEventHandler)
 
-        log.Println("Device added:", "name=" + dev.Name, "model=" + dev.Model, "proto=" + dev.Protocol, "addr=" + dev.Address)
+        d := device.NewDevice(dev.Name, dev.Model, communication.NewSocket(dev.Protocol, dev.Address, SocketDialer))
+        device.DeviceRegistry.Register(d)
+
+        go func () {
+            connectErr := d.Connect(DeviceEventHandler)
+
+            if connectErr != nil {
+                log.Println(connectErr)
+            }
+        }()
     }
 }
 
+/* setup server and start listening */
 func RunServer() error {
     server, err := net.Listen(Config.Socket.Type, Config.Socket.Address)
 
@@ -74,30 +103,13 @@ func RunServer() error {
     return nil
 }
 
-func CreateSocketDialer() communication.Dialer {
-    return func (protocol string, address string) (net.Conn, error) {
-        return net.Dial(protocol, address)
-    }
-}
-
-func CreateDeviceEventHandler() device.EventHandler {
-    return func (sender *device.Device, event string) {
-        log.Println("Event[", sender.GetName(), "]:", event)
-    }
-}
-
-func DeviceListener(deviceName string, deviceModel string, protocol string, address string, dialer communication.Dialer, handler device.EventHandler) {
-    d := device.NewDevice(deviceName, deviceModel, communication.NewSocket(protocol, address, dialer))
-    device.DeviceRegistry.Register(d)
-    d.Connect(handler)
-}
-
+/* listen to incoming messages from controller client */
 func ControllerListener(server net.Listener) {
     for {
         client, err := server.Accept()
 
         if err != nil {
-            log.Fatal("Accept error:", err)
+            log.Println("Accept error:", err)
             continue
         }
 
@@ -105,6 +117,7 @@ func ControllerListener(server net.Listener) {
     }
 }
 
+/* spawn new session with client */
 func StartSession(client net.Conn) {
     for {
         buffer := make([]byte, 512)
@@ -115,32 +128,40 @@ func StartSession(client net.Conn) {
         }
 
         message := string(buffer[:bytesRead])
-        HandleMessage(message)
+        HandleMessage(message, client)
     }
 }
 
-func HandleMessage(message string) {
-    msg, _ := communication.ParseMessage(message)
+/* handle incoming message */
+func HandleMessage(message string, client net.Conn) {
+    msg, parseErr := communication.ParseMessage(message)
 
-    switch msg.Type {
-        case communication.MSG_TYPE_WRITE:
-            SendCommand(msg)
-            break
-
-        case communication.MSG_TYPE_READ:
-            //SendQuery(msg, callback)
-            break
-
-        case communication.MSG_TYPE_NOTIFY:
-            //SendEvent(msg)
-            break
-
-        default:
-            log.Fatal("Unsupported message type: '%s'.", msg.Type)
-            break
+    if parseErr != nil {
+        log.Fatal(parseErr)
+        return
     }
+
+    if msg.IsCommand() {
+        SendCommand(msg)
+        return
+    }
+
+    if msg.IsQuery() {
+        SendQuery(msg, func (sender *device.Device, query *communication.Message) {
+            client.Write([]byte(query.Value))
+        })
+        return
+    }
+
+    if msg.IsEvent() {
+//        SendEvent(msg)
+        return
+    }
+
+    log.Fatal("Unsupported message type: '%s'.", msg.Type)
 }
 
+/* send command to device */
 func SendCommand(command *communication.Message) {
     dev := device.DeviceRegistry.GetDeviceByName(command.DeviceName)
 
@@ -150,5 +171,28 @@ func SendCommand(command *communication.Message) {
     }
 
     log.Println("Command[", command.DeviceName, "]:", command.Property, ":", command.Value)
-    dev.SendCommand(command)
+    err := dev.SendCommand(command)
+
+    if err != nil {
+        log.Println(err)
+    }
+}
+
+/* send query to device */
+func SendQuery(query *communication.Message, responseHandler device.ResponseHandler) {
+    dev := device.DeviceRegistry.GetDeviceByName(query.DeviceName)
+
+    if dev == nil {
+        log.Println("Unknown device:", query.DeviceName)
+        return
+    }
+
+    log.Println("Query[", query.DeviceName, "]:", query.Property)
+    err := dev.SendQuery(query, responseHandler)
+
+    if err != nil {
+        log.Println(err)
+        query.Value = err.Error()
+        responseHandler(dev, query)
+    }
 }

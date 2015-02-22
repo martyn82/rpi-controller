@@ -2,8 +2,8 @@ package device
 
 import (
     "testing"
-    "github.com/martyn82/rpi-controller/commands"
     "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/communication/messages"
     "github.com/martyn82/rpi-controller/device/model/denon"
 )
 
@@ -28,7 +28,7 @@ func TestNewDeviceArgumentsCanBeRetrievedWithAccessors(t *testing.T) {
 }
 
 func TestMapCommandMapsGenericCommandToDeviceSpecific(t *testing.T) {
-    inputCmd := commands.CMD_POWER_ON
+    inputCmd := messages.CMD_POWER_ON
     expected := denon.CMD_POWER_ON
 
     device := NewDevice("", denon.MODEL_NAME, nil)
