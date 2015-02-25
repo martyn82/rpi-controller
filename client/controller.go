@@ -91,9 +91,9 @@ func SendQuery(client net.Conn, query *communication.Message) {
 func PrintHelp() {
     help := "Usage: controller command\n" +
         "  command:\n" +
-        "    SET device:property:value      Write property to value on specified device.\n" +
-        "    GET device:property            Read the property's value on specified device. \n" +
-        "    EVT device:property:value      Notify that property was set on value on specified device.\n" +
+        "    SET device:property:value      Write property 'property' to 'value' on specified device.\n" +
+        "    GET device:property            Read the value of property 'property' value on specified device. \n" +
+        "    EVT device:property:value      Notify that 'property' was set to 'value' on specified device.\n" +
         "\n" +
         "  Examples:\n" +
         "    SET dev0:PW:ON\n" +

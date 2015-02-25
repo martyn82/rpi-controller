@@ -1,7 +1,7 @@
 {
     "Socket": {
-        "Type": "unix",
-        "Address": "/tmp/rpi-controller.sock"
+        "Type": "tcp",
+        "Address": ":1181"
     },
     "Devices": [
         {
@@ -12,19 +12,13 @@
         },
         {
             "Name": "shairport",
-            "Model": "SHAIRPORT-SYNC",
-            "Protocol": "unix",
-            "Address": "/tmp/shairport.sock"
+            "Model": "SHAIRPORT-SYNC"
         }
     ],
     "Actions": [
         {
             "When": "shairport:PLAY:START",
             "Then": "SET denon:PW:ON"
-        },
-        {
-            "When": "shairport:PLAY:STOP",
-            "Then": "SET denon:PW:OFF"
         }
     ]
 }
