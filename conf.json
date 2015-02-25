@@ -13,6 +13,12 @@
         {
             "Name": "shairport",
             "Model": "SHAIRPORT-SYNC"
+        },
+        {
+            "Name": "tv",
+            "Model": "SAMSUNG-TV",
+            "Protocol": "tcp",
+            "Address": "10.0.0.38:55000"
         }
     ],
     "Actions": [

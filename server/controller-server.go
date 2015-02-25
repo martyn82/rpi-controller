@@ -9,8 +9,11 @@ import (
 
     "github.com/martyn82/rpi-controller/actions"
     "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/communication/messages"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
+    "github.com/martyn82/rpi-controller/device/model"
+    "github.com/martyn82/rpi-controller/device/model/samsung"
 )
 
 const CONFIG_FILE = "conf.json"
@@ -56,8 +59,12 @@ func Setup() {
     }
 
     DeviceEventHandler = func (sender *device.Device, event string) {
-        if event == "connected" {
+        if event == messages.EVT_CONNECTED {
             log.Println("Device up:", "name=" + sender.GetName(), "model=" + sender.GetModel())
+
+            if sender.GetModel() == samsung.MODEL_NAME {
+                samsung.AuthenticateRemote("metis", sender.GetSocket().GetConnection())
+            }
         }
 
         log.Println("Event[", sender.GetName(), "]:", event)
@@ -205,11 +212,16 @@ func GetDevice(name string) *device.Device {
 /* send command to device */
 func SendCommand(command *communication.Message) {
     dev := GetDevice(command.DeviceName)
-    log.Println("Command[", command.DeviceName, "]:", command.Property, ":", command.Value)
-    err := dev.SendCommand(command)
-
-    if err != nil {
-        log.Println(err)
+    log.Println("Command[", command.DeviceName, "]:", command.Property + ":" + command.Value)
+    
+    if dev.GetModel() == samsung.MODEL_NAME {
+        key := model.LookupCommand(dev.GetModel(), command.Property + ":" + command.Value)
+        samsung.SendKey(key, dev.GetSocket().GetConnection())
+    } else {
+        err := dev.SendCommand(command)
+        if err != nil {
+            log.Println(err)
+        }
     }
 }
 
