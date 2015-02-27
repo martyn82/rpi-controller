@@ -39,21 +39,6 @@ func TestParseMalformedMessageReturnsError(t *testing.T) {
     }
 }
 
-func TestQueryMessageToStringIncludesAllButValue(t *testing.T) {
-    inputMessage := "GET dev0:prop"
-    parsed, err := ParseMessage(inputMessage)
-
-    if err != nil {
-        t.Errorf("ParseMessage() returned an error.", err)
-    }
-
-    outputMessage := parsed.ToString()
-
-    if outputMessage != inputMessage {
-        t.Errorf("ToString() expected %q, actual %q", inputMessage, outputMessage)
-    }
-}
-
 func TestMessageToString(t *testing.T) {
     inputMessage := "SET dev0:prop:val"
     parsed, err := ParseMessage(inputMessage)
@@ -62,7 +47,7 @@ func TestMessageToString(t *testing.T) {
         t.Errorf("ParseMessage() returned an error.", err)
     }
 
-    outputMessage := parsed.ToString()
+    outputMessage := parsed.String()
 
     if outputMessage != inputMessage {
         t.Errorf("ToString() expected %q, actual %q", inputMessage, outputMessage)

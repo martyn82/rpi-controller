@@ -44,11 +44,6 @@ func main() {
         return
     }
 
-    if msg.IsQuery() {
-        SendQuery(client, msg)
-        return
-    }
-
     if msg.IsEvent() {
         SendMessage(client, msg)
         return
@@ -68,23 +63,7 @@ func ConnectToServer() net.Conn {
 
 /* fire-and-forget */
 func SendMessage(client net.Conn, message *communication.Message) {
-    client.Write([]byte(message.ToString()))
-}
-
-/* query server and wait for response */
-func SendQuery(client net.Conn, query *communication.Message) {
-    client.Write([]byte(query.ToString()))
-
-    buffer := make([]byte, 512)
-    bytesRead, readErr := client.Read(buffer)
-
-    if readErr != nil {
-        log.Fatal(readErr)
-    }
-
-    if bytesRead > 0 {
-        log.Println(string(buffer[:bytesRead]))
-    }
+    client.Write([]byte(message.String()))
 }
 
 /* output usage instructions */
@@ -92,14 +71,11 @@ func PrintHelp() {
     help := "Usage: controller command\n" +
         "  command:\n" +
         "    SET device:property:value      Write property 'property' to 'value' on specified device.\n" +
-        "    GET device:property            Read the value of property 'property' value on specified device. \n" +
         "    EVT device:property:value      Notify that 'property' was set to 'value' on specified device.\n" +
         "\n" +
         "  Examples:\n" +
         "    SET dev0:PW:ON\n" +
         "      Sets the power state to 'ON' on device 'dev0'\n" +
-        "    GET dev0:PW\n" +
-        "      Retrieves the power state of device 'dev0'. A possible response could be 'ON'.\n" +
         "    EVT dev0:PW:ON\n" +
         "      Notifies the system that the power state of device 'dev0' has the value 'ON'\n" +
         "\n"

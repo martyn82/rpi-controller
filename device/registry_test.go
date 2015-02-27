@@ -4,6 +4,16 @@ import (
     "testing"
 )
 
+type DummyDevice struct {
+    DeviceModel
+}
+
+func NewDevice(name string) *DummyDevice {
+    d := new(DummyDevice)
+    d.name = name
+    return d
+}
+
 func TestRegistryIsEmptyByDefault(t *testing.T) {
     registry := CreateDeviceRegistry()
 
@@ -14,7 +24,7 @@ func TestRegistryIsEmptyByDefault(t *testing.T) {
 
 func TestRegistryAddsDeviceToRegistry(t *testing.T) {
     registry := CreateDeviceRegistry()
-    registry.Register(NewDevice("", "", nil))
+    registry.Register(NewDevice(""))
 
     if registry.IsEmpty() {
         t.Errorf("Registry is still empty after registering device.")
@@ -24,7 +34,7 @@ func TestRegistryAddsDeviceToRegistry(t *testing.T) {
 func TestRegisteredDeviceCanBeRetrievedByName(t *testing.T) {
     registry := CreateDeviceRegistry()
 
-    d := NewDevice("name", "", nil)
+    d := NewDevice("name")
     registry.Register(d)
 
     dev := registry.GetDeviceByName("name")
@@ -39,5 +49,21 @@ func TestAttemptToRetrieveNonExistingDeviceReturnsNil(t *testing.T) {
 
     if registry.GetDeviceByName("") != nil {
         t.Errorf("Non-existing device retrieval did not return NIL")
+    }
+}
+
+func TestGetAllDevicesRetrievesAllDevices(t *testing.T) {
+    registry := CreateDeviceRegistry()
+    dev := NewDevice("name")
+    registry.Register(dev)
+
+    devs := registry.GetAllDevices()
+
+    if len(devs) != 1 {
+        t.Errorf("GetAllDevices() did not return all devices.")
+    }
+
+    if devs["name"] != dev {
+        t.Errorf("GetAllDevices() did not return all devices.")
     }
 }

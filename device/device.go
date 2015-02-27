@@ -2,139 +2,135 @@ package device
 
 import (
     "errors"
-    "fmt"
-    "strings"
-
-    "github.com/martyn82/rpi-controller/communication"
-    "github.com/martyn82/rpi-controller/communication/messages"
-    "github.com/martyn82/rpi-controller/device/model"
+    "net"
+    "time"
 )
 
-type EventHandler func (sender *Device, event string)
-type ResponseHandler func (sender *Device, query *communication.Message)
-type InputHandler func (message string)
+const (
+    BUFFER_SIZE = 512
+    CONNECT_TIMEOUT = "500ms"
+)
 
-type Device struct {
-    name string
-    model string
-    socket *communication.Socket
-    inputHandler InputHandler
+/* Event handler for connection state changes */
+type ConnectionStateChangedHandler func (sender Device, isConnected bool)
+
+/* Event handler for message receptions */
+type MessageReceivedHandler func (sender Device, message string)
+
+/* Base device interface */
+type Device interface {
+    Name() string
+    Model() string
+
+    Disconnect()
+    IsConnected() bool
+    Connect() error
+    SendMessage(message string) error
+
+    SetConnectionStateChangedListener(listener ConnectionStateChangedHandler)
+    SetMessageReceivedListener(listener MessageReceivedHandler)
 }
 
-func NewDevice(name string, model string, socket *communication.Socket) *Device {
-    device := new(Device)
-    device.name = name
-    device.model = model
-    device.socket = socket
-    return device
+/* Abstract device */
+type DeviceModel struct {
+    name, model, protocol, address string
+    isConnected bool
+    connection net.Conn
+    messageMap map[string]string
+
+    connectionStateChanged ConnectionStateChangedHandler
+    messageReceived MessageReceivedHandler
 }
 
-func (device *Device) GetName() string {
-    return device.name
-}
+/* Maps given message to device-specific message */
+func (d *DeviceModel) mapMessage(message string) string {
+    msg := d.messageMap[message]
 
-func (device *Device) GetModel() string {
-    return device.model
-}
-
-func (device *Device) GetSocket() *communication.Socket {
-    return device.socket
-}
-
-func (device *Device) Disconnect() {
-    device.socket.Close()
-}
-
-func (device *Device) Connect(eventHandler EventHandler) error {
-    connection, connectionError := device.socket.Connect()
-
-    if connectionError != nil {
-        return connectionError
+    if msg == "" {
+        return message
     }
 
-    if !device.socket.IsConnected() {
-        return errors.New("Socket is not connected!")
+    return msg
+}
+
+/* Retrieves the name of the device */
+func (d *DeviceModel) Name() string {
+    return d.name
+}
+
+/* Retrieves the model of the device */
+func (d *DeviceModel) Model() string {
+    return d.model
+}
+
+/* Determines whether the device is connected */
+func (d *DeviceModel) IsConnected() bool {
+    return d.isConnected
+}
+
+/* Connects the device and opens a listener for incoming messages */
+func (d *DeviceModel) Connect() error {
+    duration, _ := time.ParseDuration(CONNECT_TIMEOUT)
+    connection, connectErr := net.DialTimeout(d.protocol, d.address, duration)
+
+    if connectErr != nil {
+        return connectErr
     }
 
-    defer connection.Close()
+    d.connection = connection
+    d.isConnected = true
 
-    buffer := make([]byte, 256)
-    eventMessage := []string{}
-    bytesRead := 0
-
-    if device.socket.IsConnected() {
-        eventHandler(device, messages.EVT_CONNECTED)
+    if d.connectionStateChanged != nil {
+        d.connectionStateChanged(d, true)
     }
 
-    for device.socket.IsConnected() {
-        bytesRead, _ = connection.Read(buffer)
+    go func (d *DeviceModel) {
+        for d.IsConnected() {
+            buffer := make([]byte, BUFFER_SIZE)
+            bytesRead, readErr := d.connection.Read(buffer)
 
-        if bytesRead == 0 {
-            continue
-        }
-
-        eventMessage = strings.SplitAfter(string(buffer[:bytesRead]), "\r")
-
-        if len(eventMessage[0]) > 0 {
-            if device.inputHandler != nil {
-                device.inputHandler(eventMessage[0])
+            if readErr != nil {
+                d.Disconnect()
+                break
             }
-            eventHandler(device, eventMessage[0])
+
+            if bytesRead > 0 && d.messageReceived != nil {
+                d.messageReceived(d, string(buffer[:bytesRead]))
+            }
         }
-    }
+    }(d)
 
     return nil
 }
 
-func (device *Device) SendCommand(command *communication.Message) error {
-    if !device.socket.IsConnected() {
-        return errors.New(fmt.Sprintf("Device is disconnected: '%s'.", device.GetName()))
+/* Disconnects the device */
+func (d *DeviceModel) Disconnect() {
+    if !d.IsConnected() {
+        return
     }
 
-    commandString := command.Property + ":" + command.Value
-    deviceCommand := device.MapCommand(commandString)
-
-    if deviceCommand == "" {
-        return errors.New(fmt.Sprintf("Unknown command '%s' for device model '%s'.", commandString, device.GetModel()))
-    }
-
-    connection := device.socket.GetConnection()
-    _, writeError := connection.Write([]byte(deviceCommand))
-
-    return writeError
+    d.connection.Close()
+    d.isConnected = false
+    d.connectionStateChanged(d, false)
 }
 
-func (device *Device) MapCommand(command string) string {
-    return model.LookupCommand(device.GetModel(), command)
+/* Sends a message to the device */
+func (d *DeviceModel) SendMessage(message string) error {
+    if !d.IsConnected() {
+        return errors.New("Device is not connected.")
+    }
+
+    message = d.mapMessage(message)
+    _, writeErr := d.connection.Write([]byte(message))
+    return writeErr
 }
 
-func (device *Device) SendQuery(query *communication.Message, responseHandler ResponseHandler) error {
-    if !device.socket.IsConnected() {
-        return errors.New(fmt.Sprintf("Device is disconnected: '%s'.", device.GetName()))
-    }
-
-    device.inputHandler = func (message string) {
-        query.Value = message
-        responseHandler(device, query)
-        device.inputHandler = nil
-    }
-
-    deviceQuery := device.MapQuery(query.Property)
-
-    if deviceQuery == "" {
-        return errors.New(fmt.Sprintf("Unknown query '%s' for device model '%s'.", query.Property, device.GetModel()))
-    }
-
-    connection := device.socket.GetConnection()
-    _, writeError := connection.Write([]byte(deviceQuery))
-
-    if writeError != nil {
-        return writeError
-    }
-
-    return nil
+/* Attach a connection state listener to the device */
+func (d *DeviceModel) SetConnectionStateChangedListener(listener ConnectionStateChangedHandler) {
+    d.connectionStateChanged = listener
 }
 
-func (device *Device) MapQuery(query string) string {
-    return model.LookupQuery(device.GetModel(), query)
+/* Attach a message reception listener to the device */
+func (d *DeviceModel) SetMessageReceivedListener(listener MessageReceivedHandler) {
+    d.messageReceived = listener
 }

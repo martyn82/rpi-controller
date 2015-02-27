@@ -17,9 +17,9 @@ func (registry *ActionRegistry) IsEmpty() bool {
 }
 
 func (registry *ActionRegistry) Register(action *Action) {
-    registry.actions[action.When.ToString()] = action
+    registry.actions[action.When.String()] = action
 }
 
 func (registry *ActionRegistry) GetActionByWhen(when *communication.Message) *Action {
-    return registry.actions[when.ToString()]
+    return registry.actions[when.String()]
 }

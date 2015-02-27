@@ -9,30 +9,35 @@ import (
 
     "github.com/martyn82/rpi-controller/actions"
     "github.com/martyn82/rpi-controller/communication"
-    "github.com/martyn82/rpi-controller/communication/messages"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
-    "github.com/martyn82/rpi-controller/device/model"
-    "github.com/martyn82/rpi-controller/device/model/samsung"
 )
 
 const CONFIG_FILE = "conf.json"
 
 var Config configuration.Configuration
-var SocketDialer communication.Dialer
-var DeviceEventHandler device.EventHandler
 var DeviceRegistry *device.DeviceRegistry
 var ActionRegistry *actions.ActionRegistry
 
 /* main entry point */
 func main() {
     Setup()
-    serverErr := RunServer()
+    defer CloseDevices()
 
-    if serverErr != nil {
-        log.Fatal("Listen error:", serverErr)
-        os.Exit(1)
+    server, err := net.Listen(Config.Socket.Type, Config.Socket.Address)
+
+    if err != nil {
+        log.Fatal("Listen error:", err)
     }
+
+    defer server.Close()
+    go ControllerListener(server)
+    log.Println("Listening on socket [", Config.Socket.Type, "]:", Config.Socket.Address)
+
+    // Wait for interrupt/kill/terminate signals
+    sigc := make(chan os.Signal, 1)
+    signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+    _ = <-sigc
 }
 
 /* loads configuration from file */
@@ -46,29 +51,12 @@ func LoadConfiguration() {
 
     if len(Config.Devices) == 0 {
         log.Fatal("No devices configured.")
-        os.Exit(1)
     }
 }
 
 /* initialize app */
 func Setup() {
     DeviceRegistry = device.CreateDeviceRegistry()
-
-    SocketDialer = func (protocol string, address string) (net.Conn, error) {
-        return net.Dial(protocol, address)
-    }
-
-    DeviceEventHandler = func (sender *device.Device, event string) {
-        if event == messages.EVT_CONNECTED {
-            log.Println("Device up:", "name=" + sender.GetName(), "model=" + sender.GetModel())
-
-            if sender.GetModel() == samsung.MODEL_NAME {
-                samsung.AuthenticateRemote("metis", sender.GetSocket().GetConnection())
-            }
-        }
-
-        log.Println("Event[", sender.GetName(), "]:", event)
-    }
 
     LoadConfiguration()
     SetupDevices()
@@ -78,18 +66,35 @@ func Setup() {
 /* setup devices and listen to them */
 func SetupDevices() {
     for i := 0; i < len(Config.Devices); i++ {
-        dev := Config.Devices[i]
+        dev, err := device.CreateDevice(Config.Devices[i])
 
-        d := device.NewDevice(dev.Name, dev.Model, communication.NewSocket(dev.Protocol, dev.Address, SocketDialer))
-        DeviceRegistry.Register(d)
+        if err != nil {
+            log.Println(err)
+            continue
+        }
 
-        go func () {
-            connectErr := d.Connect(DeviceEventHandler)
+        dev.SetConnectionStateChangedListener(func (sender device.Device, connectionState bool) {
+            log.Println("Device", "name=" + sender.Name(), "model=" + sender.Model(), "is connected:", connectionState)
+        })
 
-            if connectErr != nil {
-                log.Println(connectErr)
-            }
-        }()
+        dev.SetMessageReceivedListener(func (sender device.Device, message string) {
+            log.Println("Device", sender.Name(), "says:", message)
+            HandleMessage(message, nil)
+        })
+
+        DeviceRegistry.Register(dev)
+        connectErr := dev.Connect()
+
+        if connectErr != nil {
+            log.Println(connectErr)
+        }
+    }
+}
+
+func CloseDevices() {
+    devices := DeviceRegistry.GetAllDevices()
+    for _, dev := range devices {
+        dev.Disconnect()
     }
 }
 
@@ -116,27 +121,6 @@ func SetupActions() {
     }
 }
 
-/* setup server and start listening */
-func RunServer() error {
-    server, err := net.Listen(Config.Socket.Type, Config.Socket.Address)
-
-    if err != nil {
-        return err
-    }
-
-    defer server.Close()
-    go ControllerListener(server)
-
-    log.Println("Listening on socket [", Config.Socket.Type, "]:", Config.Socket.Address)
-
-    // Wait for interrupt/kill/terminate signals
-    sigc := make(chan os.Signal, 1)
-    signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
-    _ = <-sigc
-
-    return nil
-}
-
 /* listen to incoming messages from controller client */
 func ControllerListener(server net.Listener) {
     for {
@@ -144,7 +128,7 @@ func ControllerListener(server net.Listener) {
 
         if err != nil {
             log.Println("Accept error:", err)
-            continue
+            break
         }
 
         go StartSession(client)
@@ -166,26 +150,35 @@ func StartSession(client net.Conn) {
     }
 }
 
+/* send command to device */
+func SendCommand(command *communication.Message) {
+    dev := DeviceRegistry.GetDeviceByName(command.DeviceName)
+
+    if dev == nil {
+        return
+    }
+
+    log.Println("Command[", command.DeviceName, "]:", command.Property + ":" + command.Value)
+    err := dev.SendMessage(command.Property + ":" + command.Value)
+
+    if err != nil {
+        log.Println(err)
+    }
+}
+
 /* handle incoming message */
 func HandleMessage(message string, client net.Conn) {
     msg, parseErr := communication.ParseMessage(message)
 
     if parseErr != nil {
-        log.Fatal(parseErr)
+        log.Println(parseErr)
         return
     }
-    
+
     log.Println("Handling message", message)
 
     if msg.IsCommand() {
         SendCommand(msg)
-        return
-    }
-
-    if msg.IsQuery() {
-        SendQuery(msg, func (sender *device.Device, query *communication.Message) {
-            client.Write([]byte(query.Value))
-        })
         return
     }
 
@@ -197,47 +190,6 @@ func HandleMessage(message string, client net.Conn) {
     log.Fatal("Unsupported message type: '%s'.", msg.Type)
 }
 
-/* lookup device by name */
-func GetDevice(name string) *device.Device {
-    dev := DeviceRegistry.GetDeviceByName(name)
-
-    if dev == nil {
-        log.Println("Unknown device:", name)
-        return nil
-    }
-
-    return dev
-}
-
-/* send command to device */
-func SendCommand(command *communication.Message) {
-    dev := GetDevice(command.DeviceName)
-    log.Println("Command[", command.DeviceName, "]:", command.Property + ":" + command.Value)
-    
-    if dev.GetModel() == samsung.MODEL_NAME {
-        key := model.LookupCommand(dev.GetModel(), command.Property + ":" + command.Value)
-        samsung.SendKey(key, dev.GetSocket().GetConnection())
-    } else {
-        err := dev.SendCommand(command)
-        if err != nil {
-            log.Println(err)
-        }
-    }
-}
-
-/* send query to device */
-func SendQuery(query *communication.Message, responseHandler device.ResponseHandler) {
-    dev := GetDevice(query.DeviceName)
-    log.Println("Query[", query.DeviceName, "]:", query.Property)
-    err := dev.SendQuery(query, responseHandler)
-
-    if err != nil {
-        log.Println(err)
-        query.Value = err.Error()
-        responseHandler(dev, query)
-    }
-}
-
 /* handles an event notification */
 func HandleEvent(event *communication.Message) {
     thenMsg := ActionRegistry.GetActionByWhen(event)
@@ -246,5 +198,5 @@ func HandleEvent(event *communication.Message) {
         return
     }
 
-    HandleMessage(thenMsg.Then.ToString(), nil)
+    HandleMessage(thenMsg.Then.String(), nil)
 }

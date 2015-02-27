@@ -8,7 +8,4 @@ const (
 
     CMD_POWER_ON = "PW:ON"
     CMD_POWER_OFF = "PW:OFF"
-
-    QRY_POWER = "PW"
-    QRY_VOLUME = "VOL"
 )
