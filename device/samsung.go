@@ -8,6 +8,7 @@ import (
     "strconv"
     "strings"
 
+    "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/communication/messages"
 )
 
@@ -18,10 +19,14 @@ type SamsungTv struct {
     isAuthenticated bool
 }
 
-/* Message map */
-var samsungTvMessageMap = map[string]string{
-    messages.CMD_POWER_ON: "KEY_POWERON",
-    messages.CMD_POWER_OFF: "KEY_POWEROFF",
+var samsungTvPropertyMap = map[string]string{
+    messages.PROP_POWER: "KEY_POWER",
+    messages.PROP_VOLUME: "KEY_VOL",
+}
+
+var samsungTvValueMap = map[string]string{
+    messages.VAL_ON: "ON",
+    messages.VAL_OFF: "OFF",
 }
 
 /* Constructs SamsungTv */
@@ -32,7 +37,17 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d.protocol = protocol
     d.address = address
     d.isAuthenticated = false
-    d.messageMap = samsungTvMessageMap
+
+    d.messageMapper = func (message string) string {
+        msg, err := communication.ParseMessage(message)
+
+        if err != nil {
+            return message
+        }
+
+        return samsungTvPropertyMap[msg.Property] + samsungTvValueMap[msg.Value]
+    }
+
     return d
 }
 
@@ -133,10 +148,10 @@ func (d *SamsungTv) SendMessage(message string) error {
         d.authenticate()
     }
 
+    message = d.mapMessage(message)
+
     tvAppName := d.tvAppName
     tvAppNameLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(tvAppName))))
-
-    message = d.mapMessage(message)
 
     keyEnc := base64.StdEncoding.EncodeToString([]byte(message))
     keyLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(keyEnc))))

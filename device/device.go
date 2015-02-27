@@ -16,6 +16,9 @@ type ConnectionStateChangedHandler func (sender Device, isConnected bool)
 /* Event handler for message receptions */
 type MessageReceivedHandler func (sender Device, message string)
 
+/* Message mapper function */
+type MessageMapper func (message string) string
+
 /* Base device interface */
 type Device interface {
     Name() string
@@ -35,7 +38,7 @@ type DeviceModel struct {
     name, model, protocol, address string
     isConnected bool
     connection net.Conn
-    messageMap map[string]string
+    messageMapper MessageMapper
 
     connectionStateChanged ConnectionStateChangedHandler
     messageReceived MessageReceivedHandler
@@ -43,13 +46,11 @@ type DeviceModel struct {
 
 /* Maps given message to device-specific message */
 func (d *DeviceModel) mapMessage(message string) string {
-    msg := d.messageMap[message]
-
-    if msg == "" {
+    if d.messageMapper == nil {
         return message
     }
 
-    return msg
+    return d.messageMapper(message)
 }
 
 /* Retrieves the name of the device */
