@@ -1,7 +1,7 @@
 package main
 
 import (
-    "log"
+    "flag"
     "net"
     "os"
     "syscall"
@@ -10,76 +10,88 @@ import (
     "github.com/martyn82/rpi-controller/configuration"
 )
 
-const CONFIG_FILE = "conf.json"
+var StdErr = os.NewFile(uintptr(syscall.Stderr), "/dev/stderr")
+var StdOut = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
 
-var Config configuration.Configuration
+var configFile = flag.String("c", "", "Specify a configuration file name.")
+var message = flag.String("m", "", "Specify a message.")
 
 /* main entry point */
 func main() {
-    config, configErr := configuration.Load(CONFIG_FILE)
-    Config = config
+    flag.Parse()
 
-    if configErr != nil {
-        log.Fatal(configErr)
-    }
-
-    args := os.Args[1:]
-
-    if len(args) < 2 {
-        PrintHelp()
+    if *configFile == "" || *message == "" {
+        printHelp()
         os.Exit(1)
     }
 
-    msg, parseErr := communication.ParseMessage(args[0] + " " + args[1])
+    config, configErr := loadConfiguration(*configFile)
 
-    if parseErr != nil {
-        log.Fatal(parseErr)
+    if configErr != nil {
+        StdErr.Write([]byte(configErr.Error()))
+        os.Exit(2)
     }
 
-    client := ConnectToServer()
-    defer client.Close()
-
-    if msg.IsCommand() {
-        SendMessage(client, msg)
-        return
-    }
-
-    if msg.IsEvent() {
-        SendMessage(client, msg)
-        return
-    }
-}
-
-/* connect to server */
-func ConnectToServer() net.Conn {
-    client, err := net.Dial(Config.Socket.Type, Config.Socket.Address)
+    err := processMessage(config.Socket, *message)
 
     if err != nil {
-        log.Fatal(err)
+        StdErr.Write([]byte(err.Error()))
+        os.Exit(3)
     }
-
-    return client
 }
 
-/* fire-and-forget */
-func SendMessage(client net.Conn, message *communication.Message) {
-    client.Write([]byte(message.String()))
+/* Load configuration for client */
+func loadConfiguration(configFile string) (configuration.Configuration, error) {
+    config, configErr := configuration.Load(configFile)
+
+    if configErr != nil {
+        return config, configErr
+    }
+
+    return config, nil
+}
+
+/* Process message */
+func processMessage(config configuration.SocketConfiguration, message string) error {
+    msg, parseErr := communication.ParseMessage(message)
+
+    if parseErr != nil {
+        return parseErr
+    }
+
+    return sendMessage(config, msg)
+}
+
+/* Sends the message */
+func sendMessage(config configuration.SocketConfiguration, message *communication.Message) error {
+    client, connectErr := net.Dial(config.Type, config.Address)
+
+    if connectErr != nil {
+        return connectErr
+    }
+
+    _, err := client.Write([]byte(message.String()))
+    return err
 }
 
 /* output usage instructions */
-func PrintHelp() {
-    help := "Usage: controller command\n" +
-        "  command:\n" +
-        "    SET device:property:value      Write property 'property' to 'value' on specified device.\n" +
-        "    EVT device:property:value      Notify that 'property' was set to 'value' on specified device.\n" +
+func printHelp() {
+    help := "Usage: controller -c=<config file> -m=\"type device:property:value\"\n" +
+        "  -c          Specify a configuration file name.\n" +
+        "  -m          Specify a message.\n" +
+        "  message\n" +
+        "    type\n" +
+        "      SET       Write a property value on a device.\n" +
+        "      EVT       Notify of a property value on a device.\n" +
+        "    device:property:value\n" +
+        "      Specifies on what 'device' a 'property' should be written or notified.\n" +
         "\n" +
-        "  Examples:\n" +
+        "  Examples of messages:\n" +
         "    SET dev0:PW:ON\n" +
         "      Sets the power state to 'ON' on device 'dev0'\n" +
         "    EVT dev0:PW:ON\n" +
         "      Notifies the system that the power state of device 'dev0' has the value 'ON'\n" +
         "\n"
 
-    stdOut := os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
-    stdOut.Write([]byte(help))
+    StdOut.Write([]byte(help))
 }
