@@ -24,7 +24,7 @@
     "Actions": [
         {
             "When": "shairport:PLAY:START",
-            "Then": "SET denon:PW:ON"
+            "Then": ["SET denon:PW:ON", "SET denon:VOL:40"]
         }
     ]
 }

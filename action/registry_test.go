@@ -24,7 +24,7 @@ func TestRegistryAddsActionToRegistry(t *testing.T) {
     }
 }
 
-func TestRegisteredDeviceCanBeRetrievedByName(t *testing.T) {
+func TestRegisteredActionCanBeRetrievedByName(t *testing.T) {
     registry := CreateActionRegistry()
 
     msg, _ := communication.ParseMessage("EVT dev0:prop:val")
@@ -39,7 +39,7 @@ func TestRegisteredDeviceCanBeRetrievedByName(t *testing.T) {
     }
 }
 
-func TestAttemptToRetrieveNonExistingDeviceReturnsNil(t *testing.T) {
+func TestAttemptToRetrieveNonExistingActionReturnsNil(t *testing.T) {
     registry := CreateActionRegistry()
 
     msg, _ := communication.ParseMessage("EVT dev0:prop:val")

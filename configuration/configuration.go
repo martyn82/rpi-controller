@@ -21,7 +21,7 @@ type DeviceConfiguration struct {
 
 type ActionConfiguration struct {
     When string
-    Then string
+    Then []string
 }
 
 type Configuration struct {

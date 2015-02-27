@@ -74,7 +74,14 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
 
         dev.SetMessageReceivedListener(func (sender device.Device, message string) {
             log.Println("Device", sender.Name(), "says:", message)
-            handleMessage(message)
+            msg, parseErr := communication.ParseMessage(message)
+
+            if parseErr != nil {
+                log.Println(parseErr.Error())
+                return
+            }
+
+            handleMessage(msg)
         })
 
         DeviceRegistry.Register(dev)
@@ -104,15 +111,20 @@ func initializeActions(actions []configuration.ActionConfiguration) {
             log.Fatal(parseErr)
         }
 
-        msgThen, err := communication.ParseMessage(actionConfig.Then)
+        thens := make([]*communication.Message, len(actionConfig.Then))
+        for i := range actionConfig.Then {
+            msgThen, err := communication.ParseMessage(actionConfig.Then[i])
+            thens[i] = msgThen
 
-        if err != nil {
-            log.Fatal(err)
+            if err != nil {
+                log.Fatal(err)
+            }
         }
 
-        action := action.NewAction(msgWhen, msgThen)
+        action := action.NewAction(msgWhen, thens)
         ActionRegistry.Register(action)
-        log.Println("Registered action", action.When.String(), "::", action.Then.String())
+
+        log.Println("Registered action", action.When.String())
     }
 }
 
@@ -152,7 +164,13 @@ func startSession(client net.Conn) {
         }
 
         message := string(buffer[:bytesRead])
-        handleMessage(message)
+        msg, parseErr := communication.ParseMessage(message)
+
+        if parseErr != nil {
+            return
+        }
+
+        handleMessage(msg)
     }
 }
 
@@ -173,27 +191,20 @@ func sendCommand(command *communication.Message) {
 }
 
 /* handle incoming message */
-func handleMessage(message string) {
-    msg, parseErr := communication.ParseMessage(message)
+func handleMessage(message *communication.Message) {
+    log.Println("Handling message", message.String())
 
-    if parseErr != nil {
-        log.Println(parseErr)
+    if message.IsCommand() {
+        sendCommand(message)
         return
     }
 
-    log.Println("Handling message", message)
-
-    if msg.IsCommand() {
-        sendCommand(msg)
+    if message.IsEvent() {
+        handleEvent(message)
         return
     }
 
-    if msg.IsEvent() {
-        handleEvent(msg)
-        return
-    }
-
-    log.Fatal("Unsupported message type: '%s'.", msg.Type)
+    log.Fatal("Unsupported message type: '%s'.", message.Type)
 }
 
 /* handles an event notification */
@@ -204,5 +215,7 @@ func handleEvent(event *communication.Message) {
         return
     }
 
-    handleMessage(thenMsg.Then.String())
+    for i := range thenMsg.Then {
+        handleMessage(thenMsg.Then[i])
+    }
 }
