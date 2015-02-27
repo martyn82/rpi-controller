@@ -71,7 +71,13 @@ func sendMessage(config configuration.SocketConfiguration, message *communicatio
     }
 
     _, err := client.Write([]byte(message.String()))
-    return err
+    
+    if err != nil {
+        return err
+    }
+
+    client.Close()
+    return nil
 }
 
 /* output usage instructions */
