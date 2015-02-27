@@ -19,6 +19,9 @@ type MessageReceivedHandler func (sender Device, message string)
 /* Message mapper function */
 type MessageMapper func (message string) string
 
+/* Response processor function */
+type ResponseProcessor func (response []byte) string
+
 /* Base device interface */
 type Device interface {
     Name() string
@@ -38,19 +41,20 @@ type DeviceModel struct {
     name, model, protocol, address string
     isConnected bool
     connection net.Conn
-    messageMapper MessageMapper
+    mapMessage MessageMapper
+    processResponse ResponseProcessor
 
     connectionStateChanged ConnectionStateChangedHandler
     messageReceived MessageReceivedHandler
 }
 
 /* Maps given message to device-specific message */
-func (d *DeviceModel) mapMessage(message string) string {
-    if d.messageMapper == nil {
+func (d *DeviceModel) MapMessage(message string) string {
+    if d.mapMessage == nil {
         return message
     }
 
-    return d.messageMapper(message)
+    return d.mapMessage(message)
 }
 
 /* Retrieves the name of the device */
@@ -95,12 +99,22 @@ func (d *DeviceModel) Connect() error {
             }
 
             if bytesRead > 0 && d.messageReceived != nil {
-                d.messageReceived(d, string(buffer[:bytesRead]))
+                response := d.ProcessResponse(buffer[:bytesRead])
+                d.messageReceived(d, response)
             }
         }
     }(d)
 
     return nil
+}
+
+/* Processes response message */
+func (d *DeviceModel) ProcessResponse(response []byte) string {
+    if d.processResponse == nil {
+        return string(response)
+    }
+
+    return d.processResponse(response)
 }
 
 /* Disconnects the device */
@@ -126,7 +140,7 @@ func (d *DeviceModel) SendMessage(message string) error {
         }
     }
 
-    message = d.mapMessage(message)
+    message = d.MapMessage(message)
     _, writeErr := d.connection.Write([]byte(message))
     return writeErr
 }

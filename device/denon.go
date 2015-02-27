@@ -30,7 +30,7 @@ func CreateDenonAvr(name string, model string, protocol string, address string) 
     d.protocol = protocol
     d.address = address
 
-    d.messageMapper = func (message string) string {
+    d.mapMessage = func (message string) string {
         msg, parseErr := communication.ParseMessage(message)
 
         if parseErr != nil {

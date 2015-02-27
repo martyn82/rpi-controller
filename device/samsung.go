@@ -38,14 +38,28 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d.address = address
     d.isAuthenticated = false
 
-    d.messageMapper = func (message string) string {
+    d.mapMessage = func (message string) string {
         msg, err := communication.ParseMessage(message)
 
         if err != nil {
             return message
         }
 
-        return samsungTvPropertyMap[msg.Property] + samsungTvValueMap[msg.Value]
+        value := samsungTvValueMap[msg.Value]
+
+        if v, err := strconv.Atoi(msg.Value); err == nil {
+            if v > 0 {
+                value = "UP"
+            } else {
+                value = "DOWN"
+            }
+        }
+
+        return samsungTvPropertyMap[msg.Property] + value
+    }
+
+    d.processResponse = func (response []byte) string {
+        return strconv.Quote(string(response))
     }
 
     return d
