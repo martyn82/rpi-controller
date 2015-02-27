@@ -1,7 +1,6 @@
 package device
 
 import (
-    "errors"
     "net"
     "time"
 )
@@ -106,18 +105,24 @@ func (d *DeviceModel) Connect() error {
 /* Disconnects the device */
 func (d *DeviceModel) Disconnect() {
     if !d.IsConnected() {
+        d.connection = nil
         return
     }
 
     d.connection.Close()
     d.isConnected = false
+    d.connection = nil
     d.connectionStateChanged(d, false)
 }
 
 /* Sends a message to the device */
 func (d *DeviceModel) SendMessage(message string) error {
     if !d.IsConnected() {
-        return errors.New("Device is not connected.")
+        err := d.Connect()
+
+        if err != nil {
+            return err
+        }
     }
 
     message = d.mapMessage(message)

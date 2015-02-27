@@ -7,6 +7,8 @@ import (
     "os"
     "strconv"
     "strings"
+
+    "github.com/martyn82/rpi-controller/communication/messages"
 )
 
 /* SamsungTv type */
@@ -18,8 +20,8 @@ type SamsungTv struct {
 
 /* Message map */
 var samsungTvMessageMap = map[string]string{
-    "PW:ON": "KEY_POWERON",
-    "PW:OFF": "KEY_POWEROFF",
+    messages.CMD_POWER_ON: "KEY_POWERON",
+    messages.CMD_POWER_OFF: "KEY_POWEROFF",
 }
 
 /* Constructs SamsungTv */

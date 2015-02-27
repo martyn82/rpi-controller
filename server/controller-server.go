@@ -1,39 +1,46 @@
 package main
 
 import (
+    "flag"
     "log"
     "net"
     "os"
     "os/signal"
     "syscall"
 
-    "github.com/martyn82/rpi-controller/actions"
+    "github.com/martyn82/rpi-controller/action"
     "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
 )
 
-const CONFIG_FILE = "conf.json"
-
-var Config configuration.Configuration
+var ActionRegistry *action.ActionRegistry
 var DeviceRegistry *device.DeviceRegistry
-var ActionRegistry *actions.ActionRegistry
+
+var configFile = flag.String("c", "", "Specify a configuration file name.")
 
 /* main entry point */
 func main() {
-    Setup()
-    defer CloseDevices()
+    flag.Parse()
 
-    server, err := net.Listen(Config.Socket.Type, Config.Socket.Address)
+    ActionRegistry = action.CreateActionRegistry()
+    DeviceRegistry = device.CreateDeviceRegistry()
 
-    if err != nil {
-        log.Fatal("Listen error:", err)
-    }
+    config := loadConfiguration(*configFile)
 
+    initializeDevices(config.Devices)
+    defer closeDevices()
+
+    initializeActions(config.Actions)
+
+    server, _ := startServer(config.Socket)
     defer server.Close()
-    go ControllerListener(server)
-    log.Println("Listening on socket [", Config.Socket.Type, "]:", Config.Socket.Address)
 
+    wait()
+}
+
+/* idle */
+func wait() {
     // Wait for interrupt/kill/terminate signals
     sigc := make(chan os.Signal, 1)
     signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
@@ -41,32 +48,20 @@ func main() {
 }
 
 /* loads configuration from file */
-func LoadConfiguration() {
-    config, configErr := configuration.Load(CONFIG_FILE)
-    Config = config
+func loadConfiguration(configFile string) configuration.Configuration {
+    config, configErr := configuration.Load(configFile)
 
     if configErr != nil {
-        panic(configErr)
+        log.Fatal(configErr)
     }
 
-    if len(Config.Devices) == 0 {
-        log.Fatal("No devices configured.")
-    }
-}
-
-/* initialize app */
-func Setup() {
-    DeviceRegistry = device.CreateDeviceRegistry()
-
-    LoadConfiguration()
-    SetupDevices()
-    SetupActions()
+    return config
 }
 
 /* setup devices and listen to them */
-func SetupDevices() {
-    for i := 0; i < len(Config.Devices); i++ {
-        dev, err := device.CreateDevice(Config.Devices[i])
+func initializeDevices(devices []configuration.DeviceConfiguration) {
+    for i := range devices {
+        dev, err := device.CreateDevice(devices[i])
 
         if err != nil {
             log.Println(err)
@@ -79,7 +74,7 @@ func SetupDevices() {
 
         dev.SetMessageReceivedListener(func (sender device.Device, message string) {
             log.Println("Device", sender.Name(), "says:", message)
-            HandleMessage(message, nil)
+            handleMessage(message)
         })
 
         DeviceRegistry.Register(dev)
@@ -91,7 +86,8 @@ func SetupDevices() {
     }
 }
 
-func CloseDevices() {
+/* close devices */
+func closeDevices() {
     devices := DeviceRegistry.GetAllDevices()
     for _, dev := range devices {
         dev.Disconnect()
@@ -99,11 +95,9 @@ func CloseDevices() {
 }
 
 /* setup actions to be taken on events */
-func SetupActions() {
-    ActionRegistry = actions.CreateActionRegistry()
-
-    for i := 0; i < len(Config.Actions); i++ {
-        actionConfig := Config.Actions[i]
+func initializeActions(actions []configuration.ActionConfiguration) {
+    for i :=range actions {
+        actionConfig := actions[i]
         msgWhen, parseErr := communication.ParseMessage(communication.MSG_TYPE_EVENT + " " + actionConfig.When)
 
         if parseErr != nil {
@@ -116,27 +110,39 @@ func SetupActions() {
             log.Fatal(err)
         }
 
-        action := actions.NewAction(msgWhen, msgThen)
+        action := action.NewAction(msgWhen, msgThen)
         ActionRegistry.Register(action)
+        log.Println("Registered action", action.When.String(), "::", action.Then.String())
     }
 }
 
-/* listen to incoming messages from controller client */
-func ControllerListener(server net.Listener) {
-    for {
-        client, err := server.Accept()
+func startServer(config configuration.SocketConfiguration) (net.Listener, error) {
+    server, err := net.Listen(config.Type, config.Address)
 
-        if err != nil {
-            log.Println("Accept error:", err)
-            break
-        }
-
-        go StartSession(client)
+    if err != nil {
+        log.Fatal("Listen error:", err)
+        return nil, err
     }
+
+    go func (server net.Listener) {
+        for {
+            client, err := server.Accept()
+
+            if err != nil {
+                log.Println("Accept error:", err)
+                break
+            }
+
+            go startSession(client)
+        }
+    }(server)
+
+    log.Println("Listening on socket [", config.Type, "]:", config.Address)
+    return server, nil
 }
 
 /* spawn new session with client */
-func StartSession(client net.Conn) {
+func startSession(client net.Conn) {
     for {
         buffer := make([]byte, 512)
         bytesRead, readErr := client.Read(buffer)
@@ -146,12 +152,12 @@ func StartSession(client net.Conn) {
         }
 
         message := string(buffer[:bytesRead])
-        HandleMessage(message, client)
+        handleMessage(message)
     }
 }
 
 /* send command to device */
-func SendCommand(command *communication.Message) {
+func sendCommand(command *communication.Message) {
     dev := DeviceRegistry.GetDeviceByName(command.DeviceName)
 
     if dev == nil {
@@ -167,7 +173,7 @@ func SendCommand(command *communication.Message) {
 }
 
 /* handle incoming message */
-func HandleMessage(message string, client net.Conn) {
+func handleMessage(message string) {
     msg, parseErr := communication.ParseMessage(message)
 
     if parseErr != nil {
@@ -178,12 +184,12 @@ func HandleMessage(message string, client net.Conn) {
     log.Println("Handling message", message)
 
     if msg.IsCommand() {
-        SendCommand(msg)
+        sendCommand(msg)
         return
     }
 
     if msg.IsEvent() {
-        HandleEvent(msg)
+        handleEvent(msg)
         return
     }
 
@@ -191,12 +197,12 @@ func HandleMessage(message string, client net.Conn) {
 }
 
 /* handles an event notification */
-func HandleEvent(event *communication.Message) {
+func handleEvent(event *communication.Message) {
     thenMsg := ActionRegistry.GetActionByWhen(event)
 
     if thenMsg == nil {
         return
     }
 
-    HandleMessage(thenMsg.Then.String(), nil)
+    handleMessage(thenMsg.Then.String())
 }

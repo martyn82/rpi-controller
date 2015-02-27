@@ -1,5 +1,7 @@
 package device
 
+import "github.com/martyn82/rpi-controller/communication/messages"
+
 /* DenonAvr type */
 type DenonAvr struct {
     DeviceModel
@@ -7,8 +9,8 @@ type DenonAvr struct {
 
 /* Map of messages */
 var denonAvrMessageMap = map[string]string{
-    "PW:ON": "PWON\r",
-    "PW:OFF": "PWSTANDBY\r",
+    messages.CMD_POWER_ON: "PWON\r",
+    messages.CMD_POWER_OFF: "PWSTANDBY\r",
 }
 
 /* Construct DenonAvr */

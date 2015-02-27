@@ -1,4 +1,4 @@
-package actions
+package action
 
 import "github.com/martyn82/rpi-controller/communication"
 

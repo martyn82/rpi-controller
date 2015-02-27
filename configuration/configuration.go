@@ -2,10 +2,10 @@ package configuration
 
 import (
     "encoding/json"
+    "errors"
+    "fmt"
     "os"
 )
-
-const CONFIG_LOCATION = "/etc/rpi-controller/"
 
 type SocketConfiguration struct {
     Type string
@@ -34,7 +34,7 @@ func Load(configFile string) (Configuration, error) {
     config := Configuration{}
 
     if _, fileErr := os.Stat(configFile); os.IsNotExist(fileErr) {
-        configFile = CONFIG_LOCATION + configFile
+        return config, errors.New(fmt.Sprintf("Configuration file cannot be found: '%s'.", configFile))
     }
 
     file, err := os.Open(configFile)
