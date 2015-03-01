@@ -183,7 +183,7 @@ func sendCommand(command *messages.Message) {
     }
 
     log.Println("Command[", command.DeviceName, "]:", command.Property + ":" + command.Value)
-    err := dev.SendMessage(command.String())
+    err := dev.SendMessage(command)
 
     if err != nil {
         log.Println(err)

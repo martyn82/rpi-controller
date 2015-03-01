@@ -3,6 +3,7 @@ package device
 import (
     "net"
     "time"
+    "github.com/martyn82/rpi-controller/messages"
 )
 
 const (
@@ -16,21 +17,24 @@ type ConnectionStateChangedHandler func (sender Device, isConnected bool)
 /* Event handler for message receptions */
 type MessageReceivedHandler func (sender Device, message string)
 
-/* Message mapper function */
-type MessageMapper func (message string) string
+/* Message mapper delegate */
+type MessageMapper func (message *messages.Message) string
 
-/* Response processor function */
+/* Response processor delegate */
 type ResponseProcessor func (response []byte) string
 
 /* Base device interface */
 type Device interface {
+    // queries
     Name() string
     Model() string
-
-    Disconnect()
     IsConnected() bool
+
+    // commands
+    Disconnect()
     Connect() error
-    SendMessage(message string) error
+    SendMessage(message *messages.Message) error
+    WriteBytes(msg []byte) error
 
     SetConnectionStateChangedListener(listener ConnectionStateChangedHandler)
     SetMessageReceivedListener(listener MessageReceivedHandler)
@@ -38,20 +42,23 @@ type Device interface {
 
 /* Abstract device */
 type DeviceModel struct {
+    // properties
     name, model, protocol, address string
     isConnected bool
+    powerOnWait time.Duration
     connection net.Conn
+
+    // delegates
     mapMessage MessageMapper
     processResponse ResponseProcessor
-
     connectionStateChanged ConnectionStateChangedHandler
     messageReceived MessageReceivedHandler
 }
 
 /* Maps given message to device-specific message */
-func (d *DeviceModel) MapMessage(message string) string {
+func (d *DeviceModel) MapMessage(message *messages.Message) string {
     if d.mapMessage == nil {
-        return message
+        return message.String()
     }
 
     return d.mapMessage(message)
@@ -131,7 +138,23 @@ func (d *DeviceModel) Disconnect() {
 }
 
 /* Sends a message to the device */
-func (d *DeviceModel) SendMessage(message string) error {
+func (d *DeviceModel) SendMessage(message *messages.Message) error {
+    msg := d.MapMessage(message)
+    writeErr := d.WriteBytes([]byte(msg))
+
+    if writeErr != nil {
+        return writeErr
+    }
+
+    if message.IsPowerOnCommand() && d.powerOnWait != 0 {
+        time.Sleep(d.powerOnWait)
+    }
+
+    return nil
+}
+
+/* Sends bytes to the device */
+func (d *DeviceModel) WriteBytes(msg []byte) error {
     if !d.IsConnected() {
         err := d.Connect()
 
@@ -140,8 +163,7 @@ func (d *DeviceModel) SendMessage(message string) error {
         }
     }
 
-    message = d.MapMessage(message)
-    _, writeErr := d.connection.Write([]byte(message))
+    _, writeErr := d.connection.Write(msg)
     return writeErr
 }
 

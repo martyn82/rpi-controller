@@ -7,7 +7,7 @@ import (
     "os"
     "strconv"
     "strings"
-
+    "github.com/martyn82/rpi-controller/device/samsung"
     "github.com/martyn82/rpi-controller/messages"
 )
 
@@ -16,16 +16,6 @@ type SamsungTv struct {
     DeviceModel
     tvAppName string
     isAuthenticated bool
-}
-
-var samsungTvPropertyMap = map[string]string{
-    messages.PROP_POWER: "KEY_POWER",
-    messages.PROP_VOLUME: "KEY_VOL",
-}
-
-var samsungTvValueMap = map[string]string{
-    messages.VAL_ON: "ON",
-    messages.VAL_OFF: "OFF",
 }
 
 /* Constructs SamsungTv */
@@ -37,29 +27,8 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d.address = address
     d.isAuthenticated = false
 
-    d.mapMessage = func (message string) string {
-        msg, err := messages.ParseMessage(message)
-
-        if err != nil {
-            return message
-        }
-
-        value := samsungTvValueMap[msg.Value]
-
-        if v, err := strconv.Atoi(msg.Value); err == nil {
-            if v > 0 {
-                value = "UP"
-            } else {
-                value = "DOWN"
-            }
-        }
-
-        return samsungTvPropertyMap[msg.Property] + value
-    }
-
-    d.processResponse = func (response []byte) string {
-        return strconv.Quote(string(response))
-    }
+    d.mapMessage = samsung.MessageMapper
+    d.processResponse = samsung.ResponseProcessor
 
     return d
 }
@@ -138,7 +107,7 @@ func (d *SamsungTv) authenticate() error {
     authMsg := "\x00" + tvAppNameLen + "\x00" + tvAppName +
         authPayloadLen + "\x00" + authPayload
 
-    if writeErr := d.DeviceModel.SendMessage(authMsg); writeErr != nil {
+    if writeErr := d.WriteBytes([]byte(authMsg)); writeErr != nil {
         return writeErr
     }
 
@@ -147,7 +116,7 @@ func (d *SamsungTv) authenticate() error {
     secondMsg := "\x00" + tvAppNameLen + "\x00" + tvAppName +
         secondPayloadLen + "\x00" + secondPayload
 
-    if writeErr := d.DeviceModel.SendMessage(secondMsg); writeErr != nil {
+    if writeErr := d.WriteBytes([]byte(secondMsg)); writeErr != nil {
         return writeErr
     }
 
@@ -156,24 +125,24 @@ func (d *SamsungTv) authenticate() error {
 }
 
 /* Sends message to device */
-func (d *SamsungTv) SendMessage(message string) error {
+func (d *SamsungTv) SendMessage(message *messages.Message) error {
     if !d.isAuthenticated {
         d.authenticate()
     }
 
-    message = d.mapMessage(message)
+    msg := d.mapMessage(message)
 
     tvAppName := d.tvAppName
     tvAppNameLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(tvAppName))))
 
-    keyEnc := base64.StdEncoding.EncodeToString([]byte(message))
+    keyEnc := base64.StdEncoding.EncodeToString([]byte(msg))
     keyLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(keyEnc))))
     keyPayload := "\x00\x00\x00" + keyLen + "\x00" + keyEnc
     keyPayloadLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(keyPayload))))
     keyMsg := "\x00" + tvAppNameLen + "\x00" + tvAppName +
         keyPayloadLen + "\x00" + keyPayload
 
-    if writeErr := d.DeviceModel.SendMessage(keyMsg); writeErr != nil {
+    if writeErr := d.WriteBytes([]byte(keyMsg)); writeErr != nil {
         return writeErr
     }
 

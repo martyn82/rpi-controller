@@ -18,6 +18,12 @@ type Message struct {
     Value string
 }
 
+func (msg *Message) IsPowerOnCommand() bool {
+    return msg.IsCommand() &&
+        msg.Property == PROP_POWER &&
+        msg.Value == VAL_ON
+}
+
 func (msg *Message) IsCommand() bool {
     return msg.Type == MSG_TYPE_WRITE
 }

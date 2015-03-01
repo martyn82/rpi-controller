@@ -53,3 +53,29 @@ func TestMessageToString(t *testing.T) {
         t.Errorf("ToString() expected %q, actual %q", inputMessage, outputMessage)
     }
 }
+
+func TestMessageIsPowerOnCommand(t *testing.T) {
+    inputMessage := "SET dev0:PW:ON"
+    parsed, err := ParseMessage(inputMessage)
+
+    if err != nil {
+        t.Errorf("Error occurred while parsing message:", err.Error())
+    }
+
+    if !parsed.IsPowerOnCommand() {
+        t.Errorf("Message should be identified as power-on command.")
+    }
+}
+
+func TestMessageIsNotPowerOnCommand(t *testing.T) {
+    inputMessage := "SET dev0:PW:OFF"
+    parsed, err := ParseMessage(inputMessage)
+
+    if err != nil {
+        t.Errorf("Error occurred while parsing message:", err.Error())
+    }
+
+    if parsed.IsPowerOnCommand() {
+        t.Errorf("Message should not be identified as power-on command.")
+    }
+}
