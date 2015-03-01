@@ -35,6 +35,7 @@ func TestRetrieveSupportedModels(t *testing.T) {
     expected := []string{
         DENON_AVR,
         SAMSUNG_TV,
+        SHAIRPORT_SYNC,
     }
 
     models := GetSupportedModels()

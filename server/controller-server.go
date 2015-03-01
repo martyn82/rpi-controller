@@ -124,7 +124,7 @@ func initializeActions(actions []configuration.ActionConfiguration) {
         action := action.NewAction(msgWhen, thens)
         ActionRegistry.Register(action)
 
-        log.Println("Registered action", action.When.String())
+        log.Println("Registered ", len(thens)," actions for event", "'" + action.When.String() + "'")
     }
 }
 

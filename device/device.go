@@ -1,6 +1,8 @@
 package device
 
 import (
+    "errors"
+    "fmt"
     "net"
     "time"
     "github.com/martyn82/rpi-controller/messages"
@@ -29,6 +31,7 @@ type Device interface {
     Name() string
     Model() string
     IsConnected() bool
+    CanConnect() bool
 
     // commands
     Disconnect()
@@ -79,8 +82,17 @@ func (d *DeviceModel) IsConnected() bool {
     return d.isConnected
 }
 
+/* Determines whether the device can be connected */
+func (d *DeviceModel) CanConnect() bool {
+    return d.protocol != "" && d.address != ""
+}
+
 /* Connects the device and opens a listener for incoming messages */
 func (d *DeviceModel) Connect() error {
+    if !d.CanConnect() {
+        return errors.New(fmt.Sprintf("The device '%s' cannot be connected.", d.Name() + "[" + d.Model() + "]"))
+    }
+
     duration, _ := time.ParseDuration(CONNECT_TIMEOUT)
     connection, connectErr := net.DialTimeout(d.protocol, d.address, duration)
 
