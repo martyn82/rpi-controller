@@ -25,18 +25,23 @@ func main() {
         os.Exit(1)
     }
 
-    config, configErr := loadConfiguration(*configFile)
+    var config configuration.Configuration
+    var msg *messages.Message
+    var err error
 
-    if configErr != nil {
-        StdErr.Write([]byte(configErr.Error()))
+    if config, err = loadConfiguration(*configFile); err != nil {
+        StdErr.Write([]byte(err.Error()))
         os.Exit(2)
     }
 
-    err := processMessage(config.Socket, *message)
-
-    if err != nil {
+    if msg, err = messages.ParseMessage(*message); err != nil {
         StdErr.Write([]byte(err.Error()))
         os.Exit(3)
+    }
+
+    if err := sendMessage(config.Socket, msg); err != nil {
+        StdErr.Write([]byte(err.Error()))
+        os.Exit(4)
     }
 }
 
@@ -49,17 +54,6 @@ func loadConfiguration(configFile string) (configuration.Configuration, error) {
     }
 
     return config, nil
-}
-
-/* Process message */
-func processMessage(config configuration.SocketConfiguration, message string) error {
-    msg, parseErr := messages.ParseMessage(message)
-
-    if parseErr != nil {
-        return parseErr
-    }
-
-    return sendMessage(config, msg)
 }
 
 /* Sends the message */
