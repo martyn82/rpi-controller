@@ -2,6 +2,7 @@ package main
 
 import (
     "flag"
+    "fmt"
     "log"
     "net"
     "os"
@@ -69,11 +70,10 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
         }
 
         dev.SetConnectionStateChangedListener(func (sender device.Device, connectionState bool) {
-            log.Println("Device", "name=" + sender.Name(), "model=" + sender.Model(), "is connected:", connectionState)
+            log.Println(fmt.Sprintf("Device name=%s,model=%s is connected: %s.", sender.Name(), sender.Model(), connectionState))
         })
 
         dev.SetMessageReceivedListener(func (sender device.Device, message string) {
-            log.Println("Device", sender.Name(), "says:", message)
             msg, parseErr := messages.ParseMessage(message)
 
             if parseErr != nil {
@@ -124,7 +124,7 @@ func initializeActions(actions []configuration.ActionConfiguration) {
         action := action.NewAction(msgWhen, thens)
         ActionRegistry.Register(action)
 
-        log.Println("Registered ", len(thens)," actions for event", "'" + action.When.String() + "'")
+        log.Println(fmt.Sprintf("Registered %d actions for event '%s'", len(thens), action.When.String()))
     }
 }
 
@@ -149,7 +149,7 @@ func startServer(config configuration.SocketConfiguration) (net.Listener, error)
         }
     }(server)
 
-    log.Println("Listening on socket [", config.Type, "]:", config.Address)
+    log.Println(fmt.Sprintf("Listening on socket [%s]: %s.", config.Type, config.Address))
     return server, nil
 }
 
@@ -179,10 +179,11 @@ func sendCommand(command *messages.Message) {
     dev := DeviceRegistry.GetDeviceByName(command.DeviceName)
 
     if dev == nil {
+        log.Println(fmt.Sprintf("Device not registered '%s'.", command.DeviceName))
         return
     }
 
-    log.Println("Command[", command.DeviceName, "]:", command.Property + ":" + command.Value)
+    log.Println(fmt.Sprintf("Command[%s]: %s:%s", command.DeviceName, command.Property, command.Value))
     err := dev.SendMessage(command)
 
     if err != nil {
@@ -204,7 +205,7 @@ func handleMessage(message *messages.Message) {
         return
     }
 
-    log.Fatal("Unsupported message type: '%s'.", message.Type)
+    log.Fatal(fmt.Sprintf("Unsupported message type: '%s'.", message.Type))
 }
 
 /* handles an event notification */
@@ -212,6 +213,7 @@ func handleEvent(event *messages.Message) {
     thenMsg := ActionRegistry.GetActionByWhen(event)
 
     if thenMsg == nil {
+        log.Println("No actions defined for event", event.String())
         return
     }
 
