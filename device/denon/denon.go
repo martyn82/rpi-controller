@@ -12,7 +12,7 @@ var propertyMap = map[string]string{
 
 var valueMap = map[string]string{
     messages.VAL_ON: "ON",
-    messages.VAL_OFF: "OFF",
+    messages.VAL_OFF: "STANDBY",
 }
 
 func MessageMapper(message *messages.Message) string {
