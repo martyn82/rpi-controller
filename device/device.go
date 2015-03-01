@@ -134,15 +134,17 @@ func (d *DeviceModel) Disconnect() {
     d.connection.Close()
     d.isConnected = false
     d.connection = nil
-    d.connectionStateChanged(d, false)
+
+    if d.connectionStateChanged != nil {
+        d.connectionStateChanged(d, false)
+    }
 }
 
 /* Sends a message to the device */
 func (d *DeviceModel) SendMessage(message *messages.Message) error {
     msg := d.MapMessage(message)
-    writeErr := d.WriteBytes([]byte(msg))
 
-    if writeErr != nil {
+    if writeErr := d.WriteBytes([]byte(msg)); writeErr != nil {
         return writeErr
     }
 
@@ -156,9 +158,7 @@ func (d *DeviceModel) SendMessage(message *messages.Message) error {
 /* Sends bytes to the device */
 func (d *DeviceModel) WriteBytes(msg []byte) error {
     if !d.IsConnected() {
-        err := d.Connect()
-
-        if err != nil {
+        if err := d.Connect(); err != nil {
             return err
         }
     }
