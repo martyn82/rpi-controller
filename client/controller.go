@@ -47,10 +47,11 @@ func main() {
 
 /* Load configuration for client */
 func loadConfiguration(configFile string) (configuration.Configuration, error) {
-    config, configErr := configuration.Load(configFile)
+    var config configuration.Configuration
+    var err error
 
-    if configErr != nil {
-        return config, configErr
+    if config, err = configuration.Load(configFile); err != nil {
+        return config, err
     }
 
     return config, nil
@@ -58,15 +59,14 @@ func loadConfiguration(configFile string) (configuration.Configuration, error) {
 
 /* Sends the message */
 func sendMessage(config configuration.SocketConfiguration, message *messages.Message) error {
-    client, connectErr := net.Dial(config.Type, config.Address)
+    var client net.Conn
+    var err error
 
-    if connectErr != nil {
-        return connectErr
+    if client, err = net.Dial(config.Type, config.Address); err != nil {
+        return err
     }
 
-    _, err := client.Write([]byte(message.String()))
-    
-    if err != nil {
+    if _, err = client.Write([]byte(message.String())); err != nil {
         return err
     }
 
