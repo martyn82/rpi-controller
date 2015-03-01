@@ -2,7 +2,7 @@ package action
 
 import (
     "testing"
-    "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/messages"
 )
 
 func TestRegistryIsEmptyByDefault(t *testing.T) {
@@ -16,7 +16,7 @@ func TestRegistryIsEmptyByDefault(t *testing.T) {
 func TestRegistryAddsActionToRegistry(t *testing.T) {
     registry := CreateActionRegistry()
     
-    msg, _ := communication.ParseMessage("EVT dev0:prop:val")
+    msg, _ := messages.ParseMessage("EVT dev0:prop:val")
     registry.Register(NewAction(msg, nil))
 
     if registry.IsEmpty() {
@@ -27,11 +27,11 @@ func TestRegistryAddsActionToRegistry(t *testing.T) {
 func TestRegisteredActionCanBeRetrievedByName(t *testing.T) {
     registry := CreateActionRegistry()
 
-    msg, _ := communication.ParseMessage("EVT dev0:prop:val")
+    msg, _ := messages.ParseMessage("EVT dev0:prop:val")
     a := NewAction(msg, nil)
     registry.Register(a)
 
-    msgWhen, _ := communication.ParseMessage("EVT dev0:prop:val")
+    msgWhen, _ := messages.ParseMessage("EVT dev0:prop:val")
     act := registry.GetActionByWhen(msgWhen)
 
     if act != a {
@@ -42,7 +42,7 @@ func TestRegisteredActionCanBeRetrievedByName(t *testing.T) {
 func TestAttemptToRetrieveNonExistingActionReturnsNil(t *testing.T) {
     registry := CreateActionRegistry()
 
-    msg, _ := communication.ParseMessage("EVT dev0:prop:val")
+    msg, _ := messages.ParseMessage("EVT dev0:prop:val")
 
     if registry.GetActionByWhen(msg) != nil {
         t.Errorf("Non-existing action retrieval did not return NIL")

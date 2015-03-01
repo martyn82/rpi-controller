@@ -8,8 +8,7 @@ import (
     "strconv"
     "strings"
 
-    "github.com/martyn82/rpi-controller/communication"
-    "github.com/martyn82/rpi-controller/communication/messages"
+    "github.com/martyn82/rpi-controller/messages"
 )
 
 /* SamsungTv type */
@@ -39,7 +38,7 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d.isAuthenticated = false
 
     d.mapMessage = func (message string) string {
-        msg, err := communication.ParseMessage(message)
+        msg, err := messages.ParseMessage(message)
 
         if err != nil {
             return message

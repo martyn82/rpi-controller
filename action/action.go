@@ -1,13 +1,13 @@
 package action
 
-import "github.com/martyn82/rpi-controller/communication"
+import "github.com/martyn82/rpi-controller/messages"
 
 type Action struct {
-    When *communication.Message
-    Then []*communication.Message
+    When *messages.Message
+    Then []*messages.Message
 }
 
-func NewAction(when *communication.Message, then []*communication.Message) *Action {
+func NewAction(when *messages.Message, then []*messages.Message) *Action {
     action := new(Action)
     action.When = when
     action.Then = then

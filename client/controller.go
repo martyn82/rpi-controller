@@ -6,7 +6,7 @@ import (
     "os"
     "syscall"
 
-    "github.com/martyn82/rpi-controller/communication"
+    "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/configuration"
 )
 
@@ -53,7 +53,7 @@ func loadConfiguration(configFile string) (configuration.Configuration, error) {
 
 /* Process message */
 func processMessage(config configuration.SocketConfiguration, message string) error {
-    msg, parseErr := communication.ParseMessage(message)
+    msg, parseErr := messages.ParseMessage(message)
 
     if parseErr != nil {
         return parseErr
@@ -63,7 +63,7 @@ func processMessage(config configuration.SocketConfiguration, message string) er
 }
 
 /* Sends the message */
-func sendMessage(config configuration.SocketConfiguration, message *communication.Message) error {
+func sendMessage(config configuration.SocketConfiguration, message *messages.Message) error {
     client, connectErr := net.Dial(config.Type, config.Address)
 
     if connectErr != nil {

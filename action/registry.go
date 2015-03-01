@@ -1,6 +1,6 @@
 package action
 
-import "github.com/martyn82/rpi-controller/communication"
+import "github.com/martyn82/rpi-controller/messages"
 
 type ActionRegistry struct {
     actions map[string]*Action
@@ -20,6 +20,6 @@ func (registry *ActionRegistry) Register(action *Action) {
     registry.actions[action.When.String()] = action
 }
 
-func (registry *ActionRegistry) GetActionByWhen(when *communication.Message) *Action {
+func (registry *ActionRegistry) GetActionByWhen(when *messages.Message) *Action {
     return registry.actions[when.String()]
 }

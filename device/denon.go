@@ -2,9 +2,7 @@ package device
 
 import (
     "strconv"
-
-    "github.com/martyn82/rpi-controller/communication"
-    "github.com/martyn82/rpi-controller/communication/messages"
+    "github.com/martyn82/rpi-controller/messages"
 )
 
 /* DenonAvr type */
@@ -31,7 +29,7 @@ func CreateDenonAvr(name string, model string, protocol string, address string) 
     d.address = address
 
     d.mapMessage = func (message string) string {
-        msg, parseErr := communication.ParseMessage(message)
+        msg, parseErr := messages.ParseMessage(message)
 
         if parseErr != nil {
             return message

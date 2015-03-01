@@ -9,9 +9,9 @@ import (
     "syscall"
 
     "github.com/martyn82/rpi-controller/action"
-    "github.com/martyn82/rpi-controller/communication"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
+    "github.com/martyn82/rpi-controller/messages"
 )
 
 var ActionRegistry *action.ActionRegistry
@@ -74,7 +74,7 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
 
         dev.SetMessageReceivedListener(func (sender device.Device, message string) {
             log.Println("Device", sender.Name(), "says:", message)
-            msg, parseErr := communication.ParseMessage(message)
+            msg, parseErr := messages.ParseMessage(message)
 
             if parseErr != nil {
                 log.Println(parseErr.Error())
@@ -105,15 +105,15 @@ func closeDevices() {
 func initializeActions(actions []configuration.ActionConfiguration) {
     for i :=range actions {
         actionConfig := actions[i]
-        msgWhen, parseErr := communication.ParseMessage(communication.MSG_TYPE_EVENT + " " + actionConfig.When)
+        msgWhen, parseErr := messages.ParseMessage(messages.MSG_TYPE_EVENT + " " + actionConfig.When)
 
         if parseErr != nil {
             log.Fatal(parseErr)
         }
 
-        thens := make([]*communication.Message, len(actionConfig.Then))
+        thens := make([]*messages.Message, len(actionConfig.Then))
         for i := range actionConfig.Then {
-            msgThen, err := communication.ParseMessage(actionConfig.Then[i])
+            msgThen, err := messages.ParseMessage(actionConfig.Then[i])
             thens[i] = msgThen
 
             if err != nil {
@@ -164,7 +164,7 @@ func startSession(client net.Conn) {
         }
 
         message := string(buffer[:bytesRead])
-        msg, parseErr := communication.ParseMessage(message)
+        msg, parseErr := messages.ParseMessage(message)
 
         if parseErr != nil {
             return
@@ -175,7 +175,7 @@ func startSession(client net.Conn) {
 }
 
 /* send command to device */
-func sendCommand(command *communication.Message) {
+func sendCommand(command *messages.Message) {
     dev := DeviceRegistry.GetDeviceByName(command.DeviceName)
 
     if dev == nil {
@@ -191,7 +191,7 @@ func sendCommand(command *communication.Message) {
 }
 
 /* handle incoming message */
-func handleMessage(message *communication.Message) {
+func handleMessage(message *messages.Message) {
     log.Println("Handling message", message.String())
 
     if message.IsCommand() {
@@ -208,7 +208,7 @@ func handleMessage(message *communication.Message) {
 }
 
 /* handles an event notification */
-func handleEvent(event *communication.Message) {
+func handleEvent(event *messages.Message) {
     thenMsg := ActionRegistry.GetActionByWhen(event)
 
     if thenMsg == nil {
