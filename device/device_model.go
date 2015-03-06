@@ -18,7 +18,7 @@ type DeviceModel struct {
     // properties
     name, model, protocol, address string
     isConnected bool
-    powerOnWait time.Duration
+    commandTimeout time.Duration
     connection net.Conn
 
     // delegates
@@ -130,8 +130,8 @@ func (d *DeviceModel) SendMessage(message *messages.Message) error {
         return writeErr
     }
 
-    if message.IsPowerOnCommand() && d.powerOnWait != 0 {
-        time.Sleep(d.powerOnWait)
+    if d.Model() == DENON_AVR && d.commandTimeout != 0 {
+        time.Sleep(d.commandTimeout)
     }
 
     return nil
