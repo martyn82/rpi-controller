@@ -36,6 +36,24 @@ func TestDeviceIsConnectedAccordingToProperty(t *testing.T) {
     }
 }
 
+func TestDeviceWithoutProtocolAndAddressCanNotConnect(t *testing.T) {
+    d := new(DeviceModel)
+
+    if d.CanConnect() {
+        t.Errorf("Expected device to be unable to connect.")
+    }
+}
+
+func TestDeviceWithProtocolAndAddressCanConnect(t *testing.T) {
+    d := new(DeviceModel)
+    d.protocol = "tcp"
+    d.address = "1234"
+
+    if !d.CanConnect() {
+        t.Errorf("Expected device to be able to connect.")
+    }
+}
+
 func TestDeviceConnectionStateIsUpdatedOnConnect(t *testing.T) {
     socketType := "unix"
     socketAddr := "/tmp/mockdevice.sock"
