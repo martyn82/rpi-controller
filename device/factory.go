@@ -14,7 +14,7 @@ const (
 )
 
 /* Creates a device instance based on configuration */
-func CreateDevice(config configuration.DeviceConfiguration) (Device, error) {
+func CreateDevice(config configuration.DeviceConfiguration) (IDevice, error) {
     switch config.Model {
         case DENON_AVR:
             return CreateDenonAvr(config.Name, config.Model, config.Protocol, config.Address), nil

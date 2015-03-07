@@ -69,7 +69,7 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
             continue
         }
 
-        dev.SetConnectionStateChangedListener(func (sender device.Device, connectionState bool) {
+        dev.SetConnectionStateChangedListener(func (sender device.IDevice, connectionState bool) {
             connected := "no"
             if connectionState {
                 connected = "yes"
@@ -77,7 +77,7 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
             log.Println(fmt.Sprintf("Device %s is connected: %s.", sender.Info().String(), connected))
         })
 
-        dev.SetMessageReceivedListener(func (sender device.Device, message string) {
+        dev.SetMessageReceivedListener(func (sender device.IDevice, message string) {
             msg, parseErr := messages.ParseMessage(message)
 
             if parseErr != nil {

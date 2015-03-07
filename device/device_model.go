@@ -16,7 +16,7 @@ const (
 /* Abstract device */
 type DeviceModel struct {
     // properties
-    info DeviceInfo
+    info IDeviceInfo
     isConnected bool
     commandTimeout time.Duration
     connection net.Conn
@@ -38,7 +38,7 @@ func (d *DeviceModel) MapMessage(message *messages.Message) string {
 }
 
 /* Retrieves the info of the device */
-func (d *DeviceModel) Info() DeviceInfo {
+func (d *DeviceModel) Info() IDeviceInfo {
     return d.info
 }
 
@@ -52,7 +52,7 @@ func (d *DeviceModel) IsConnected() bool {
 
 /* Determines whether the device can be connected */
 func (d *DeviceModel) CanConnect() bool {
-    return d.info.protocol != "" && d.info.address != ""
+    return d.info != nil && d.info.Protocol() != "" && d.info.Address() != ""
 }
 
 /* Connects the device and opens a listener for incoming messages */
@@ -62,7 +62,7 @@ func (d *DeviceModel) Connect() error {
     }
 
     duration, _ := time.ParseDuration(CONNECT_TIMEOUT)
-    connection, connectErr := net.DialTimeout(d.info.protocol, d.info.address, duration)
+    connection, connectErr := net.DialTimeout(d.info.Protocol(), d.info.Address(), duration)
 
     if connectErr != nil {
         return connectErr

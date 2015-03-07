@@ -84,7 +84,7 @@ func (d *SamsungTv) authenticate() error {
 
     remoteMac := strings.Replace(mac, ":", "-", -1)
     remoteName := hostName + "..iapp.samsung"
-    tvAppName := remoteName + "." + d.info.model + ".iapp.samsung"
+    tvAppName := remoteName + "." + d.info.Model() + ".iapp.samsung"
     d.tvAppName = tvAppName
 
     remoteIpEnc := base64.StdEncoding.EncodeToString([]byte(remoteIp))

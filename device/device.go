@@ -3,10 +3,10 @@ package device
 import "github.com/martyn82/rpi-controller/messages"
 
 /* Event handler for connection state changes */
-type ConnectionStateChangedHandler func (sender Device, isConnected bool)
+type ConnectionStateChangedHandler func (sender IDevice, isConnected bool)
 
 /* Event handler for message receptions */
-type MessageReceivedHandler func (sender Device, message string)
+type MessageReceivedHandler func (sender IDevice, message string)
 
 /* Message mapper delegate */
 type MessageMapper func (message *messages.Message) string
@@ -15,9 +15,9 @@ type MessageMapper func (message *messages.Message) string
 type ResponseProcessor func (response []byte) string
 
 /* Base device interface */
-type Device interface {
+type IDevice interface {
     // queries
-    Info() DeviceInfo
+    Info() IDeviceInfo
     CanConnect() bool
     IsConnected() bool
 
