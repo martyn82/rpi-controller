@@ -33,6 +33,8 @@ type IDevice interface {
     // commands
     Connect() error
     Disconnect()
+    Notify(event IEvent)
+
     SendMessage(message *messages.Message) error
     WriteBytes(msg []byte) error
 
@@ -80,10 +82,7 @@ func (d *Device) Connect() error {
     }
 
     d.connected = true
-
-    if d.connectionStateChanged != nil {
-        d.connectionStateChanged(d, true)
-    }
+    d.fire(NewConnectionStateChanged(d, d.connected))
 
     go d.listen()
     return nil
@@ -101,7 +100,6 @@ func (d *Device) ProcessResponse(response []byte) string {
 /* Disconnects the device */
 func (d *Device) Disconnect() {
     if !d.isConnected() {
-        d.connection = nil
         return
     }
 
@@ -109,9 +107,7 @@ func (d *Device) Disconnect() {
     d.connected = false
     d.connection = nil
 
-    if d.connectionStateChanged != nil {
-        d.connectionStateChanged(d, false)
-    }
+    d.fire(NewConnectionStateChanged(d, d.connected))
 }
 
 /* Sends a message to the device */
@@ -158,8 +154,9 @@ func (d *Device) supportsNetwork() bool {
 
 /* Determines whether the device is connected */
 func (d *Device) isConnected() bool {
-    if d.connection == nil {
+    if d.connected == true && d.connection == nil {
         d.connected = false
+        d.fire(NewConnectionStateChanged(d, d.connected))
     }
     return d.connected
 }
@@ -182,6 +179,12 @@ func (d *Device) listen() {
     }
 }
 
+func (d *Device) fire(event IEvent) {
+    
+}
+
+func (d *Device) Notify(event IEvent) {
+}
 
 
 /* Maps given message to device-specific message */
