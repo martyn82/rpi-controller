@@ -17,7 +17,7 @@ const (
 type Device struct {
     // properties
     info IDeviceInfo
-    isConnected bool
+    connected bool
     commandTimeout time.Duration
     connection net.Conn
 
@@ -28,50 +28,39 @@ type Device struct {
     messageReceived MessageReceivedHandler
 }
 
-/* Maps given message to device-specific message */
-func (d *Device) MapMessage(message *messages.Message) string {
-    if d.mapMessage == nil {
-        return message.String()
-    }
-
-    return d.mapMessage(message)
-}
+var connectTimeout, _ = time.ParseDuration(CONNECT_TIMEOUT)
 
 /* Retrieves the info of the device */
 func (d *Device) Info() IDeviceInfo {
     return d.info
 }
 
-/* Determines whether the device is connected */
-func (d *Device) IsConnected() bool {
-    if d.connection == nil {
-        d.isConnected = false
-    }
-    return d.isConnected
-}
-
 /* Connects the device and opens a listener for incoming messages */
 func (d *Device) Connect() error {
-    if !d.supportsConnect() {
-        return errors.New(fmt.Sprintf("The device '%s' cannot be connected.", d.info.Name() + "[" + d.info.Model() + "]"))
+    if d.isConnected() {
+        return errors.New(fmt.Sprintf("Device already connected: %s", d.info.String()))
     }
 
-    duration, _ := time.ParseDuration(CONNECT_TIMEOUT)
-    connection, connectErr := net.DialTimeout(d.info.Protocol(), d.info.Address(), duration)
+    if !d.supportsNetwork() {
+        return errors.New(fmt.Sprintf("Device does not support connections: %s", d.info.String()))
+    }
 
-    if connectErr != nil {
-        return connectErr
+    var connection net.Conn
+    var err error
+
+    if connection, err = net.DialTimeout(d.info.Protocol(), d.info.Address(), connectTimeout); err != nil {
+        return err
     }
 
     d.connection = connection
-    d.isConnected = true
+    d.connected = true
 
     if d.connectionStateChanged != nil {
         d.connectionStateChanged(d, true)
     }
 
     go func (d *Device) {
-        for d.IsConnected() {
+        for d.isConnected() {
             buffer := make([]byte, BUFFER_SIZE)
             bytesRead, readErr := d.connection.Read(buffer)
 
@@ -101,13 +90,13 @@ func (d *Device) ProcessResponse(response []byte) string {
 
 /* Disconnects the device */
 func (d *Device) Disconnect() {
-    if !d.IsConnected() {
+    if !d.isConnected() {
         d.connection = nil
         return
     }
 
     d.connection.Close()
-    d.isConnected = false
+    d.connected = false
     d.connection = nil
 
     if d.connectionStateChanged != nil {
@@ -132,7 +121,7 @@ func (d *Device) SendMessage(message *messages.Message) error {
 
 /* Sends bytes to the device */
 func (d *Device) WriteBytes(msg []byte) error {
-    if !d.IsConnected() {
+    if !d.isConnected() {
         if err := d.Connect(); err != nil {
             return err
         }
@@ -153,6 +142,27 @@ func (d *Device) SetMessageReceivedListener(listener MessageReceivedHandler) {
 }
 
 /* Determines whether the device can be connected */
-func (d *Device) supportsConnect() bool {
+func (d *Device) supportsNetwork() bool {
     return d.info != nil && d.info.Protocol() != "" && d.info.Address() != ""
+}
+
+/* Determines whether the device is connected */
+func (d *Device) isConnected() bool {
+    if d.connection == nil {
+        d.connected = false
+    }
+    return d.connected
+}
+
+
+
+
+
+/* Maps given message to device-specific message */
+func (d *Device) MapMessage(message *messages.Message) string {
+    if d.mapMessage == nil {
+        return message.String()
+    }
+
+    return d.mapMessage(message)
 }

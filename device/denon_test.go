@@ -46,13 +46,13 @@ func TestConnectAndDisconnect(t *testing.T) {
         panic(err)
     }
 
-    if !d.IsConnected() {
+    if !d.isConnected() {
         t.Errorf("Expected device to be connected.")
     }
 
     d.Disconnect()
 
-    if d.IsConnected() {
+    if d.isConnected() {
         t.Errorf("Expected device to be disconnected.")
     }
 }

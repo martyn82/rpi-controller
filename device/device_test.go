@@ -21,15 +21,15 @@ func TestDeviceReflectsItsProperties(t *testing.T) {
 func TestDeviceIsDisconnectedByDefault(t *testing.T) {
     d := new(Device)
 
-    if d.IsConnected() {
-        t.Errorf("Expected IsConnected() to be false.")
+    if d.isConnected() {
+        t.Errorf("Expected isConnected() to be false.")
     }
 }
 
 func TestDeviceWithoutProtocolAndAddressCanNotConnect(t *testing.T) {
     d := new(Device)
 
-    if d.supportsConnect() {
+    if d.supportsNetwork() {
         t.Errorf("Expected device to be unable to connect.")
     }
 }
@@ -38,7 +38,7 @@ func TestDeviceWithProtocolAndAddressCanConnect(t *testing.T) {
     d := new(Device)
     d.info = DeviceInfo{protocol: "tcp", address: "1234"}
 
-    if !d.supportsConnect() {
+    if !d.supportsNetwork() {
         t.Errorf("Expected device to be able to connect.")
     }
 }
@@ -66,13 +66,13 @@ func TestDeviceConnectionStateIsUpdatedOnConnect(t *testing.T) {
 
     d.Connect()
 
-    if !d.IsConnected() {
+    if !d.isConnected() {
         t.Errorf("Expected device to be connected.")
     }
 
     d.Disconnect()
 
-    if d.IsConnected() {
+    if d.isConnected() {
         t.Errorf("Expected device to be disconnected.")
     }
 }
