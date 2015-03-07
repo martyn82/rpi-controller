@@ -12,6 +12,7 @@ import (
     "github.com/martyn82/rpi-controller/action"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
+    "github.com/martyn82/rpi-controller/device/event"
     "github.com/martyn82/rpi-controller/messages"
 )
 
@@ -69,13 +70,9 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
             continue
         }
 
-        dev.SetConnectionStateChangedListener(func (sender device.IDevice, connectionState bool) {
-            connected := "no"
-            if connectionState {
-                connected = "yes"
-            }
-            log.Println(fmt.Sprintf("Device %s is connected: %s.", sender.Info().String(), connected))
-        })
+        dev.Subscribe(func (event device.IEvent) {
+            log.Println(fmt.Sprintf("Device's connection state changed: %s.", event.String()))
+        }, event.CONNECTION_STATE_CHANGED)
 
         dev.SetMessageReceivedListener(func (sender device.IDevice, message string) {
             msg, parseErr := messages.ParseMessage(message)

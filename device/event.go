@@ -1,9 +1,7 @@
 package device
 
-import "fmt"
-
-const (
-    EVENT_TYPE_CONNECTIONSTATECHANGE = 1
+import (
+    "fmt"
 )
 
 type IEvent interface {
@@ -17,21 +15,8 @@ type Event struct {
     eventType int
 }
 
-type ConnectionStateChanged struct {
-    Event
-    connected bool
-}
-
-func NewConnectionStateChanged(device *Device, connectedState bool) *ConnectionStateChanged {
-    e := new(ConnectionStateChanged)
-    e.sender = device
-    e.eventType = EVENT_TYPE_CONNECTIONSTATECHANGE
-    e.connected = connectedState
-    return e
-}
-
 func (e *Event) String() string {
-    return fmt.Sprintf("Event '%s', %s", e.sender.Info().String(), e.Type())
+    return fmt.Sprintf("Event '%s'", e.sender.Info().String())
 }
 
 func (e *Event) Sender() *Device {

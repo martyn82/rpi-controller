@@ -3,6 +3,7 @@ package device
 import (
     "net"
     "testing"
+    "github.com/martyn82/rpi-controller/device/event"
 )
 
 func TestDeviceReflectsItsProperties(t *testing.T) {
@@ -74,5 +75,33 @@ func TestDeviceConnectionStateIsUpdatedOnConnect(t *testing.T) {
 
     if d.isConnected() {
         t.Errorf("Expected device to be disconnected.")
+    }
+}
+
+func TestDeviceAcceptsSubscribersToEvents(t *testing.T) {
+    listener := func (event IEvent) {
+    }
+
+    d := new(Device)
+    d.Subscribe(listener, event.CONNECTION_STATE_CHANGED)
+
+    if len(d.listeners) != 1 {
+        t.Errorf("Expected event listener to be subscribed.")
+    }
+}
+
+func TestEventListenersAreCalledOnCertainEvent(t *testing.T) {
+    listenerWasCalled := false
+    listener := func (event IEvent) {
+        listenerWasCalled = true
+    }
+
+    d := new(Device)
+    d.Subscribe(listener, event.CONNECTION_STATE_CHANGED)
+
+    d.fire(NewConnectionStateChanged(d, true))
+
+    if !listenerWasCalled {
+        t.Errorf("Expected event listener to be called on event.")
     }
 }

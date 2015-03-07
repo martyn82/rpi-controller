@@ -13,9 +13,6 @@ const (
     CONNECT_TIMEOUT = "500ms"
 )
 
-/* Event handler for connection state changes */
-type ConnectionStateChangedHandler func (sender IDevice, isConnected bool)
-
 /* Event handler for message receptions */
 type MessageReceivedHandler func (sender IDevice, message string)
 
@@ -24,6 +21,8 @@ type MessageMapper func (message *messages.Message) string
 
 /* Response processor delegate */
 type ResponseProcessor func (response []byte) string
+
+type EventListener func (event IEvent)
 
 /* Base device interface */
 type IDevice interface {
@@ -34,11 +33,11 @@ type IDevice interface {
     Connect() error
     Disconnect() error
     Notify(event IEvent)
+    Subscribe(listener EventListener, eventType int)
 
     SendMessage(message *messages.Message) error
     WriteBytes(msg []byte) error
 
-    SetConnectionStateChangedListener(listener ConnectionStateChangedHandler)
     SetMessageReceivedListener(listener MessageReceivedHandler)
 }
 
@@ -47,6 +46,7 @@ type Device struct {
     // properties
     info IDeviceInfo
     connected bool
+    listeners map[int][]EventListener
 
     commandTimeout time.Duration
     connection net.Conn
@@ -54,7 +54,6 @@ type Device struct {
     // delegates
     mapMessage MessageMapper
     processResponse ResponseProcessor
-    connectionStateChanged ConnectionStateChangedHandler
     messageReceived MessageReceivedHandler
 }
 
@@ -114,6 +113,18 @@ func (d *Device) Disconnect() error {
     return nil
 }
 
+/* Subscribes an event listener */
+func (d *Device) Subscribe(listener EventListener, eventType int) {
+    if d.listeners == nil {
+        d.listeners = make(map[int][]EventListener)
+    }
+
+    d.listeners[eventType] = append(d.listeners[eventType], listener)
+}
+
+func (d *Device) Notify(event IEvent) {
+}
+
 /* Sends a message to the device */
 func (d *Device) SendMessage(message *messages.Message) error {
     msg := d.MapMessage(message)
@@ -139,11 +150,6 @@ func (d *Device) WriteBytes(msg []byte) error {
 
     _, writeErr := d.connection.Write(msg)
     return writeErr
-}
-
-/* Attach a connection state listener to the device */
-func (d *Device) SetConnectionStateChangedListener(listener ConnectionStateChangedHandler) {
-    d.connectionStateChanged = listener
 }
 
 /* Attach a message reception listener to the device */
@@ -183,13 +189,20 @@ func (d *Device) listen() {
     }
 }
 
+/* Fires given event and calls all listeners for that event type */
 func (d *Device) fire(event IEvent) {
-    
-}
+    if d.listeners == nil {
+        return
+    }
 
-func (d *Device) Notify(event IEvent) {
-}
+    if d.listeners[event.Type()] == nil {
+        return
+    }
 
+    for _, listener := range d.listeners[event.Type()] {
+        listener(event)
+    }
+}
 
 /* Maps given message to device-specific message */
 func (d *Device) MapMessage(message *messages.Message) string {
