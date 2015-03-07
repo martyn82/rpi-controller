@@ -13,10 +13,6 @@ const (
     CONNECT_TIMEOUT = "500ms"
 )
 
-type DeviceInfo struct {
-    name, model, protocol, address string
-}
-
 /* Abstract device */
 type DeviceModel struct {
     // properties
@@ -39,18 +35,6 @@ func (d *DeviceModel) MapMessage(message *messages.Message) string {
     }
 
     return d.mapMessage(message)
-}
-
-func (info DeviceInfo) Name() string {
-    return info.name
-}
-
-func (info DeviceInfo) Model() string {
-    return info.model
-}
-
-func (info DeviceInfo) String() string {
-    return fmt.Sprintf("name=%s, model=%s, protocol=%s, address=%s", info.name, info.model, info.protocol, info.address)
 }
 
 /* Retrieves the info of the device */
