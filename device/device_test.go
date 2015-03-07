@@ -5,8 +5,8 @@ import (
     "testing"
 )
 
-func TestDeviceModelReflectsItsProperties(t *testing.T) {
-    d := new(DeviceModel)
+func TestDeviceReflectsItsProperties(t *testing.T) {
+    d := new(Device)
     d.info = DeviceInfo{name: "name", model: "model"}
  
     if d.Info().Name() != "name" {
@@ -19,7 +19,7 @@ func TestDeviceModelReflectsItsProperties(t *testing.T) {
 }
 
 func TestDeviceIsDisconnectedByDefault(t *testing.T) {
-    d := new(DeviceModel)
+    d := new(Device)
 
     if d.IsConnected() {
         t.Errorf("Expected IsConnected() to be false.")
@@ -27,7 +27,7 @@ func TestDeviceIsDisconnectedByDefault(t *testing.T) {
 }
 
 func TestDeviceWithoutProtocolAndAddressCanNotConnect(t *testing.T) {
-    d := new(DeviceModel)
+    d := new(Device)
 
     if d.CanConnect() {
         t.Errorf("Expected device to be unable to connect.")
@@ -35,7 +35,7 @@ func TestDeviceWithoutProtocolAndAddressCanNotConnect(t *testing.T) {
 }
 
 func TestDeviceWithProtocolAndAddressCanConnect(t *testing.T) {
-    d := new(DeviceModel)
+    d := new(Device)
     d.info = DeviceInfo{protocol: "tcp", address: "1234"}
 
     if !d.CanConnect() {
@@ -61,7 +61,7 @@ func TestDeviceConnectionStateIsUpdatedOnConnect(t *testing.T) {
         server.Accept()
     }()
 
-    d := new(DeviceModel)
+    d := new(Device)
     d.info = DeviceInfo{protocol: socketType, address: socketAddr}
 
     d.Connect()

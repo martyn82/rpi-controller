@@ -2,7 +2,7 @@ package device
 
 /* ShairportSync type */
 type ShairportSync struct {
-    DeviceModel
+    Device
 }
 
 /* Construct ShairportSync */

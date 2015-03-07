@@ -5,7 +5,7 @@ import (
 )
 
 type DummyDevice struct {
-    DeviceModel
+    Device
 }
 
 func NewDevice(name string) *DummyDevice {

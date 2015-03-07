@@ -7,7 +7,7 @@ import (
 
 /* DenonAvr type */
 type DenonAvr struct {
-    DeviceModel
+    Device
 }
 
 /* Construct DenonAvr */

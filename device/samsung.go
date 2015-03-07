@@ -13,7 +13,7 @@ import (
 
 /* SamsungTv type */
 type SamsungTv struct {
-    DeviceModel
+    Device
     tvAppName string
     isAuthenticated bool
 }
@@ -32,7 +32,7 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
 
 /* Connects to device */
 func (d *SamsungTv) Connect() error {
-    connectErr := d.DeviceModel.Connect()
+    connectErr := d.Device.Connect()
 
     if connectErr != nil {
         return connectErr
