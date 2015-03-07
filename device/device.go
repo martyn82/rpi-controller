@@ -27,7 +27,7 @@ type IDevice interface {
     // commands
     Connect() error
     Disconnect() error
-    SendMessage(message *messages.Message) error
+    Command(message *messages.Message) error
 
     SetConnectionStateChangedListener(listener ConnectionStateChangedListener)
     SetMessageReceivedListener(listener MessageReceivedListener)
@@ -40,7 +40,7 @@ type Device struct {
     connected bool
     autoReconnect bool
 
-    commandTimeout time.Duration
+    wait time.Duration
     connection net.Conn
 
     // delegates
@@ -118,15 +118,15 @@ func (d *Device) SetMessageReceivedListener(listener MessageReceivedListener) {
 }
 
 /* Sends a message to the device */
-func (d *Device) SendMessage(message *messages.Message) error {
+func (d *Device) Command(message *messages.Message) error {
     msg := d.MapMessage(message)
 
     if writeErr := d.send([]byte(msg)); writeErr != nil {
         return writeErr
     }
 
-    if d.info.Model() == DENON_AVR && d.commandTimeout != 0 {
-        time.Sleep(d.commandTimeout)
+    if d.wait != 0 {
+        time.Sleep(d.wait)
     }
 
     return nil

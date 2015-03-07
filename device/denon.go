@@ -14,7 +14,8 @@ type DenonAvr struct {
 func CreateDenonAvr(name string, model string, protocol string, address string) *DenonAvr {
     d := new(DenonAvr)
     d.info = DeviceInfo{name: name, model: model, protocol: protocol, address: address}
-    d.commandTimeout = time.Second * 3
+    d.wait = time.Second * 3
+    d.autoReconnect = true
 
     d.mapMessage = denon.MessageMapper
     d.processResponse = denon.ResponseProcessor

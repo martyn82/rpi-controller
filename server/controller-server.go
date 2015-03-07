@@ -187,7 +187,7 @@ func sendCommand(command *messages.Message) {
     }
 
     log.Println(fmt.Sprintf("Command[%s]: %s:%s", command.DeviceName, command.Property, command.Value))
-    err := dev.SendMessage(command)
+    err := dev.Command(command)
 
     if err != nil {
         log.Println(err)

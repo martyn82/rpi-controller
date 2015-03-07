@@ -122,7 +122,7 @@ func (d *SamsungTv) authenticate() error {
 }
 
 /* Sends message to device */
-func (d *SamsungTv) SendMessage(message *messages.Message) error {
+func (d *SamsungTv) Command(message *messages.Message) error {
     if !d.isAuthenticated {
         d.authenticate()
     }
