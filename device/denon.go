@@ -17,7 +17,7 @@ func CreateDenonAvr(name string, model string, protocol string, address string) 
     d.wait = time.Second * 3
     d.autoReconnect = true
 
-    d.mapMessage = denon.MessageMapper
+    d.commandProcessor = denon.CommandProcessor
     d.processResponse = denon.ResponseProcessor
 
     return d

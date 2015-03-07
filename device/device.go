@@ -13,8 +13,8 @@ const (
     CONNECT_TIMEOUT = "500ms"
 )
 
-/* Message mapper delegate */
-type MessageMapper func (message *messages.Message) string
+/* Command processor delegate */
+type CommandProcessor func (command messages.ICommand) string
 
 /* Response processor delegate */
 type ResponseProcessor func (response []byte) string
@@ -27,7 +27,7 @@ type IDevice interface {
     // commands
     Connect() error
     Disconnect() error
-    Command(message *messages.Message) error
+    Command(command messages.ICommand) error
 
     SetConnectionStateChangedListener(listener ConnectionStateChangedListener)
     SetMessageReceivedListener(listener MessageReceivedListener)
@@ -43,8 +43,7 @@ type Device struct {
     wait time.Duration
     connection net.Conn
 
-    // delegates
-    mapMessage MessageMapper
+    commandProcessor CommandProcessor
     processResponse ResponseProcessor
 
     connectionStateChangedListener ConnectionStateChangedListener
@@ -118,8 +117,8 @@ func (d *Device) SetMessageReceivedListener(listener MessageReceivedListener) {
 }
 
 /* Sends a message to the device */
-func (d *Device) Command(message *messages.Message) error {
-    msg := d.MapMessage(message)
+func (d *Device) Command(command messages.ICommand) error {
+    msg := d.mapCommand(command)
 
     if writeErr := d.send([]byte(msg)); writeErr != nil {
         return writeErr
@@ -194,10 +193,10 @@ func (d *Device) fireMessageReceived(event *MessageReceivedEvent) {
 }
 
 /* Maps given message to device-specific message */
-func (d *Device) MapMessage(message *messages.Message) string {
-    if d.mapMessage == nil {
-        return message.String()
+func (d *Device) mapCommand(command messages.ICommand) string {
+    if d.commandProcessor == nil {
+        return ""
     }
 
-    return d.mapMessage(message)
+    return d.commandProcessor(command)
 }

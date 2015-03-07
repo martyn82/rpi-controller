@@ -24,7 +24,7 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d.info = DeviceInfo{name: name, model: model, protocol: protocol, address: address}
     d.isAuthenticated = false
 
-    d.mapMessage = samsung.MessageMapper
+    d.commandProcessor = samsung.CommandProcessor
     d.processResponse = samsung.ResponseProcessor
 
     return d
@@ -122,12 +122,12 @@ func (d *SamsungTv) authenticate() error {
 }
 
 /* Sends message to device */
-func (d *SamsungTv) Command(message *messages.Message) error {
+func (d *SamsungTv) SendCommand(command messages.ICommand) error {
     if !d.isAuthenticated {
         d.authenticate()
     }
 
-    msg := d.mapMessage(message)
+    msg := d.commandProcessor(command)
 
     tvAppName := d.tvAppName
     tvAppNameLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(tvAppName))))
