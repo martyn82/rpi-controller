@@ -8,7 +8,7 @@ import (
 
 const PAUSE_CHAR = "\r"
 
-func CommandProcessor(command messages.ICommand) ([]byte, error) {
+func CommandProcessor(command messages.ICommand, deviceModel string) ([]byte, error) {
     var cmdInterface interface {}
     cmdInterface = command
 
@@ -26,7 +26,7 @@ func CommandProcessor(command messages.ICommand) ([]byte, error) {
             return []byte("SI" + command.(*messages.SetSourceCommand).Value() + PAUSE_CHAR), nil
 
         default:
-            return nil, errors.New(fmt.Sprintf("Unknown command '%T' for device denon.", cmdType))
+            return nil, errors.New(fmt.Sprintf("Unknown command '%T' for device model %s.", cmdType, deviceModel))
     }
 
     return nil, nil

@@ -207,7 +207,7 @@ func sendCommand(command messages.IMessage) error {
         return errors.New(errMsg)
     }
 
-    log.Println(fmt.Sprintf("Command: %T to %s", command, command.TargetDeviceName()))
+    log.Println(fmt.Sprintf("Command: %T to '%s'", command, command.TargetDeviceName()))
 
     if err := dev.Command(command); err != nil {
         log.Println(err)

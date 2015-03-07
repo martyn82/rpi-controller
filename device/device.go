@@ -14,7 +14,7 @@ const (
 )
 
 /* Command processor delegate */
-type CommandProcessor func (command messages.ICommand) ([]byte, error)
+type CommandProcessor func (command messages.ICommand, deviceModel string) ([]byte, error)
 
 /* Response processor delegate */
 type ResponseProcessor func (response []byte) string
@@ -137,6 +137,8 @@ func (d *Device) send(message []byte) error {
         if err := d.Connect(); err != nil {
             return err
         }
+    } else if !d.isConnected() {
+        return errors.New(fmt.Sprintf("Device is disconnected %s", d.info.String()))
     }
 
     _, writeErr := d.connection.Write(message)
@@ -198,7 +200,7 @@ func (d *Device) mapCommand(command messages.ICommand) []byte {
         return nil
     }
 
-    cmd, err := d.commandProcessor(command)
+    cmd, err := d.commandProcessor(command, d.info.Model())
 
     if err != nil {
         return nil

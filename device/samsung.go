@@ -122,12 +122,12 @@ func (d *SamsungTv) authenticate() error {
 }
 
 /* Sends message to device */
-func (d *SamsungTv) SendCommand(command messages.ICommand) error {
+func (d *SamsungTv) Command(command messages.ICommand) error {
     if !d.isAuthenticated {
         d.authenticate()
     }
 
-    cmd, err := d.commandProcessor(command)
+    cmd, err := d.commandProcessor(command, d.info.Model())
 
     if err != nil {
         return err
