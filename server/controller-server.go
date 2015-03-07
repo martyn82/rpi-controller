@@ -12,7 +12,6 @@ import (
     "github.com/martyn82/rpi-controller/action"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
-    "github.com/martyn82/rpi-controller/device/event"
     "github.com/martyn82/rpi-controller/messages"
 )
 
@@ -70,15 +69,18 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
             continue
         }
 
-        dev.Subscribe(func (event device.IEvent) {
-            log.Println(fmt.Sprintf("Device's connection state changed: %s.", event.String()))
-        }, event.CONNECTION_STATE_CHANGED)
+        dev.SetConnectionStateChangedListener(func (event *device.ConnectionStateChangedEvent) {
+            log.Println(event.String())
+        })
 
-        dev.SetMessageReceivedListener(func (sender device.IDevice, message string) {
-            msg, parseErr := messages.ParseMessage(message)
+        dev.SetMessageReceivedListener(func (event *device.MessageReceivedEvent) {
+            message := event.Message()
+            log.Println(event.String())
 
-            if parseErr != nil {
-                log.Println(parseErr.Error())
+            var msg *messages.Message
+            var parseErr error
+
+            if msg, parseErr = messages.ParseMessage(message); parseErr != nil {
                 return
             }
 

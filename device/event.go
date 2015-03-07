@@ -1,9 +1,5 @@
 package device
 
-import (
-    "fmt"
-)
-
 type IEvent interface {
     Sender() *Device
     Type() int
@@ -16,7 +12,7 @@ type Event struct {
 }
 
 func (e *Event) String() string {
-    return fmt.Sprintf("Event '%s'", e.sender.Info().String())
+    return e.sender.Info().String()
 }
 
 func (e *Event) Sender() *Device {

@@ -13,16 +13,11 @@ const (
     CONNECT_TIMEOUT = "500ms"
 )
 
-/* Event handler for message receptions */
-type MessageReceivedHandler func (sender IDevice, message string)
-
 /* Message mapper delegate */
 type MessageMapper func (message *messages.Message) string
 
 /* Response processor delegate */
 type ResponseProcessor func (response []byte) string
-
-type EventListener func (event IEvent)
 
 /* Base device interface */
 type IDevice interface {
@@ -32,13 +27,10 @@ type IDevice interface {
     // commands
     Connect() error
     Disconnect() error
-    Notify(event IEvent)
-    Subscribe(listener EventListener, eventType int)
-
     SendMessage(message *messages.Message) error
-    WriteBytes(msg []byte) error
 
-    SetMessageReceivedListener(listener MessageReceivedHandler)
+    SetConnectionStateChangedListener(listener ConnectionStateChangedListener)
+    SetMessageReceivedListener(listener MessageReceivedListener)
 }
 
 /* Abstract device */
@@ -46,7 +38,7 @@ type Device struct {
     // properties
     info IDeviceInfo
     connected bool
-    listeners map[int][]EventListener
+    autoReconnect bool
 
     commandTimeout time.Duration
     connection net.Conn
@@ -54,7 +46,9 @@ type Device struct {
     // delegates
     mapMessage MessageMapper
     processResponse ResponseProcessor
-    messageReceived MessageReceivedHandler
+
+    connectionStateChangedListener ConnectionStateChangedListener
+    messageReceivedListener MessageReceivedListener
 }
 
 var connectTimeout, _ = time.ParseDuration(CONNECT_TIMEOUT)
@@ -81,7 +75,7 @@ func (d *Device) Connect() error {
     }
 
     d.connected = true
-    d.fire(NewConnectionStateChanged(d, d.connected))
+    d.fireConnectionStateChanged(NewConnectionStateChanged(d, d.connected))
 
     go d.listen()
     return nil
@@ -108,28 +102,26 @@ func (d *Device) Disconnect() error {
 
     d.connected = false
     d.connection = nil
-    d.fire(NewConnectionStateChanged(d, d.connected))
+    d.fireConnectionStateChanged(NewConnectionStateChanged(d, d.connected))
 
     return nil
 }
 
 /* Subscribes an event listener */
-func (d *Device) Subscribe(listener EventListener, eventType int) {
-    if d.listeners == nil {
-        d.listeners = make(map[int][]EventListener)
-    }
-
-    d.listeners[eventType] = append(d.listeners[eventType], listener)
+func (d *Device) SetConnectionStateChangedListener(listener ConnectionStateChangedListener) {
+    d.connectionStateChangedListener = listener
 }
 
-func (d *Device) Notify(event IEvent) {
+/* Subscribes an event listener */
+func (d *Device) SetMessageReceivedListener(listener MessageReceivedListener) {
+    d.messageReceivedListener = listener
 }
 
 /* Sends a message to the device */
 func (d *Device) SendMessage(message *messages.Message) error {
     msg := d.MapMessage(message)
 
-    if writeErr := d.WriteBytes([]byte(msg)); writeErr != nil {
+    if writeErr := d.send([]byte(msg)); writeErr != nil {
         return writeErr
     }
 
@@ -141,20 +133,15 @@ func (d *Device) SendMessage(message *messages.Message) error {
 }
 
 /* Sends bytes to the device */
-func (d *Device) WriteBytes(msg []byte) error {
-    if !d.isConnected() {
+func (d *Device) send(message []byte) error {
+    if !d.isConnected() && d.autoReconnect {
         if err := d.Connect(); err != nil {
             return err
         }
     }
 
-    _, writeErr := d.connection.Write(msg)
+    _, writeErr := d.connection.Write(message)
     return writeErr
-}
-
-/* Attach a message reception listener to the device */
-func (d *Device) SetMessageReceivedListener(listener MessageReceivedHandler) {
-    d.messageReceived = listener
 }
 
 /* Determines whether the device can be connected */
@@ -166,7 +153,7 @@ func (d *Device) supportsNetwork() bool {
 func (d *Device) isConnected() bool {
     if d.connected == true && d.connection == nil {
         d.connected = false
-        d.fire(NewConnectionStateChanged(d, d.connected))
+        d.fireConnectionStateChanged(NewConnectionStateChanged(d, d.connected))
     }
     return d.connected
 }
@@ -182,26 +169,28 @@ func (d *Device) listen() {
             break
         }
 
-        if bytesRead > 0 && d.messageReceived != nil {
-            response := d.ProcessResponse(buffer[:bytesRead])
-            d.messageReceived(d, response)
+        if bytesRead > 0 {
+            d.fireMessageReceived(NewMessageReceived(d, d.ProcessResponse(buffer[:bytesRead])))
         }
     }
 }
 
 /* Fires given event and calls all listeners for that event type */
-func (d *Device) fire(event IEvent) {
-    if d.listeners == nil {
+func (d *Device) fireConnectionStateChanged(event *ConnectionStateChangedEvent) {
+    if d.connectionStateChangedListener == nil {
         return
     }
 
-    if d.listeners[event.Type()] == nil {
+    d.connectionStateChangedListener(event)
+}
+
+/* Fires given event and calls all listeners for that event type */
+func (d *Device) fireMessageReceived(event *MessageReceivedEvent) {
+    if d.messageReceivedListener == nil {
         return
     }
 
-    for _, listener := range d.listeners[event.Type()] {
-        listener(event)
-    }
+    d.messageReceivedListener(event)
 }
 
 /* Maps given message to device-specific message */

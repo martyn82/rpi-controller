@@ -104,7 +104,7 @@ func (d *SamsungTv) authenticate() error {
     authMsg := "\x00" + tvAppNameLen + "\x00" + tvAppName +
         authPayloadLen + "\x00" + authPayload
 
-    if writeErr := d.WriteBytes([]byte(authMsg)); writeErr != nil {
+    if writeErr := d.send([]byte(authMsg)); writeErr != nil {
         return writeErr
     }
 
@@ -113,7 +113,7 @@ func (d *SamsungTv) authenticate() error {
     secondMsg := "\x00" + tvAppNameLen + "\x00" + tvAppName +
         secondPayloadLen + "\x00" + secondPayload
 
-    if writeErr := d.WriteBytes([]byte(secondMsg)); writeErr != nil {
+    if writeErr := d.send([]byte(secondMsg)); writeErr != nil {
         return writeErr
     }
 
@@ -139,7 +139,7 @@ func (d *SamsungTv) SendMessage(message *messages.Message) error {
     keyMsg := "\x00" + tvAppNameLen + "\x00" + tvAppName +
         keyPayloadLen + "\x00" + keyPayload
 
-    if writeErr := d.WriteBytes([]byte(keyMsg)); writeErr != nil {
+    if writeErr := d.send([]byte(keyMsg)); writeErr != nil {
         return writeErr
     }
 
