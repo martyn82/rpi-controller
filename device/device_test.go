@@ -29,7 +29,7 @@ func TestDeviceIsDisconnectedByDefault(t *testing.T) {
 func TestDeviceWithoutProtocolAndAddressCanNotConnect(t *testing.T) {
     d := new(Device)
 
-    if d.CanConnect() {
+    if d.supportsConnect() {
         t.Errorf("Expected device to be unable to connect.")
     }
 }
@@ -38,7 +38,7 @@ func TestDeviceWithProtocolAndAddressCanConnect(t *testing.T) {
     d := new(Device)
     d.info = DeviceInfo{protocol: "tcp", address: "1234"}
 
-    if !d.CanConnect() {
+    if !d.supportsConnect() {
         t.Errorf("Expected device to be able to connect.")
     }
 }

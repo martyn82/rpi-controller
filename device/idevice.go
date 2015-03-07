@@ -18,7 +18,6 @@ type ResponseProcessor func (response []byte) string
 type IDevice interface {
     // queries
     Info() IDeviceInfo
-    CanConnect() bool
     IsConnected() bool
 
     // commands

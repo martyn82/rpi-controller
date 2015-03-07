@@ -50,14 +50,9 @@ func (d *Device) IsConnected() bool {
     return d.isConnected
 }
 
-/* Determines whether the device can be connected */
-func (d *Device) CanConnect() bool {
-    return d.info != nil && d.info.Protocol() != "" && d.info.Address() != ""
-}
-
 /* Connects the device and opens a listener for incoming messages */
 func (d *Device) Connect() error {
-    if !d.CanConnect() {
+    if !d.supportsConnect() {
         return errors.New(fmt.Sprintf("The device '%s' cannot be connected.", d.info.Name() + "[" + d.info.Model() + "]"))
     }
 
@@ -155,4 +150,9 @@ func (d *Device) SetConnectionStateChangedListener(listener ConnectionStateChang
 /* Attach a message reception listener to the device */
 func (d *Device) SetMessageReceivedListener(listener MessageReceivedHandler) {
     d.messageReceived = listener
+}
+
+/* Determines whether the device can be connected */
+func (d *Device) supportsConnect() bool {
+    return d.info != nil && d.info.Protocol() != "" && d.info.Address() != ""
 }
