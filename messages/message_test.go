@@ -4,78 +4,75 @@ import (
     "testing"
 )
 
-func TestParseMessage(t *testing.T) {
-    inputMessage := "SET dev0:prop:val"
-    outputMessage, parseErr := ParseMessage(inputMessage)
+func TestParseMalformedMessageReturnsError(t *testing.T) {
+    inputMessage := "SET dev0 prop:val"
+    _, parseErr := Parse(inputMessage)
+
+    if parseErr == nil {
+        t.Errorf("Parse() on malformed message should return error")
+    }
+}
+
+func TestMessageTypeIsCommand(t *testing.T) {
+    inputMessage := "SET dev0:PW:ON"
+    msg, parseErr := Parse(inputMessage)
 
     if parseErr != nil {
-        t.Errorf("ParseMessage() returned an error: %s", parseErr)
+        t.Errorf("Parse() returned an error.")
         return
     }
 
-    if outputMessage.Type != MSG_TYPE_WRITE {
-        t.Errorf("ParseMessage() expected action to be %q, actual %q", MSG_TYPE_WRITE, outputMessage.Type)
-    }
-
-    if outputMessage.DeviceName != "dev0" {
-        t.Errorf("ParseMessage() expected deviceName to be %q, actual %q", "dev0", outputMessage.DeviceName)
-    }
-
-    if outputMessage.Property != "prop" {
-        t.Errorf("ParseMessage() expected property to be %q, actual %q", "prop", outputMessage.Property)
-    }
-    
-    if outputMessage.Value != "val" {
-        t.Errorf("ParseMessage() expected value to be %q, actual %q", "val", outputMessage.Value)
+    if !msg.IsCommand() {
+        t.Errorf("IsCommand() message was expected to be a command, turned out to be false.")
     }
 }
 
-func TestParseMalformedMessageReturnsError(t *testing.T) {
-    inputMessage := "SET dev0 prop:val"
-    _, parseErr := ParseMessage(inputMessage)
+func TestMessageTypeIsNotCommand(t *testing.T) {
+    inputMessage := "EVT dev0:PW:ON"
+    msg, parseErr := Parse(inputMessage)
 
-    if parseErr == nil {
-        t.Errorf("ParseMessage() on malformed message should return error")
+    if parseErr != nil {
+        t.Errorf("Parse() returned an error.")
+        return
+    }
+
+    if msg.IsCommand() {
+        t.Errorf("IsCommand() message was expected not to be a command, turned out it is.")
     }
 }
 
-func TestMessageToString(t *testing.T) {
-    inputMessage := "SET dev0:prop:val"
-    parsed, err := ParseMessage(inputMessage)
-
-    if err != nil {
-        t.Errorf("ParseMessage() returned an error.", err)
-    }
-
-    outputMessage := parsed.String()
-
-    if outputMessage != inputMessage {
-        t.Errorf("ToString() expected %q, actual %q", inputMessage, outputMessage)
-    }
-}
-
-func TestMessageIsPowerOnCommand(t *testing.T) {
+func TestParseMessagePowerOnCommand(t *testing.T) {
     inputMessage := "SET dev0:PW:ON"
-    parsed, err := ParseMessage(inputMessage)
+    outputMessage, parseErr := Parse(inputMessage)
 
-    if err != nil {
-        t.Errorf("Error occurred while parsing message:", err.Error())
+    if parseErr != nil {
+        t.Errorf("Parse() returned an error: %s", parseErr)
+        return
     }
 
-    if !parsed.IsPowerOnCommand() {
-        t.Errorf("Message should be identified as power-on command.")
+    if outputMessage.TargetDeviceName() != "dev0" {
+        t.Errorf("Parse() expected deviceName to be %q, actual %q", "dev0", outputMessage.TargetDeviceName())
+    }
+
+    if _, ok := outputMessage.(*PowerOnCommand); !ok {
+        t.Errorf("Parse() expected output message to be of type PowerOnCommand")
     }
 }
 
-func TestMessageIsNotPowerOnCommand(t *testing.T) {
+func TestParseMessagePowerOffCommand(t *testing.T) {
     inputMessage := "SET dev0:PW:OFF"
-    parsed, err := ParseMessage(inputMessage)
+    outputMessage, parseErr := Parse(inputMessage)
 
-    if err != nil {
-        t.Errorf("Error occurred while parsing message:", err.Error())
+    if parseErr != nil {
+        t.Errorf("Parse() returned an error: %s", parseErr)
+        return
     }
 
-    if parsed.IsPowerOnCommand() {
-        t.Errorf("Message should not be identified as power-on command.")
+    if outputMessage.TargetDeviceName() != "dev0" {
+        t.Errorf("Parse() expected deviceName to be %q, actual %q", "dev0", outputMessage.TargetDeviceName())
+    }
+
+    if _, ok := outputMessage.(*PowerOffCommand); !ok {
+        t.Errorf("Parse() expected output message to be of type PowerOffCommand")
     }
 }

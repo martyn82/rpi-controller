@@ -20,6 +20,6 @@ func (registry *ActionRegistry) Register(action *Action) {
     registry.actions[action.When.String()] = action
 }
 
-func (registry *ActionRegistry) GetActionByWhen(when *messages.Message) *Action {
+func (registry *ActionRegistry) GetActionByWhen(when messages.IMessage) *Action {
     return registry.actions[when.String()]
 }

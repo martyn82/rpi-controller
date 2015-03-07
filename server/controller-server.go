@@ -1,6 +1,7 @@
 package main
 
 import (
+    "errors"
     "flag"
     "fmt"
     "log"
@@ -70,17 +71,17 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
         }
 
         dev.SetConnectionStateChangedListener(func (event *device.ConnectionStateChangedEvent) {
-            log.Println(event.String())
+            log.Println("Event: " + event.String())
         })
 
         dev.SetMessageReceivedListener(func (event *device.MessageReceivedEvent) {
             message := event.Message()
-            log.Println(event.String())
+            log.Println("Event: " + event.String())
 
-            var msg *messages.Message
+            var msg messages.IMessage
             var parseErr error
 
-            if msg, parseErr = messages.ParseMessage(message); parseErr != nil {
+            if msg, parseErr = messages.Parse(message); parseErr != nil {
                 return
             }
 
@@ -108,26 +109,30 @@ func closeDevices() {
 func initializeActions(actions []configuration.ActionConfiguration) {
     for i :=range actions {
         actionConfig := actions[i]
-        msgWhen, parseErr := messages.ParseMessage(messages.MSG_TYPE_EVENT + " " + actionConfig.When)
+        msgWhen, parseErr := messages.Parse(messages.MSG_TYPE_EVENT + " " + actionConfig.When)
 
         if parseErr != nil {
-            log.Fatal(parseErr)
+            log.Println(parseErr)
+            break
         }
 
-        thens := make([]*messages.Message, len(actionConfig.Then))
+        thens := make([]messages.IMessage, len(actionConfig.Then))
         for i := range actionConfig.Then {
-            msgThen, err := messages.ParseMessage(actionConfig.Then[i])
+            msgThen, err := messages.Parse(actionConfig.Then[i])
             thens[i] = msgThen
 
             if err != nil {
-                log.Fatal(err)
+                log.Println(err)
+                break
             }
         }
 
-        action := action.NewAction(msgWhen, thens)
-        ActionRegistry.Register(action)
+        if len(thens) > 0 {
+            action := action.NewAction(msgWhen, thens)
+            ActionRegistry.Register(action)
+        }
 
-        log.Println(fmt.Sprintf("Registered %d actions for event '%s'", len(thens), action.When.String()))
+        log.Println(fmt.Sprintf("Registered %d actions for event '%s'", len(thens), actionConfig.When))
     }
 }
 
@@ -159,68 +164,85 @@ func startServer(config configuration.SocketConfiguration) (net.Listener, error)
 /* spawn new session with client */
 func startSession(client net.Conn) {
     for {
-        buffer := make([]byte, 512)
-        bytesRead, readErr := client.Read(buffer)
+        var bytesRead int
+        var err error
 
-        if readErr != nil {
+        buffer := make([]byte, 512)
+        if bytesRead, err = client.Read(buffer); err != nil {
             return
+        }
+
+        if bytesRead == 0 {
+            continue
         }
 
         message := string(buffer[:bytesRead])
-        msg, parseErr := messages.ParseMessage(message)
+        var msg messages.IMessage
 
-        if parseErr != nil {
-            return
+        if msg, err = messages.Parse(message); err != nil {
+            log.Println(err.Error())
+            client.Write([]byte(err.Error()))
+            continue
         }
 
-        handleMessage(msg)
+        log.Println("Received message " + message)
+
+        if err = handleMessage(msg); err != nil {
+            log.Println(err.Error())
+            client.Write([]byte(err.Error()))
+            continue
+        }
+
+        client.Write([]byte(string(rune(0))))
     }
 }
 
 /* send command to device */
-func sendCommand(command *messages.Message) {
-    dev := DeviceRegistry.GetDeviceByName(command.DeviceName)
+func sendCommand(command messages.IMessage) error {
+    dev := DeviceRegistry.GetDeviceByName(command.TargetDeviceName())
 
     if dev == nil {
-        log.Println(fmt.Sprintf("Device not registered '%s'.", command.DeviceName))
-        return
+        errMsg := fmt.Sprintf("Device not registered '%s'.", command.TargetDeviceName())
+        log.Println(errMsg)
+        return errors.New(errMsg)
     }
 
-    log.Println(fmt.Sprintf("Command[%s]: %s:%s", command.DeviceName, command.Property, command.Value))
-    err := dev.Command(command)
+    log.Println(fmt.Sprintf("Command: %T to %s", command, command.TargetDeviceName()))
 
-    if err != nil {
+    if err := dev.Command(command); err != nil {
         log.Println(err)
+        return err
     }
+
+    return nil
 }
 
 /* handle incoming message */
-func handleMessage(message *messages.Message) {
-    log.Println("Handling message", message.String())
-
+func handleMessage(message messages.IMessage) error {
     if message.IsCommand() {
-        sendCommand(message)
-        return
+        return sendCommand(message)
     }
 
     if message.IsEvent() {
-        handleEvent(message)
-        return
+        return handleEvent(message)
     }
 
-    log.Fatal(fmt.Sprintf("Unsupported message type: '%s'.", message.Type))
+    return errors.New("Unsupported message type.")
 }
 
 /* handles an event notification */
-func handleEvent(event *messages.Message) {
+func handleEvent(event messages.IMessage) error {
     thenMsg := ActionRegistry.GetActionByWhen(event)
 
     if thenMsg == nil {
-        log.Println("No actions defined for event", event.String())
-        return
+        errMsg := "No actions defined for event."
+        log.Println(errMsg)
+        return errors.New(errMsg)
     }
 
     for i := range thenMsg.Then {
         handleMessage(thenMsg.Then[i])
     }
+
+    return nil
 }

@@ -127,12 +127,16 @@ func (d *SamsungTv) SendCommand(command messages.ICommand) error {
         d.authenticate()
     }
 
-    msg := d.commandProcessor(command)
+    cmd, err := d.commandProcessor(command)
+
+    if err != nil {
+        return err
+    }
 
     tvAppName := d.tvAppName
     tvAppNameLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(tvAppName))))
 
-    keyEnc := base64.StdEncoding.EncodeToString([]byte(msg))
+    keyEnc := base64.StdEncoding.EncodeToString(cmd)
     keyLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(keyEnc))))
     keyPayload := "\x00\x00\x00" + keyLen + "\x00" + keyEnc
     keyPayloadLen, _ := strconv.Unquote(strconv.QuoteRuneToASCII(rune(len(keyPayload))))

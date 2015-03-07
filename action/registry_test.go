@@ -16,7 +16,13 @@ func TestRegistryIsEmptyByDefault(t *testing.T) {
 func TestRegistryAddsActionToRegistry(t *testing.T) {
     registry := CreateActionRegistry()
     
-    msg, _ := messages.ParseMessage("EVT dev0:prop:val")
+    msg, err := messages.Parse("EVT dev0:PW:ON")
+
+    if err != nil {
+        t.Errorf(err.Error())
+        return
+    }
+
     registry.Register(NewAction(msg, nil))
 
     if registry.IsEmpty() {
@@ -27,11 +33,11 @@ func TestRegistryAddsActionToRegistry(t *testing.T) {
 func TestRegisteredActionCanBeRetrievedByName(t *testing.T) {
     registry := CreateActionRegistry()
 
-    msg, _ := messages.ParseMessage("EVT dev0:prop:val")
+    msg, _ := messages.Parse("EVT dev0:PW:ON")
     a := NewAction(msg, nil)
     registry.Register(a)
 
-    msgWhen, _ := messages.ParseMessage("EVT dev0:prop:val")
+    msgWhen, _ := messages.Parse("EVT dev0:PW:ON")
     act := registry.GetActionByWhen(msgWhen)
 
     if act != a {
@@ -42,7 +48,7 @@ func TestRegisteredActionCanBeRetrievedByName(t *testing.T) {
 func TestAttemptToRetrieveNonExistingActionReturnsNil(t *testing.T) {
     registry := CreateActionRegistry()
 
-    msg, _ := messages.ParseMessage("EVT dev0:prop:val")
+    msg, _ := messages.Parse("EVT dev0:PW:ON")
 
     if registry.GetActionByWhen(msg) != nil {
         t.Errorf("Non-existing action retrieval did not return NIL")

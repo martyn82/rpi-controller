@@ -3,11 +3,11 @@ package action
 import "github.com/martyn82/rpi-controller/messages"
 
 type Action struct {
-    When *messages.Message
-    Then []*messages.Message
+    When messages.IMessage
+    Then []messages.IMessage
 }
 
-func NewAction(when *messages.Message, then []*messages.Message) *Action {
+func NewAction(when messages.IMessage, then []messages.IMessage) *Action {
     action := new(Action)
     action.When = when
     action.Then = then

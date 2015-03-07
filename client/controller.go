@@ -6,7 +6,6 @@ import (
     "os"
     "syscall"
 
-    "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/configuration"
 )
 
@@ -15,6 +14,7 @@ var StdOut = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
 
 var configFile = flag.String("c", "", "Specify a configuration file name.")
 var message = flag.String("m", "", "Specify a message.")
+var wait = flag.Bool("w", false, "When specified, the connection waits for server response.")
 
 /* main entry point */
 func main() {
@@ -26,7 +26,6 @@ func main() {
     }
 
     var config configuration.Configuration
-    var msg *messages.Message
     var err error
 
     if config, err = loadConfiguration(*configFile); err != nil {
@@ -34,14 +33,9 @@ func main() {
         os.Exit(2)
     }
 
-    if msg, err = messages.ParseMessage(*message); err != nil {
+    if err := sendMessage(config.Socket, *message); err != nil {
         StdErr.Write([]byte(err.Error()))
         os.Exit(3)
-    }
-
-    if err := sendMessage(config.Socket, msg); err != nil {
-        StdErr.Write([]byte(err.Error()))
-        os.Exit(4)
     }
 }
 
@@ -58,7 +52,7 @@ func loadConfiguration(configFile string) (configuration.Configuration, error) {
 }
 
 /* Sends the message */
-func sendMessage(config configuration.SocketConfiguration, message *messages.Message) error {
+func sendMessage(config configuration.SocketConfiguration, message string) error {
     var client net.Conn
     var err error
 
@@ -66,8 +60,19 @@ func sendMessage(config configuration.SocketConfiguration, message *messages.Mes
         return err
     }
 
-    if _, err = client.Write([]byte(message.String())); err != nil {
+    if _, err = client.Write([]byte(message)); err != nil {
         return err
+    }
+
+    if *wait {
+        buffer := make([]byte, 512)
+        var bytesRead int
+
+        if bytesRead, err = client.Read(buffer); err == nil && bytesRead > 1 {
+            StdOut.Write([]byte("RESPONSE: "))
+            StdOut.Write(buffer)
+            StdOut.Write([]byte("\n"))
+        }
     }
 
     client.Close()
@@ -78,7 +83,8 @@ func sendMessage(config configuration.SocketConfiguration, message *messages.Mes
 func printHelp() {
     help := "Usage: controller -c=<config file> -m=\"type device:property:value\"\n" +
         "  -c          Specify a configuration file name.\n" +
-        "  -m          Specify a message.\n" +
+        "  -w          When specified, the connection waits for server response.\n" +
+        "  -m          Specify a message (see below).\n" +
         "  message\n" +
         "    type\n" +
         "      SET       Write a property value on a device.\n" +

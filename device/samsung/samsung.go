@@ -15,7 +15,7 @@ import (
 //    messages.VAL_OFF: "OFF",
 //}
 
-func CommandProcessor(command messages.ICommand) string {
+func CommandProcessor(command messages.ICommand) ([]byte, error) {
 //    value := valueMap[message.Value]
 //
 //    if v, err := strconv.Atoi(message.Value); err == nil {
@@ -27,7 +27,7 @@ func CommandProcessor(command messages.ICommand) string {
 //    }
 //
 //    return propertyMap[message.Property] + value
-    return ""
+    return nil, nil
 }
 
 func ResponseProcessor(response []byte) string {

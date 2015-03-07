@@ -7,60 +7,158 @@ import (
 )
 
 const (
-    MSG_TYPE_WRITE = "SET"
+    MSG_HEAD_BODY_SEPARATOR = " "
+    MSG_PROPERTY_VALUE_SEPARATOR = ":"
+)
+
+const (
+    MSG_TYPE_COMMAND = "SET"
     MSG_TYPE_EVENT = "EVT"
 )
 
+type IMessage interface {
+    TargetDeviceName() string
+    IsCommand() bool
+    IsEvent() bool
+    String() string
+}
+
 type Message struct {
-    Type string
-    DeviceName string
-    Property string
-    Value string
+    messageString string
+    targetDevice string
 }
 
-func (msg *Message) IsCommand() bool {
-    return msg.Type == MSG_TYPE_WRITE
-}
+func Parse(message string) (IMessage, error) {
+    headBody := strings.Split(message, MSG_HEAD_BODY_SEPARATOR)
 
-func (msg *Message) IsEvent() bool {
-    return msg.Type == MSG_TYPE_EVENT
-}
-
-func (msg *Message) String() string {
-    msgString := msg.Type + " " + msg.DeviceName + ":" + msg.Property
-
-    if msg.IsEvent() || msg.IsCommand() {
-        msgString += ":" + msg.Value
+    if len(headBody) != 2 {
+        return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': invalid message format.", message))
     }
 
-    return msgString
-}
+    msgHead := headBody[0]
+    msgBody := headBody[1]
 
-func ParseMessage(message string) (*Message, error) {
-    msgParts := strings.Split(message, " ")
+    switch msgHead {
+        case MSG_TYPE_COMMAND:
+            return parseCommand(msgBody, message)
 
-    if len(msgParts) < 2 {
-        return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': Invalid message format.", message))
+        case MSG_TYPE_EVENT:
+            return parseEvent(msgBody, message)
     }
 
-    msgType := msgParts[0]
-    msgBodyParts := strings.Split(msgParts[1], ":")
+    return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': invalid type: '%s'.", message, msgHead))
+}
 
-    switch msgType {
-        case MSG_TYPE_WRITE,
-             MSG_TYPE_EVENT:
+func (m *Message) TargetDeviceName() string {
+    return m.targetDevice
+}
 
-            if len(msgBodyParts) < 3 {
-                return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': Invalid message format.", message))
+func (m *ValueCommand) Value() string {
+    return m.value
+}
+
+func (m *Message) IsCommand() bool {
+    return false
+}
+
+func (m *Message) IsEvent() bool {
+    return false
+}
+
+func (m *Message) String() string {
+    return m.messageString
+}
+
+func parseCommand(command string, message string) (ICommand, error) {
+    commandParts := strings.Split(command, MSG_PROPERTY_VALUE_SEPARATOR)
+
+    if len(commandParts) != 3 {
+        return nil, errors.New(fmt.Sprintf("Failed to parse command '%s': invalid format.", command))
+    }
+
+    deviceName := commandParts[0]
+    property := commandParts[1]
+    value := commandParts[2]
+
+    switch property {
+        case PROP_POWER:
+            if value == VAL_ON {
+                cmd := new(PowerOnCommand)
+                cmd.messageString = message
+                cmd.targetDevice = deviceName
+                return cmd, nil
+            } else if value == VAL_OFF {
+                cmd := new(PowerOffCommand)
+                cmd.messageString = message
+                cmd.targetDevice = deviceName
+                return cmd, nil
+            } else {
+                return nil, errors.New(fmt.Sprintf("Failed to parse command '%s': unsupported value '%s'.", command, value))
             }
+            break
 
-            msg := new(Message)
-            msg.Type = msgType
-            msg.DeviceName = msgBodyParts[0]
-            msg.Property = msgBodyParts[1]
-            msg.Value = msgBodyParts[2]
-            return msg, nil
+        case PROP_VOLUME:
+            cmd := new(SetVolumeCommand)
+            cmd.messageString = message
+            cmd.targetDevice = deviceName
+            cmd.value = value
+            return cmd, nil
+
+        case PROP_SOURCE:
+            cmd := new(SetSourceCommand)
+            cmd.messageString = message
+            cmd.targetDevice = deviceName
+            cmd.value = value
+            return cmd, nil
     }
 
-    return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': Invalid message type.", message))
+    return nil, errors.New(fmt.Sprintf("Failed to parse command '%s': unsupported property '%s'.", command, property)) 
+}
+
+func parseEvent(event string, message string) (IEvent, error) {
+    eventParts := strings.Split(event, MSG_PROPERTY_VALUE_SEPARATOR)
+
+    if len(eventParts) != 3 {
+        return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': invalid format.", event))
+    }
+
+    deviceName := eventParts[0]
+    property := eventParts[1]
+    value := eventParts[2]
+
+    switch property {
+        case PROP_POWER:
+            if value == VAL_ON {
+                evt := new(PowerOnEvent)
+                evt.messageString = message
+                evt.targetDevice = deviceName
+                return evt, nil
+            } else if value == VAL_OFF {
+                evt := new(PowerOffEvent)
+                evt.messageString = message
+                evt.targetDevice = deviceName
+                return evt, nil
+            } else {
+                return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': unsupported value '%s'.", event, value))
+            }
+            break
+
+        case PROP_PLAY:
+            if value == VAL_START {
+                evt := new(PlayStartEvent)
+                evt.messageString = message
+                evt.targetDevice = deviceName
+                return evt, nil
+            } else if value == VAL_STOP {
+                evt := new(PlayStopEvent)
+                evt.messageString = message
+                evt.targetDevice = deviceName
+                return evt, nil
+            } else {
+                return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': unsupported value '%s'.", event, value))
+            }
+            break
+    }
+
+    return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': unsupported property '%s'.", event, property))
 }

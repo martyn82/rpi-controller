@@ -14,7 +14,7 @@ const (
 )
 
 /* Command processor delegate */
-type CommandProcessor func (command messages.ICommand) string
+type CommandProcessor func (command messages.ICommand) ([]byte, error)
 
 /* Response processor delegate */
 type ResponseProcessor func (response []byte) string
@@ -118,9 +118,9 @@ func (d *Device) SetMessageReceivedListener(listener MessageReceivedListener) {
 
 /* Sends a message to the device */
 func (d *Device) Command(command messages.ICommand) error {
-    msg := d.mapCommand(command)
+    cmd := d.mapCommand(command)
 
-    if writeErr := d.send([]byte(msg)); writeErr != nil {
+    if writeErr := d.send(cmd); writeErr != nil {
         return writeErr
     }
 
@@ -193,10 +193,16 @@ func (d *Device) fireMessageReceived(event *MessageReceivedEvent) {
 }
 
 /* Maps given message to device-specific message */
-func (d *Device) mapCommand(command messages.ICommand) string {
+func (d *Device) mapCommand(command messages.ICommand) []byte {
     if d.commandProcessor == nil {
-        return ""
+        return nil
     }
 
-    return d.commandProcessor(command)
+    cmd, err := d.commandProcessor(command)
+
+    if err != nil {
+        return nil
+    }
+
+    return cmd
 }
