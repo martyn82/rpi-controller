@@ -13,10 +13,7 @@ type DenonAvr struct {
 /* Construct DenonAvr */
 func CreateDenonAvr(name string, model string, protocol string, address string) *DenonAvr {
     d := new(DenonAvr)
-    d.name = name
-    d.model = model
-    d.protocol = protocol
-    d.address = address
+    d.info = DeviceInfo{name: name, model: model, protocol: protocol, address: address}
     d.commandTimeout = time.Second * 3
 
     d.mapMessage = denon.MessageMapper

@@ -15,7 +15,7 @@ func (registry *DeviceRegistry) IsEmpty() bool {
 }
 
 func (registry *DeviceRegistry) Register(device Device) {
-    registry.devices[device.Name()] = device
+    registry.devices[device.Info().name] = device
 }
 
 func (registry *DeviceRegistry) GetDeviceByName(name string) Device {

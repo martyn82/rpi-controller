@@ -8,7 +8,6 @@ type ShairportSync struct {
 /* Construct ShairportSync */
 func CreateShairportSync(name string, model string) *ShairportSync {
     d := new(ShairportSync)
-    d.name = name
-    d.model = model
+    d.info = DeviceInfo{name: name, model: model}
     return d
 }

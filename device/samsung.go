@@ -21,10 +21,7 @@ type SamsungTv struct {
 /* Constructs SamsungTv */
 func CreateSamsungTv(name string, model string, protocol string, address string) *SamsungTv {
     d := new(SamsungTv)
-    d.name = name
-    d.model = model
-    d.protocol = protocol
-    d.address = address
+    d.info = DeviceInfo{name: name, model: model, protocol: protocol, address: address}
     d.isAuthenticated = false
 
     d.mapMessage = samsung.MessageMapper
@@ -87,7 +84,7 @@ func (d *SamsungTv) authenticate() error {
 
     remoteMac := strings.Replace(mac, ":", "-", -1)
     remoteName := hostName + "..iapp.samsung"
-    tvAppName := remoteName + "." + d.model + ".iapp.samsung"
+    tvAppName := remoteName + "." + d.info.model + ".iapp.samsung"
     d.tvAppName = tvAppName
 
     remoteIpEnc := base64.StdEncoding.EncodeToString([]byte(remoteIp))

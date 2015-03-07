@@ -13,10 +13,14 @@ const (
     CONNECT_TIMEOUT = "500ms"
 )
 
+type DeviceInfo struct {
+    name, model, protocol, address string
+}
+
 /* Abstract device */
 type DeviceModel struct {
     // properties
-    name, model, protocol, address string
+    info DeviceInfo
     isConnected bool
     commandTimeout time.Duration
     connection net.Conn
@@ -37,34 +41,44 @@ func (d *DeviceModel) MapMessage(message *messages.Message) string {
     return d.mapMessage(message)
 }
 
-/* Retrieves the name of the device */
-func (d *DeviceModel) Name() string {
-    return d.name
+func (info DeviceInfo) Name() string {
+    return info.name
 }
 
-/* Retrieves the model of the device */
-func (d *DeviceModel) Model() string {
-    return d.model
+func (info DeviceInfo) Model() string {
+    return info.model
+}
+
+func (info DeviceInfo) String() string {
+    return fmt.Sprintf("name=%s, model=%s, protocol=%s, address=%s", info.name, info.model, info.protocol, info.address)
+}
+
+/* Retrieves the info of the device */
+func (d *DeviceModel) Info() DeviceInfo {
+    return d.info
 }
 
 /* Determines whether the device is connected */
 func (d *DeviceModel) IsConnected() bool {
+    if d.connection == nil {
+        d.isConnected = false
+    }
     return d.isConnected
 }
 
 /* Determines whether the device can be connected */
 func (d *DeviceModel) CanConnect() bool {
-    return d.protocol != "" && d.address != ""
+    return d.info.protocol != "" && d.info.address != ""
 }
 
 /* Connects the device and opens a listener for incoming messages */
 func (d *DeviceModel) Connect() error {
     if !d.CanConnect() {
-        return errors.New(fmt.Sprintf("The device '%s' cannot be connected.", d.Name() + "[" + d.Model() + "]"))
+        return errors.New(fmt.Sprintf("The device '%s' cannot be connected.", d.info.Name() + "[" + d.info.Model() + "]"))
     }
 
     duration, _ := time.ParseDuration(CONNECT_TIMEOUT)
-    connection, connectErr := net.DialTimeout(d.protocol, d.address, duration)
+    connection, connectErr := net.DialTimeout(d.info.protocol, d.info.address, duration)
 
     if connectErr != nil {
         return connectErr
@@ -130,7 +144,7 @@ func (d *DeviceModel) SendMessage(message *messages.Message) error {
         return writeErr
     }
 
-    if d.Model() == DENON_AVR && d.commandTimeout != 0 {
+    if d.info.Model() == DENON_AVR && d.commandTimeout != 0 {
         time.Sleep(d.commandTimeout)
     }
 

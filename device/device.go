@@ -17,8 +17,7 @@ type ResponseProcessor func (response []byte) string
 /* Base device interface */
 type Device interface {
     // queries
-    Name() string
-    Model() string
+    Info() DeviceInfo
     CanConnect() bool
     IsConnected() bool
 

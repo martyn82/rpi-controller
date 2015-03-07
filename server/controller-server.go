@@ -70,7 +70,11 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
         }
 
         dev.SetConnectionStateChangedListener(func (sender device.Device, connectionState bool) {
-            log.Println(fmt.Sprintf("Device name=%s,model=%s is connected: %s.", sender.Name(), sender.Model(), connectionState))
+            connected := "no"
+            if connectionState {
+                connected = "yes"
+            }
+            log.Println(fmt.Sprintf("Device %s is connected: %s.", sender.Info().String(), connected))
         })
 
         dev.SetMessageReceivedListener(func (sender device.Device, message string) {
