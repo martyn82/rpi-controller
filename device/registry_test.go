@@ -10,7 +10,7 @@ type DummyDevice struct {
 
 func NewDevice(name string) *DummyDevice {
     d := new(DummyDevice)
-    d.name = name
+    d.info = DeviceInfo{name: name}
     return d
 }
 

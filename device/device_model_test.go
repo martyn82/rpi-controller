@@ -7,14 +7,13 @@ import (
 
 func TestDeviceModelReflectsItsProperties(t *testing.T) {
     d := new(DeviceModel)
-    d.name = "name"
-    d.model = "model"
+    d.info = DeviceInfo{name: "name", model: "model"}
  
-    if d.Name() != d.name {
+    if d.Info().Name() != "name" {
         t.Errorf("Expected Name() to return device name.")
     }
 
-    if d.Model() != d.model {
+    if d.Info().Model() != "model" {
         t.Errorf("Expected Model() to return device model.")
     }
 }
@@ -24,15 +23,6 @@ func TestDeviceIsDisconnectedByDefault(t *testing.T) {
 
     if d.IsConnected() {
         t.Errorf("Expected IsConnected() to be false.")
-    }
-}
-
-func TestDeviceIsConnectedAccordingToProperty(t *testing.T) {
-    d := new(DeviceModel)
-    d.isConnected = true
-
-    if !d.IsConnected() {
-        t.Errorf("Expected IsConnected() to be equal to isConnected property.")
     }
 }
 
@@ -46,8 +36,7 @@ func TestDeviceWithoutProtocolAndAddressCanNotConnect(t *testing.T) {
 
 func TestDeviceWithProtocolAndAddressCanConnect(t *testing.T) {
     d := new(DeviceModel)
-    d.protocol = "tcp"
-    d.address = "1234"
+    d.info = DeviceInfo{protocol: "tcp", address: "1234"}
 
     if !d.CanConnect() {
         t.Errorf("Expected device to be able to connect.")
@@ -73,8 +62,7 @@ func TestDeviceConnectionStateIsUpdatedOnConnect(t *testing.T) {
     }()
 
     d := new(DeviceModel)
-    d.protocol = socketType
-    d.address = socketAddr
+    d.info = DeviceInfo{protocol: socketType, address: socketAddr}
 
     d.Connect()
 
