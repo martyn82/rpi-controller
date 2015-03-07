@@ -32,7 +32,7 @@ type IDevice interface {
 
     // commands
     Connect() error
-    Disconnect()
+    Disconnect() error
     Notify(event IEvent)
 
     SendMessage(message *messages.Message) error
@@ -47,7 +47,7 @@ type Device struct {
     // properties
     info IDeviceInfo
     connected bool
-    
+
     commandTimeout time.Duration
     connection net.Conn
 
@@ -98,16 +98,20 @@ func (d *Device) ProcessResponse(response []byte) string {
 }
 
 /* Disconnects the device */
-func (d *Device) Disconnect() {
+func (d *Device) Disconnect() error {
     if !d.isConnected() {
-        return
+        return errors.New(fmt.Sprintf("Device not connected: %s", d.info.String()))
     }
 
-    d.connection.Close()
+    if err := d.connection.Close(); err != nil {
+        return err
+    }
+
     d.connected = false
     d.connection = nil
-
     d.fire(NewConnectionStateChanged(d, d.connected))
+
+    return nil
 }
 
 /* Sends a message to the device */
