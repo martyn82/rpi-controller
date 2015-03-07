@@ -23,6 +23,7 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d := new(SamsungTv)
     d.info = DeviceInfo{name: name, model: model, protocol: protocol, address: address}
     d.isAuthenticated = false
+    d.autoReconnect = true
 
     d.commandProcessor = samsung.CommandProcessor
     d.processResponse = samsung.ResponseProcessor
