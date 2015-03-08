@@ -2,6 +2,7 @@ package main
 
 import (
     "flag"
+    "fmt"
     "net"
     "os"
     "syscall"
@@ -13,14 +14,23 @@ var StdErr = os.NewFile(uintptr(syscall.Stderr), "/dev/stderr")
 var StdOut = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
 
 var configFile = flag.String("c", "", "Specify a configuration file name.")
-var message = flag.String("m", "", "Specify a message.")
-var wait = flag.Bool("w", false, "When specified, the connection waits for server response.")
+var inputMessage = flag.String("m", "", "Specify a message.")
+var application = flag.String("a", "", "Specify an application description.")
+var wait = flag.Bool("w", false, "If specified, the connection waits for server response.")
 
 /* main entry point */
 func main() {
     flag.Parse()
 
-    if *configFile == "" || *message == "" {
+    var message string
+    
+    if *application != "" {
+        message = createApplicationMessage(*application)
+    } else if *inputMessage != "" {
+        message = *inputMessage
+    }
+
+    if *configFile == "" || message == "" {
         printHelp()
         os.Exit(1)
     }
@@ -33,10 +43,15 @@ func main() {
         os.Exit(2)
     }
 
-    if err := sendMessage(config.Socket, *message); err != nil {
+    if err = sendMessage(config.Socket, message); err != nil {
         StdErr.Write([]byte(err.Error()))
         os.Exit(3)
     }
+}
+
+/* Converts the application registration to a server understandable message */
+func createApplicationMessage(application string) string {
+    return fmt.Sprintf("REG %s", application)
 }
 
 /* Load configuration for client */
@@ -83,8 +98,9 @@ func sendMessage(config configuration.SocketConfiguration, message string) error
 func printHelp() {
     help := "Usage: controller -c=<config file> -m=\"type device:property:value\"\n" +
         "  -c          Specify a configuration file name.\n" +
-        "  -w          When specified, the connection waits for server response.\n" +
-        "  -m          Specify a message (see below).\n" +
+        "  -w          If specified, the connection waits for server response.\n" +
+        "  -a          Register an application to push notifications to (see 'application').\n" +
+        "  -m          Specify a message (see 'message').\n" +
         "  message\n" +
         "    type\n" +
         "      SET       Write a property value on a device.\n" +
@@ -97,6 +113,17 @@ func printHelp() {
         "      Sets the power state to 'ON' on device 'dev0'\n" +
         "    EVT dev0:PW:ON\n" +
         "      Notifies the system that the power state of device 'dev0' has the value 'ON'\n" +
+        "\n" +
+        "  application\n" +
+        "    id:protocol:address[:port]\n" +
+        "      id        Specifies the unique name of the application.\n" +
+        "      protocol  Specifies the protocol to use for communication (tcp|unix).\n" +
+        "      address   Specifies the address (socket name or IP address) the application is running.\n" +
+        "      port      Optional port number.\n" +
+        "\n" +
+        "  Examples of application registrations:\n" +
+        "    webclient:tcp:192.168.1.12:33\n" +
+        "      Registers an application with name 'webclient'. Notifications will be pushed to tcp socket at 192.168.1.12 port 33.\n" +
         "\n"
 
     StdOut.Write([]byte(help))
