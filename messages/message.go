@@ -14,12 +14,14 @@ const (
 const (
     MSG_TYPE_COMMAND = "SET"
     MSG_TYPE_EVENT = "EVT"
+    MSG_TYPE_APPREGISTRATION = "REG"
 )
 
 type IMessage interface {
     TargetDeviceName() string
     IsCommand() bool
     IsEvent() bool
+    IsApp() bool
     String() string
 }
 
@@ -44,6 +46,9 @@ func Parse(message string) (IMessage, error) {
 
         case MSG_TYPE_EVENT:
             return parseEvent(msgBody, message)
+
+        case MSG_TYPE_APPREGISTRATION:
+            return parseAppRegistration(msgBody, message)
     }
 
     return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': invalid type: '%s'.", message, msgHead))
@@ -62,6 +67,10 @@ func (m *Message) IsCommand() bool {
 }
 
 func (m *Message) IsEvent() bool {
+    return false
+}
+
+func (m *Message) IsApp() bool {
     return false
 }
 
@@ -161,4 +170,27 @@ func parseEvent(event string, message string) (IEvent, error) {
     }
 
     return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': unsupported property '%s'.", event, property))
+}
+
+func parseAppRegistration(registration string, message string) (IAppMessage, error) {
+    msgParts := strings.Split(registration, MSG_PROPERTY_VALUE_SEPARATOR)
+
+    if len(msgParts) < 3 || len(msgParts) > 4 {
+        return nil, errors.New(fmt.Sprintf("Failed to parse registration '%s': invalid format.", registration))
+    }
+
+    appName := msgParts[0]
+    protocol := msgParts[1]
+    address := msgParts[2]
+
+    if len(msgParts) == 4 {
+        address += ":" + msgParts[3]
+    }
+
+    reg := new(AppRegistration)
+    reg.messageString = message
+    reg.appName = appName
+    reg.protocol = protocol
+    reg.address = address
+    return reg, nil
 }

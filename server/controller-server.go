@@ -11,12 +11,14 @@ import (
     "syscall"
 
     "github.com/martyn82/rpi-controller/action"
+    "github.com/martyn82/rpi-controller/app"
     "github.com/martyn82/rpi-controller/configuration"
     "github.com/martyn82/rpi-controller/device"
     "github.com/martyn82/rpi-controller/messages"
 )
 
 var ActionRegistry *action.ActionRegistry
+var AppRegistry *app.AppRegistry
 var DeviceRegistry *device.DeviceRegistry
 
 var configFile = flag.String("c", "", "Specify a configuration file name.")
@@ -26,6 +28,7 @@ func main() {
     flag.Parse()
 
     ActionRegistry = action.CreateActionRegistry()
+    AppRegistry = app.CreateAppRegistry()
     DeviceRegistry = device.CreateDeviceRegistry()
 
     config := loadConfiguration(*configFile)
@@ -227,15 +230,20 @@ func handleMessage(message messages.IMessage) error {
         return handleEvent(message)
     }
 
+    if message.IsApp() {
+        return handleApp(message.(messages.IAppMessage))
+    }
+
     return errors.New("Unsupported message type.")
 }
 
 /* handles an event notification */
-func handleEvent(event messages.IMessage) error {
+func handleEvent(event messages.IEvent) error {
+    sendToApps(event)
     thenMsg := ActionRegistry.GetActionByWhen(event)
 
     if thenMsg == nil {
-        errMsg := "No actions defined for event."
+        errMsg := fmt.Sprintf("No actions defined for event '%s'.", event.String())
         log.Println(errMsg)
         return errors.New(errMsg)
     }
@@ -245,4 +253,37 @@ func handleEvent(event messages.IMessage) error {
     }
 
     return nil
+}
+
+/* handle application message */
+func handleApp(message messages.IAppMessage) error {
+    var t interface {}
+    t = message
+
+    switch t.(type) {
+        case *messages.AppRegistration:
+            return registerApp(message.(*messages.AppRegistration))
+    }
+
+    return errors.New("Unsupported app message type.")
+}
+
+func registerApp(message *messages.AppRegistration) error {
+    application := app.CreateApp(message.Name(), message.Protocol(), message.Address())
+    log.Println("Connecting to app... " + application.Name())
+
+    if err := application.Connect(); err != nil {
+        return err
+    }
+
+    AppRegistry.Register(application)
+    log.Println(fmt.Sprintf("Registered app '%s'.", application.Name()))
+
+    return nil
+}
+
+func sendToApps(event messages.IEvent) {
+    for _, app := range AppRegistry.GetAllApps() {
+        app.Notify(event.String())
+    }
 }
