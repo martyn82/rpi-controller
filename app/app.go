@@ -1,6 +1,7 @@
 package app
 
 import (
+    "encoding/json"
     "errors"
     "net"
 )
@@ -12,7 +13,7 @@ type IApp interface {
 
     Connect() error
     Disconnect() error
-    Notify(message string) error
+    Notify(message *Notification) error
 }
 
 type App struct {
@@ -55,7 +56,7 @@ func (a *App) Connect() error {
 
     a.connected = true
 
-    if err = a.send([]byte("OK")); err != nil {
+    if err = a.send([]byte("{\"Connected\": true}")); err != nil {
         a.Disconnect()
         return err
     }
@@ -74,8 +75,15 @@ func (a *App) Disconnect() error {
     return err
 }
 
-func (a *App) Notify(message string) error {
-    return a.send([]byte(message))
+func (a *App) Notify(message *Notification) error {
+    var msg []byte
+    var err error
+
+    if msg, err = json.Marshal(message); err != nil {
+        return err
+    }
+
+    return a.send(msg)
 }
 
 func (a *App) send(message []byte) error {

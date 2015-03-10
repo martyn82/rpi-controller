@@ -282,8 +282,20 @@ func sendToApps(event messages.IEvent) {
     for _, app := range apps {
         log.Println("Notifying app " + app.Name())
 
-        if err = app.Notify(event.String()); err != nil {
+        if err = app.Notify(createAppNotification(event)); err != nil {
             log.Println(err.Error())
         }
+    }
+}
+
+func createAppNotification(event messages.IEvent) *app.Notification {
+    var t interface {}
+    t = event
+    switch eventType := t.(type) {
+        default:
+            not := new(app.Notification)
+            not.EventType = fmt.Sprintf("%T", eventType)
+            not.DeviceName = event.TargetDeviceName()
+            return not
     }
 }
