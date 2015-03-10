@@ -26,7 +26,7 @@ func CreateSamsungTv(name string, model string, protocol string, address string)
     d.autoReconnect = true
 
     d.commandProcessor = samsung.CommandProcessor
-    d.processResponse = samsung.ResponseProcessor
+    d.eventProcessor = samsung.EventProcessor
 
     return d
 }
@@ -128,7 +128,7 @@ func (d *SamsungTv) Command(command messages.ICommand) error {
         d.authenticate()
     }
 
-    cmd, err := d.commandProcessor(command, d.info.Model())
+    cmd, err := d.commandProcessor(command, d.info.Name(), d.info.Model())
 
     if err != nil {
         return err

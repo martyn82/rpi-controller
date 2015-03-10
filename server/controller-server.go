@@ -74,21 +74,12 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
         }
 
         dev.SetConnectionStateChangedListener(func (event *device.ConnectionStateChangedEvent) {
-            log.Println("Event: " + event.String())
+            log.Println(fmt.Sprintf("Event: %T (%s)", event, event.String()))
         })
 
         dev.SetMessageReceivedListener(func (event *device.MessageReceivedEvent) {
-            message := event.Message()
-            log.Println("Event: " + event.String())
-
-            var msg messages.IMessage
-            var parseErr error
-
-            if msg, parseErr = messages.Parse(message); parseErr != nil {
-                return
-            }
-
-            handleMessage(msg)
+            log.Println(fmt.Sprintf("Event: %T (%s)", event, event.String()))
+            handleMessage(event.Message())
         })
 
         DeviceRegistry.Register(dev)
@@ -283,7 +274,16 @@ func registerApp(message *messages.AppRegistration) error {
 }
 
 func sendToApps(event messages.IEvent) {
-    for _, app := range AppRegistry.GetAllApps() {
-        app.Notify(event.String())
+    var err error
+    apps := AppRegistry.GetAllApps()
+    
+    log.Println(fmt.Sprintf("Notifying %d apps.", len(apps)))
+
+    for _, app := range apps {
+        log.Println("Notifying app " + app.Name())
+
+        if err = app.Notify(event.String()); err != nil {
+            log.Println(err.Error())
+        }
     }
 }

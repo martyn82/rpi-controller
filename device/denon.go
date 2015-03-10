@@ -18,7 +18,7 @@ func CreateDenonAvr(name string, model string, protocol string, address string) 
     d.autoReconnect = true
 
     d.commandProcessor = denon.CommandProcessor
-    d.processResponse = denon.ResponseProcessor
+    d.eventProcessor = denon.EventProcessor
 
     return d
 }

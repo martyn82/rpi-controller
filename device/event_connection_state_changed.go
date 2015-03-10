@@ -25,7 +25,7 @@ func (e *ConnectionStateChangedEvent) String() string {
     if e.DeviceIsConnected() {
         connected = "yes"
     }
-    return fmt.Sprintf("%s, connected: %s", e.Event.String(), connected)
+    return fmt.Sprintf("%s, isConnected: %s", e.Event.String(), connected)
 }
 
 func (e *ConnectionStateChangedEvent) DeviceIsConnected() bool {

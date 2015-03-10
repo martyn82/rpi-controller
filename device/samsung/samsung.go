@@ -7,7 +7,7 @@ import (
     "github.com/martyn82/rpi-controller/messages"
 )
 
-func CommandProcessor(command messages.ICommand, deviceModel string) ([]byte, error) {
+func CommandProcessor(command messages.ICommand, deviceName string, deviceModel string) ([]byte, error) {
     var cmdInterface interface {}
     cmdInterface = command
 
@@ -25,17 +25,18 @@ func CommandProcessor(command messages.ICommand, deviceModel string) ([]byte, er
             } else if value == messages.VAL_DOWN {
                 return []byte("KEY_VOLDOWN"), nil
             } else {
-                return nil, errors.New(fmt.Sprintf("Unknown value '%s' for property '%s' for device model %s.", value, messages.PROP_VOLUME, deviceModel))
+                return nil, errors.New(fmt.Sprintf("Unknown value '%s' for property '%s' for device name=%s, model=%s.", value, messages.PROP_VOLUME, deviceName, deviceModel))
             }
             break
 
         default:
-            return nil, errors.New(fmt.Sprintf("Unknown command '%T' for device model %s.", cmdType, deviceModel))
+            return nil, errors.New(fmt.Sprintf("Unknown command '%T' for device name=%s, model=%s.", cmdType, deviceName, deviceModel))
     }
 
     return nil, nil
 }
 
-func ResponseProcessor(response []byte) string {
-    return strconv.Quote(string(response))
+func EventProcessor(event []byte, deviceName string, deviceModel string) (messages.IEvent, error) {
+    eventString := strconv.Quote(string(event))
+    return nil, errors.New(fmt.Sprintf("Unknown event '%s' for device name=%s, model=%s.", eventString, deviceName, deviceModel))
 }

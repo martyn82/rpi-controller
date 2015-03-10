@@ -4,6 +4,15 @@ type IEvent interface {
     IMessage
 }
 
+const (
+    EVENT_TYPE_EVENT = 1 << iota
+    EVENT_TYPE_VALUE
+    EVENT_TYPE_POWER_ON
+    EVENT_TYPE_POWER_OFF
+    EVENT_TYPE_PLAY_START
+    EVENT_TYPE_PLAY_STOP
+)
+
 type Event struct {
     Message
 }
@@ -27,8 +36,4 @@ type PlayStartEvent struct {
 
 type PlayStopEvent struct {
     Event
-}
-
-func (m *Event) IsEvent() bool {
-    return true
 }

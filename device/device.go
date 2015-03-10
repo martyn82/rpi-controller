@@ -14,10 +14,10 @@ const (
 )
 
 /* Command processor delegate */
-type CommandProcessor func (command messages.ICommand, deviceModel string) ([]byte, error)
+type CommandProcessor func (command messages.ICommand, deviceName string, deviceModel string) ([]byte, error)
 
-/* Response processor delegate */
-type ResponseProcessor func (response []byte) string
+/* Event processor delegate */
+type EventProcessor func (event []byte, deviceName string, deviceModel string) (messages.IEvent, error)
 
 /* Base device interface */
 type IDevice interface {
@@ -44,7 +44,7 @@ type Device struct {
     connection net.Conn
 
     commandProcessor CommandProcessor
-    processResponse ResponseProcessor
+    eventProcessor EventProcessor
 
     connectionStateChangedListener ConnectionStateChangedListener
     messageReceivedListener MessageReceivedListener
@@ -78,15 +78,6 @@ func (d *Device) Connect() error {
 
     go d.listen()
     return nil
-}
-
-/* Processes response message */
-func (d *Device) ProcessResponse(response []byte) string {
-    if d.processResponse == nil {
-        return string(response)
-    }
-
-    return d.processResponse(response)
 }
 
 /* Disconnects the device */
@@ -171,7 +162,9 @@ func (d *Device) listen() {
         }
 
         if bytesRead > 0 {
-            d.fireMessageReceived(NewMessageReceived(d, d.ProcessResponse(buffer[:bytesRead])))
+            if event := d.mapEvent(buffer[:bytesRead]); event != nil {
+                d.fireMessageReceived(NewMessageReceived(d, event))
+            }
         }
     }
 }
@@ -200,11 +193,26 @@ func (d *Device) mapCommand(command messages.ICommand) []byte {
         return nil
     }
 
-    cmd, err := d.commandProcessor(command, d.info.Model())
+    cmd, err := d.commandProcessor(command, d.info.Name(), d.info.Model())
 
     if err != nil {
         return nil
     }
 
     return cmd
+}
+
+/* Processes response message */
+func (d *Device) mapEvent(event []byte) messages.IEvent {
+    if d.eventProcessor == nil {
+        return nil
+    }
+
+    evt, err := d.eventProcessor(event, d.info.Name(), d.info.Model())
+
+    if err != nil {
+        return nil
+    }
+
+    return evt
 }

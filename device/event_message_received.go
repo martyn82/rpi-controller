@@ -3,16 +3,17 @@ package device
 import (
     "fmt"
     "github.com/martyn82/rpi-controller/device/event"
+    "github.com/martyn82/rpi-controller/messages"
 )
 
 type MessageReceivedListener func (event *MessageReceivedEvent)
 
 type MessageReceivedEvent struct {
     Event
-    message string
+    message messages.IEvent
 }
 
-func NewMessageReceived(device *Device, message string) *MessageReceivedEvent {
+func NewMessageReceived(device *Device, message messages.IEvent) *MessageReceivedEvent {
     e := new(MessageReceivedEvent)
     e.sender = device
     e.eventType = event.MESSAGE_RECEIVED
@@ -20,10 +21,10 @@ func NewMessageReceived(device *Device, message string) *MessageReceivedEvent {
     return e
 }
 
-func (e *MessageReceivedEvent) Message() string {
+func (e *MessageReceivedEvent) Message() messages.IEvent {
     return e.message
 }
 
 func (e *MessageReceivedEvent) String() string {
-    return fmt.Sprintf("%s, message: %s", e.Event.String(), e.Message())
+    return fmt.Sprintf("%s, message: %s", e.Event.String(), e.Message().String())
 }

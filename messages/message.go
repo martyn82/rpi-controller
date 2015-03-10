@@ -66,8 +66,16 @@ func (m *Message) IsCommand() bool {
     return false
 }
 
+func (m *Command) IsCommand() bool {
+    return true
+}
+
 func (m *Message) IsEvent() bool {
     return false
+}
+
+func (m *Event) IsEvent() bool {
+    return true
 }
 
 func (m *Message) IsApp() bool {
@@ -75,7 +83,36 @@ func (m *Message) IsApp() bool {
 }
 
 func (m *Message) String() string {
-    return m.messageString
+    return toString(m, m.messageString)
+}
+
+func (m *Event) String() string {
+    return toString(m, m.messageString)
+}
+
+func (m *PlayStartEvent) String() string {
+    return toString(m, m.messageString)
+}
+
+func (m *PlayStopEvent) String() string {
+    return toString(m, m.messageString)
+}
+
+func (m *PowerOnEvent) String() string {
+    return toString(m, m.messageString)
+}
+
+func (m *PowerOffEvent) String() string {
+    return toString(m, m.messageString)
+}
+
+func toString(m IMessage, messageString string) string {
+    var t interface {}
+    t = m
+    switch msgType := t.(type) {
+        default:
+            return fmt.Sprintf("%T(device=%s, message=%s)", msgType, m.TargetDeviceName(), messageString)
+    }
 }
 
 func parseCommand(command string, message string) (ICommand, error) {
@@ -92,33 +129,19 @@ func parseCommand(command string, message string) (ICommand, error) {
     switch property {
         case PROP_POWER:
             if value == VAL_ON {
-                cmd := new(PowerOnCommand)
-                cmd.messageString = message
-                cmd.targetDevice = deviceName
-                return cmd, nil
+                return ComposeCommand(COMMAND_TYPE_POWER_ON, message, deviceName, "")
             } else if value == VAL_OFF {
-                cmd := new(PowerOffCommand)
-                cmd.messageString = message
-                cmd.targetDevice = deviceName
-                return cmd, nil
+                return ComposeCommand(COMMAND_TYPE_POWER_OFF, message, deviceName, "")
             } else {
                 return nil, errors.New(fmt.Sprintf("Failed to parse command '%s': unsupported value '%s'.", command, value))
             }
             break
 
         case PROP_VOLUME:
-            cmd := new(SetVolumeCommand)
-            cmd.messageString = message
-            cmd.targetDevice = deviceName
-            cmd.value = value
-            return cmd, nil
+            return ComposeCommand(COMMAND_TYPE_SET_VOLUME, message, deviceName, value)
 
         case PROP_SOURCE:
-            cmd := new(SetSourceCommand)
-            cmd.messageString = message
-            cmd.targetDevice = deviceName
-            cmd.value = value
-            return cmd, nil
+            return ComposeCommand(COMMAND_TYPE_SET_SOURCE, message, deviceName, value)
     }
 
     return nil, errors.New(fmt.Sprintf("Failed to parse command '%s': unsupported property '%s'.", command, property)) 
@@ -138,15 +161,9 @@ func parseEvent(event string, message string) (IEvent, error) {
     switch property {
         case PROP_POWER:
             if value == VAL_ON {
-                evt := new(PowerOnEvent)
-                evt.messageString = message
-                evt.targetDevice = deviceName
-                return evt, nil
+                return ComposeEvent(EVENT_TYPE_POWER_ON, message, deviceName, "")
             } else if value == VAL_OFF {
-                evt := new(PowerOffEvent)
-                evt.messageString = message
-                evt.targetDevice = deviceName
-                return evt, nil
+                return ComposeEvent(EVENT_TYPE_POWER_OFF, message, deviceName, "")
             } else {
                 return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': unsupported value '%s'.", event, value))
             }
@@ -154,15 +171,9 @@ func parseEvent(event string, message string) (IEvent, error) {
 
         case PROP_PLAY:
             if value == VAL_START {
-                evt := new(PlayStartEvent)
-                evt.messageString = message
-                evt.targetDevice = deviceName
-                return evt, nil
+                return ComposeEvent(EVENT_TYPE_PLAY_START, message, deviceName, "")
             } else if value == VAL_STOP {
-                evt := new(PlayStopEvent)
-                evt.messageString = message
-                evt.targetDevice = deviceName
-                return evt, nil
+                return ComposeEvent(EVENT_TYPE_PLAY_STOP, message, deviceName, "")
             } else {
                 return nil, errors.New(fmt.Sprintf("Failed to parse event '%s': unsupported value '%s'.", event, value))
             }
@@ -193,4 +204,66 @@ func parseAppRegistration(registration string, message string) (IAppMessage, err
     reg.protocol = protocol
     reg.address = address
     return reg, nil
+}
+
+func ComposeCommand(commandType int, messageString string, deviceName string, value string) (ICommand, error) {
+    switch commandType {
+        case COMMAND_TYPE_POWER_ON:
+            cmd := new(PowerOnCommand)
+            cmd.messageString = messageString
+            cmd.targetDevice = deviceName
+            return cmd, nil
+
+        case COMMAND_TYPE_POWER_OFF:
+            cmd := new(PowerOffCommand)
+            cmd.messageString = messageString
+            cmd.targetDevice = deviceName
+            return cmd, nil
+
+        case COMMAND_TYPE_SET_VOLUME:
+            cmd := new(SetVolumeCommand)
+            cmd.messageString = messageString
+            cmd.targetDevice = deviceName
+            cmd.value = value
+            return cmd, nil
+
+        case COMMAND_TYPE_SET_SOURCE:
+            cmd := new(SetSourceCommand)
+            cmd.messageString = messageString
+            cmd.targetDevice = deviceName
+            cmd.value = value
+            return cmd, nil
+    }
+
+    return nil, errors.New(fmt.Sprintf("Unknown command type '%d'.", commandType))
+}
+
+func ComposeEvent(eventType int, messageString string, deviceName string, value string) (IEvent, error) {
+    switch eventType {
+        case EVENT_TYPE_POWER_ON:
+            evt := new(PowerOnEvent)
+            evt.messageString = messageString
+            evt.targetDevice = deviceName
+            return evt, nil
+
+        case EVENT_TYPE_POWER_OFF:
+            evt := new(PowerOffEvent)
+            evt.messageString = messageString
+            evt.targetDevice = deviceName
+            return evt, nil
+
+        case EVENT_TYPE_PLAY_START:
+            evt := new(PlayStartEvent)
+            evt.messageString = messageString
+            evt.targetDevice = deviceName
+            return evt, nil
+
+        case EVENT_TYPE_PLAY_STOP:
+            evt := new(PlayStopEvent)
+            evt.messageString = messageString
+            evt.targetDevice = deviceName
+            return evt, nil
+    }
+
+    return nil, errors.New(fmt.Sprintf("Unknown event type '%d'.", eventType))
 }
