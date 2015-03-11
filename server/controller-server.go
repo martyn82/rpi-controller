@@ -74,11 +74,11 @@ func initializeDevices(devices []configuration.DeviceConfiguration) {
         }
 
         dev.SetConnectionStateChangedListener(func (event *device.ConnectionStateChangedEvent) {
-            log.Println(fmt.Sprintf("Event: %T (%s)", event, event.String()))
+            log.Println(fmt.Sprintf("Event: %T(%s)", event, event.String()))
         })
 
         dev.SetMessageReceivedListener(func (event *device.MessageReceivedEvent) {
-            log.Println(fmt.Sprintf("Event: %T (%s)", event, event.String()))
+            log.Println(fmt.Sprintf("Event: %T(%s)", event, event.String()))
             handleMessage(event.Message())
         })
 
@@ -218,7 +218,7 @@ func handleMessage(message messages.IMessage) error {
     }
 
     if message.IsEvent() {
-        return handleEvent(message)
+        return handleEvent(message.(messages.IEvent))
     }
 
     if message.IsApp() {
@@ -289,13 +289,17 @@ func sendToApps(event messages.IEvent) {
 }
 
 func createAppNotification(event messages.IEvent) *app.Notification {
+    not := new(app.Notification)
+    not.EventType = event.Type()
+    not.DeviceName = event.TargetDeviceName()
+
     var t interface {}
     t = event
-    switch eventType := t.(type) {
-        default:
-            not := new(app.Notification)
-            not.EventType = fmt.Sprintf("%T", eventType)
-            not.DeviceName = event.TargetDeviceName()
-            return not
+    switch t.(type) {
+        case *messages.ValueEvent:
+            not.Value = event.(*messages.ValueEvent).Value()
+            break
     }
+
+    return not
 }

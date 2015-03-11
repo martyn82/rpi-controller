@@ -54,28 +54,18 @@ func Parse(message string) (IMessage, error) {
     return nil, errors.New(fmt.Sprintf("Failed to parse message '%s': invalid type: '%s'.", message, msgHead))
 }
 
+// ==== Message
+
 func (m *Message) TargetDeviceName() string {
     return m.targetDevice
-}
-
-func (m *ValueCommand) Value() string {
-    return m.value
 }
 
 func (m *Message) IsCommand() bool {
     return false
 }
 
-func (m *Command) IsCommand() bool {
-    return true
-}
-
 func (m *Message) IsEvent() bool {
     return false
-}
-
-func (m *Event) IsEvent() bool {
-    return true
 }
 
 func (m *Message) IsApp() bool {
@@ -83,36 +73,44 @@ func (m *Message) IsApp() bool {
 }
 
 func (m *Message) String() string {
-    return toString(m, m.messageString)
-}
-
-func (m *Event) String() string {
-    return toString(m, m.messageString)
-}
-
-func (m *PlayStartEvent) String() string {
-    return toString(m, m.messageString)
-}
-
-func (m *PlayStopEvent) String() string {
-    return toString(m, m.messageString)
-}
-
-func (m *PowerOnEvent) String() string {
-    return toString(m, m.messageString)
-}
-
-func (m *PowerOffEvent) String() string {
-    return toString(m, m.messageString)
-}
-
-func toString(m IMessage, messageString string) string {
     var t interface {}
     t = m
     switch msgType := t.(type) {
         default:
-            return fmt.Sprintf("%T(device=%s, message=%s)", msgType, m.TargetDeviceName(), messageString)
+            return fmt.Sprintf("%T(device=%s, message=%s)", msgType, m.TargetDeviceName(), m.messageString)
     }
+}
+
+// ==== Command
+
+func (m *Command) IsCommand() bool {
+    return true
+}
+
+func (m *ValueCommand) Value() string {
+    return m.value
+}
+
+// ==== Event
+
+func (m *Event) IsEvent() bool {
+    return true
+}
+
+func (m *Event) Type() string {
+    return eventName[m.eventType]
+}
+
+func (m *ValueEvent) Value() string {
+    return m.value
+}
+
+func (m *Event) String() string {
+    return fmt.Sprintf("%s(device=%s, message=%s)", m.Type(), m.TargetDeviceName(), m.messageString)
+}
+
+func (m *ValueEvent) String() string {
+    return fmt.Sprintf("%s(device=%s, message=%s, value=%s)", m.Type(), m.TargetDeviceName(), m.messageString, m.value)
 }
 
 func parseCommand(command string, message string) (ICommand, error) {
@@ -239,31 +237,18 @@ func ComposeCommand(commandType int, messageString string, deviceName string, va
 }
 
 func ComposeEvent(eventType int, messageString string, deviceName string, value string) (IEvent, error) {
-    switch eventType {
-        case EVENT_TYPE_POWER_ON:
-            evt := new(PowerOnEvent)
-            evt.messageString = messageString
-            evt.targetDevice = deviceName
-            return evt, nil
-
-        case EVENT_TYPE_POWER_OFF:
-            evt := new(PowerOffEvent)
-            evt.messageString = messageString
-            evt.targetDevice = deviceName
-            return evt, nil
-
-        case EVENT_TYPE_PLAY_START:
-            evt := new(PlayStartEvent)
-            evt.messageString = messageString
-            evt.targetDevice = deviceName
-            return evt, nil
-
-        case EVENT_TYPE_PLAY_STOP:
-            evt := new(PlayStopEvent)
-            evt.messageString = messageString
-            evt.targetDevice = deviceName
-            return evt, nil
+    if value == "" {
+        evt := new(Event)
+        evt.messageString = messageString
+        evt.eventType = eventType
+        evt.targetDevice = deviceName
+        return evt, nil
+    } else {
+        evt := new(ValueEvent)
+        evt.messageString = messageString
+        evt.eventType = eventType
+        evt.targetDevice = deviceName
+        evt.value = value
+        return evt, nil
     }
-
-    return nil, errors.New(fmt.Sprintf("Unknown event type '%d'.", eventType))
 }

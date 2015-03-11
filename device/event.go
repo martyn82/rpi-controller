@@ -14,12 +14,7 @@ type Event struct {
 }
 
 func (e *Event) String() string {
-    var t interface {}
-    t = e
-    switch eventType := t.(type) {
-        default:
-            return fmt.Sprintf("%T [%s]", eventType, e.sender.Info().String())
-    }
+    return fmt.Sprintf("%s", e.sender.Info().String())
 }
 
 func (e *Event) Sender() *Device {
