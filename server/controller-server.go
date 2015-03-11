@@ -293,12 +293,8 @@ func createAppNotification(event messages.IEvent) *app.Notification {
     not.EventType = event.Type()
     not.DeviceName = event.TargetDeviceName()
 
-    var t interface {}
-    t = event
-    switch t.(type) {
-        case *messages.ValueEvent:
-            not.Value = event.(*messages.ValueEvent).Value()
-            break
+    if _, ok := event.(*messages.ValueEvent); ok {
+        not.Value = event.(*messages.ValueEvent).Value()
     }
 
     return not
