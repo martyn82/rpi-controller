@@ -1,5 +1,7 @@
 package configuration
 
+/* This package is deprecated */
+
 import (
     "encoding/json"
     "errors"

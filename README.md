@@ -1,5 +1,4 @@
 RPi-Controller
 ==============
 
-A simple device controller and event bus designed for RaspberryPi.
- 
+A daemon with a message API to control registered devices in your home.

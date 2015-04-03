@@ -1,0 +1,6 @@
+{
+    "Socket": {
+        "Type": "tcp",
+        "Address": ":1181"
+    }
+}
