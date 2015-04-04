@@ -1,25 +1,24 @@
 package daemon
 
 import (
-    "github.com/martyn82/rpi-controller/daemon/servicelistener"
     "github.com/martyn82/rpi-controller/network"
 )
 
 type MessageHandler func (message string) string
 
 var state = STATE_STOPPED
-var serviceListener *servicelistener.ServiceListener
+var server *network.Server
 var messageHandlers = make(map[string]MessageHandler)
 
 /* Starts the service daemon */
 func Start(socketInfo network.SocketInfo) {
-    serviceListener = servicelistener.New(socketInfo, handleMessage)
-    serviceListener.Start()
+    server = network.NewServer(socketInfo, handleMessage)
+    server.Start()
 }
 
 /* Stops the service daemon */
 func Stop() {
-    serviceListener.Stop()
+    server.Stop()
 }
 
 /* Retrieves the current state of the daemon */
@@ -33,8 +32,8 @@ func NotifyState(newState string) {
 }
 
 /* Register a message handler for a given message. An existing handler for given message will be overwritten. */
-func RegisterMessageHandler(command string, handler MessageHandler) {
-    messageHandlers[command] = handler
+func RegisterMessageHandler(messageType string, handler MessageHandler) {
+    messageHandlers[messageType] = handler
 }
 
 /* Handles a service message */

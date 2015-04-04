@@ -1,7 +1,6 @@
-package servicelistener
+package network
 
 import (
-    "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/testing/assert"
     "io"
     "net"
@@ -10,19 +9,19 @@ import (
 )
 
 var waitTimeout = time.Millisecond
-var socketInfo = network.SocketInfo{"unix", "/tmp/foo.sock"}
+var serverSocketInfo = SocketInfo{"unix", "/tmp/foo.sock"}
 
-func TestServiceListenerNewConstructsDefaultInstance(t *testing.T) {
-    instance := New(socketInfo, nil)
+func TestServerNewConstructsDefaultInstance(t *testing.T) {
+    instance := NewServer(serverSocketInfo, nil)
 
     assert.Nil(t, instance.listener)
-    assert.Equals(t, socketInfo, instance.socketInfo)
+    assert.Equals(t, serverSocketInfo, instance.socketInfo)
     assert.False(t, instance.listening)
     assert.False(t, instance.isListening())
 }
 
-func TestServiceListenerStartWillStartTheListenerToListen(t *testing.T) {
-    instance := New(socketInfo, nil)
+func TestServerStartWillStartTheListenerToListen(t *testing.T) {
+    instance := NewServer(serverSocketInfo, nil)
 
     instance.Start()
     defer instance.Stop()
@@ -32,8 +31,8 @@ func TestServiceListenerStartWillStartTheListenerToListen(t *testing.T) {
     assert.NotNil(t, instance.listener)
 }
 
-func TestServiceListenerStopWillStopTheListener(t *testing.T) {
-    instance := New(socketInfo, nil)
+func TestServerStopWillStopTheListener(t *testing.T) {
+    instance := NewServer(serverSocketInfo, nil)
 
     instance.Start()
     instance.Stop() // immediately stop
@@ -43,8 +42,8 @@ func TestServiceListenerStopWillStopTheListener(t *testing.T) {
     assert.Nil(t, instance.listener)
 }
 
-func TestStartingAListeningServiceListenerReturnsError(t *testing.T) {
-    instance := New(socketInfo, nil)
+func TestStartingAListeningServerReturnsError(t *testing.T) {
+    instance := NewServer(serverSocketInfo, nil)
 
     instance.Start()
     defer instance.Stop()
@@ -55,8 +54,8 @@ func TestStartingAListeningServiceListenerReturnsError(t *testing.T) {
     assert.Equals(t, ERR_LISTENER_ALREADY_LISTENING, err.Error())
 }
 
-func TestStoppingANonListeningServiceListenerReturnsError(t *testing.T) {
-    instance := New(socketInfo, nil)
+func TestStoppingANonListeningServerReturnsError(t *testing.T) {
+    instance := NewServer(serverSocketInfo, nil)
 
     err := instance.Stop()
 
@@ -65,8 +64,8 @@ func TestStoppingANonListeningServiceListenerReturnsError(t *testing.T) {
 }
 
 func TestErrorFromNetListenWillBeReturned(t *testing.T) {
-    socketInfo := network.SocketInfo{"invalid", "socket"}
-    instance := New(socketInfo, nil)
+    serverSocketInfo := SocketInfo{"invalid", "socket"}
+    instance := NewServer(serverSocketInfo, nil)
 
     err := instance.Start()
 
@@ -74,8 +73,8 @@ func TestErrorFromNetListenWillBeReturned(t *testing.T) {
 }
 
 func TestWaitingForConnectionsWillAcceptIncomingConnections(t *testing.T) {
-    instance := New(socketInfo, nil)
-    listener, _ := net.Listen(socketInfo.Type, socketInfo.Address)
+    instance := NewServer(serverSocketInfo, nil)
+    listener, _ := net.Listen(serverSocketInfo.Type, serverSocketInfo.Address)
     defer listener.Close()
 
     go func () {
@@ -86,15 +85,15 @@ func TestWaitingForConnectionsWillAcceptIncomingConnections(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    conn, err := net.Dial(socketInfo.Type, socketInfo.Address)
+    conn, err := net.Dial(serverSocketInfo.Type, serverSocketInfo.Address)
     defer conn.Close()
 
     assert.Nil(t, err)
 }
 
 func TestNewSessionWillListenOnInputFromClient(t *testing.T) {
-    instance := New(socketInfo, nil)
-    listener, _ := net.Listen(socketInfo.Type, socketInfo.Address)
+    instance := NewServer(serverSocketInfo, nil)
+    listener, _ := net.Listen(serverSocketInfo.Type, serverSocketInfo.Address)
     defer listener.Close()
 
     go func () {
@@ -112,7 +111,7 @@ func TestNewSessionWillListenOnInputFromClient(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    client, _ := net.Dial(socketInfo.Type, socketInfo.Address)
+    client, _ := net.Dial(serverSocketInfo.Type, serverSocketInfo.Address)
     defer client.Close()
 
     message := []byte("foo")
@@ -131,12 +130,12 @@ func TestMessageHandlerGetsCalledOnIncomingCommand(t *testing.T) {
         return "response"
     }
 
-    instance := New(socketInfo, handler)
+    instance := NewServer(serverSocketInfo, handler)
     instance.Start()
     defer instance.Stop()
     time.Sleep(waitTimeout)
 
-    client, _ := net.Dial(socketInfo.Type, socketInfo.Address)
+    client, _ := net.Dial(serverSocketInfo.Type, serverSocketInfo.Address)
     defer client.Close()
 
     message := "foo"

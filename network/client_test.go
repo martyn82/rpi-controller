@@ -1,17 +1,16 @@
-package connector
+package network
 
 import (
-    "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/testing/assert"
     "net"
     "testing"
 )
 
-var socketInfo = network.SocketInfo{"unix", "/tmp/foo.sock"}
+var clientSocketInfo = SocketInfo{"unix", "/tmp/foo.sock"}
 type SessionHandler func (session net.Conn)
 
 func startMockServer(sessionHandler SessionHandler) net.Listener {
-    mockServer, _ := net.Listen(socketInfo.Type, socketInfo.Address)
+    mockServer, _ := net.Listen(clientSocketInfo.Type, clientSocketInfo.Address)
 
     go func () {
         var client net.Conn
@@ -34,10 +33,10 @@ func stopMockServer(server net.Listener) {
 }
 
 func TestNewConstructsDefaultInstance(t *testing.T) {
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
 
     assert.Nil(t, instance.connection)
-    assert.Equals(t, socketInfo, instance.socketInfo)
+    assert.Equals(t, clientSocketInfo, instance.socketInfo)
     assert.False(t, instance.connected)
     assert.False(t, instance.isConnected())
 }
@@ -46,7 +45,7 @@ func TestConnectWillMakeConnectionToServer(t *testing.T) {
     server := startMockServer(nil)
     defer stopMockServer(server)
 
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
 
     instance.Connect()
     defer instance.Disconnect()
@@ -60,7 +59,7 @@ func TestDisconnectWillDisconnectFromConnection(t *testing.T) {
     server := startMockServer(nil)
     defer stopMockServer(server)
 
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
 
     instance.Connect()
     instance.Disconnect() // immediately stop
@@ -70,11 +69,11 @@ func TestDisconnectWillDisconnectFromConnection(t *testing.T) {
     assert.Nil(t, instance.connection)
 }
 
-func TestConnectingAConnectedConnectorReturnsError(t *testing.T) {
+func TestConnectingAConnectedClientReturnsError(t *testing.T) {
     server := startMockServer(nil)
     defer stopMockServer(server)
 
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
 
     instance.Connect()
     defer instance.Disconnect()
@@ -85,8 +84,8 @@ func TestConnectingAConnectedConnectorReturnsError(t *testing.T) {
     assert.Equals(t, ERR_ALREADY_CONNECTED, err.Error())
 }
 
-func TestDisconnectingANonConnectedConnectorReturnsError(t *testing.T) {
-    instance := New(socketInfo)
+func TestDisconnectingANonConnectedClientReturnsError(t *testing.T) {
+    instance := NewClient(clientSocketInfo)
 
     err := instance.Disconnect()
 
@@ -95,8 +94,8 @@ func TestDisconnectingANonConnectedConnectorReturnsError(t *testing.T) {
 }
 
 func TestErrorFromNetDialWillBeReturned(t *testing.T) {
-    socketInfo := network.SocketInfo{"invalid", "socket"}
-    instance := New(socketInfo)
+    clientSocketInfo := SocketInfo{"invalid", "socket"}
+    instance := NewClient(clientSocketInfo)
 
     err := instance.Connect()
 
@@ -112,7 +111,7 @@ func TestSendWillWriteToServerAndReturnResponse(t *testing.T) {
     })
     defer stopMockServer(server)
 
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
     instance.Connect()
     defer instance.Disconnect()
 
@@ -122,7 +121,7 @@ func TestSendWillWriteToServerAndReturnResponse(t *testing.T) {
 }
 
 func TestSendWhenNotConnectedReturnsError(t *testing.T) {
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
     _, err := instance.Send("")
     assert.NotNil(t, err)
     assert.Equals(t, ERR_NOT_CONNECTED, err.Error())
@@ -134,7 +133,7 @@ func TestEmptyMessageReturnsNoResponse(t *testing.T) {
     })
     defer stopMockServer(server)
 
-    instance := New(socketInfo)
+    instance := NewClient(clientSocketInfo)
     instance.Connect()
     defer instance.Disconnect()
 

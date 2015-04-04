@@ -148,18 +148,6 @@ func stopDaemon() {
 //    wait()
 //}
 //
-//
-///* loads configuration from file */
-//func loadConfiguration(configFile string) configuration.Configuration {
-//    config, configErr := configuration.Load(configFile)
-//
-//    if configErr != nil {
-//        log.Fatal(configErr)
-//    }
-//
-//    return config
-//}
-//
 ///* setup devices and listen to them */
 //func initializeDevices(devices []configuration.DeviceConfiguration) {
 //    for i := range devices {

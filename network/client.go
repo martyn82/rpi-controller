@@ -1,32 +1,31 @@
-package connector
+package network
 
 import (
     "errors"
-    "github.com/martyn82/rpi-controller/network"
     "io"
     "net"
 )
 
 const (
-    ERR_ALREADY_CONNECTED = "The connector is already connected to the daemon."
-    ERR_NOT_CONNECTED = "The connector is not connected."
+    ERR_ALREADY_CONNECTED = "The client is already connected to the daemon."
+    ERR_NOT_CONNECTED = "The client is not connected."
 )
 
-type Connector struct {
-    socketInfo network.SocketInfo
+type Client struct {
+    socketInfo SocketInfo
     connection net.Conn
     connected bool
 }
 
-/* Constructs a new DaemonConnector */
-func New(socketInfo network.SocketInfo) *Connector {
-    instance := new(Connector)
+/* Constructs a new client */
+func NewClient(socketInfo SocketInfo) *Client {
+    instance := new(Client)
     instance.socketInfo = socketInfo
     return instance
 }
 
-/* Attempts to connect to the daemon */
-func (this *Connector) Connect() error {
+/* Attempts to connect to the server */
+func (this *Client) Connect() error {
     if this.isConnected() {
         return errors.New(ERR_ALREADY_CONNECTED)
     }
@@ -40,8 +39,8 @@ func (this *Connector) Connect() error {
     return nil
 }
 
-/* Disconnects from the daemon */
-func (this *Connector) Disconnect() error {
+/* Disconnects from the server */
+func (this *Client) Disconnect() error {
     if !this.isConnected() {
         return errors.New(ERR_NOT_CONNECTED)
     }
@@ -53,13 +52,13 @@ func (this *Connector) Disconnect() error {
     return err
 }
 
-/* Determines whether the connector is connected */
-func (this *Connector) isConnected() bool {
+/* Determines whether the client is connected */
+func (this *Client) isConnected() bool {
     return this.connection != nil && this.connected
 }
 
-/* Sends a message to the daemon */
-func (this *Connector) Send(message string) (string, error) {
+/* Sends a message to the server */
+func (this *Client) Send(message string) (string, error) {
     if !this.isConnected() {
         return "", errors.New(ERR_NOT_CONNECTED)
     }

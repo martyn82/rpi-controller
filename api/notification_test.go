@@ -1,4 +1,4 @@
-package command
+package api
 
 import (
     "github.com/martyn82/rpi-controller/testing/assert"

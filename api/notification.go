@@ -1,4 +1,4 @@
-package command
+package api
 
 type Notification struct {
     deviceName string
