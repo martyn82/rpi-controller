@@ -2,11 +2,9 @@ package main
 
 import (
     "flag"
-    "github.com/martyn82/rpi-controller/config"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/service"
     "github.com/martyn82/rpi-controller/service/api"
-    "github.com/martyn82/rpi-controller/service/daemon"
     "os"
     "syscall"
 )
@@ -21,7 +19,7 @@ var StdErr = os.NewFile(uintptr(syscall.Stderr), "/dev/stderr")
 var StdOut = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
 
 var args service.Arguments
-var settings config.Config
+var settings service.ServiceConfig
 
 /* main entry */
 func main() {
@@ -56,8 +54,8 @@ func parseArguments() service.Arguments {
 }
 
 /* Load configuration from file */
-func loadConfig(configFile string) config.Config {
-    conf := config.Config{}
+func loadConfig(configFile string) service.ServiceConfig {
+    conf := service.ServiceConfig{}
 
     if err := loader.FromFile(&conf, configFile); err != nil {
         StdErr.Write([]byte(err.Error()))
@@ -72,7 +70,7 @@ func sendMessageToDaemon(message string) string {
     var response string
     var err error
 
-    if response, err = daemon.Send(settings.Socket, message); err != nil {
+    if response, err = service.Send(settings.Socket, message); err != nil {
         StdErr.Write([]byte(err.Error()))
         os.Exit(ERR_GENERAL)
     }

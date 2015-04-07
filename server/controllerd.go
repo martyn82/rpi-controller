@@ -2,7 +2,6 @@ package main
 
 import (
     "github.com/martyn82/rpi-controller/api"
-    "github.com/martyn82/rpi-controller/config"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
     "github.com/martyn82/rpi-controller/network"
@@ -13,7 +12,7 @@ import (
 )
 
 var args daemon.Arguments
-var settings config.Config
+var settings daemon.DaemonConfig
 
 /* main entry */
 func main() {
@@ -69,10 +68,10 @@ func parseArguments() daemon.Arguments {
 }
 
 /* load configuration from file */
-func loadConfig(configFile string) config.Config {
+func loadConfig(configFile string) daemon.DaemonConfig {
     log.Printf("Loading configuration from file '%s'...", configFile)
 
-    var conf config.Config
+    var conf daemon.DaemonConfig
 
     if err := loader.FromFile(&conf, configFile); err != nil {
         log.Fatal(err)
@@ -136,8 +135,6 @@ func stopDaemon() {
 //    ActionRegistry = action.CreateActionRegistry()
 //    AppRegistry = app.CreateAppRegistry()
 //    DeviceRegistry = device.CreateDeviceRegistry()
-//
-//    config := loadConfiguration(*configFile)
 //
 //    initializeDevices(config.Devices)
 //    defer closeDevices()

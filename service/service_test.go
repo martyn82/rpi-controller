@@ -1,4 +1,4 @@
-package daemon
+package service
 
 import (
     "github.com/martyn82/rpi-controller/config"
