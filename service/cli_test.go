@@ -46,3 +46,29 @@ func TestEventNotificationIsValidIfDeviceAndPropertyAreSet(t *testing.T) {
     assert.True(t, valid)
     assert.Nil(t, err)
 }
+
+func TestDeviceRegistrationHasName(t *testing.T) {
+    args := Arguments{}
+    args.RegisterDevice = true
+    args.DeviceName = "dev"
+
+    assert.True(t, args.IsDeviceRegistration())
+}
+
+func TestDeviceRegistrationIsValidIfNameAndModelAreSet(t *testing.T) {
+    args := Arguments{}
+    args.RegisterDevice = true
+    args.DeviceName = "dev"
+    assert.True(t, args.IsDeviceRegistration())
+
+    // invalid
+    valid, err := args.IsValid()
+    assert.False(t, valid)
+    assert.NotNil(t, err)
+
+    // valid
+    args.DeviceModel = "mod"
+    valid, err = args.IsValid()
+    assert.True(t, valid)
+    assert.Nil(t, err)
+}

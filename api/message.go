@@ -8,14 +8,15 @@ import (
 
 const (
     KEY_DEVICE = "Device"
+    KEY_NAME = "Name"
+    KEY_MODEL = "Model"
+    KEY_ADDRESS = "Address"
 
     ERR_UNSUPPORTED_TYPE = "Unsupported message type '%s'."
 )
 
 type IMessage interface {
     DeviceName() string
-    PropertyName() string
-    PropertyValue() string
 
     Type() string
     IsValid() (bool, error)
@@ -39,6 +40,8 @@ func ParseJSON(message string) (IMessage, error) {
     switch msgType {
         case TYPE_NOTIFICATION:
             return notificationFromMap(obj[TYPE_NOTIFICATION])
+        case TYPE_DEVICE_REGISTRATION:
+            return deviceRegistrationFromMap(obj[TYPE_DEVICE_REGISTRATION])
     }
 
     return nil, errors.New(fmt.Sprintf(ERR_UNSUPPORTED_TYPE, msgType))

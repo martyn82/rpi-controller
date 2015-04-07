@@ -15,9 +15,30 @@ func TestFromJSONCreatesNotificationFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Equals(t, "dev", msg.DeviceName())
-    assert.Equals(t, "prop", msg.PropertyName())
-    assert.Equals(t, "val", msg.PropertyValue())
+    assert.Type(t, new(Notification), msg)
+
+    not := msg.(*Notification)
+    assert.Equals(t, "dev", not.DeviceName())
+    assert.Equals(t, "prop", not.PropertyName())
+    assert.Equals(t, "val", not.PropertyValue())
+}
+
+func TestFromJSONCreatesDeviceRegistrationFromString(t *testing.T) {
+    message := "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"dev\",\"Model\":\"model\",\"Address\":\"addr:foo\"}}"
+    msg, err := ParseJSON(message)
+
+    if err != nil {
+        t.Errorf(err.Error())
+    }
+
+    assert.NotNil(t, msg)
+    assert.Type(t, new(DeviceRegistration), msg)
+
+    dr := msg.(*DeviceRegistration)
+    assert.Equals(t, "dev", dr.DeviceName())
+    assert.Equals(t, "model", dr.DeviceModel())
+    assert.Equals(t, "addr", dr.DeviceProtocol())
+    assert.Equals(t, "foo", dr.DeviceAddress())
 }
 
 func TestFromJSONReturnsErrorOnUnknownMessageType(t *testing.T) {

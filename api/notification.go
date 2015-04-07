@@ -8,6 +8,12 @@ const (
     ERR_INVALID_NOTIFICATION = "Invalid event notification; missing device and/or property name."
 )
 
+type INotification interface {
+    IMessage
+    PropertyName() string
+    PropertyValue() string
+}
+
 type Notification struct {
     deviceName string
     propertyName string

@@ -8,6 +8,7 @@ type Arguments struct {
 
 var configFile = flag.String("c", "controllerd.conf.json", "Specify a configuration file to load.")
 
+/* Parse command line arguments */
 func ParseArguments() Arguments {
     flag.Parse()
 

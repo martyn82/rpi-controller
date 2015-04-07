@@ -87,7 +87,11 @@ func initDaemon(socketInfo network.SocketInfo) {
 
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return "you said: " + message.JSON()
+        return "got event: " + message.JSON()
+    })
+    daemon.RegisterDeviceRegistrationMessageHandler(func (message api.IMessage) string {
+        log.Println("Received API message: " + message.JSON())
+        return "got device registration: " + message.JSON()
     })
     daemon.Start(socketInfo)
 

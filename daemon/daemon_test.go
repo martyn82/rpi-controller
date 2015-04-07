@@ -54,7 +54,7 @@ func TestMessageHandlerReturnsEmptyStringWithoutHandler(t *testing.T) {
     assert.Equals(t, "", response)
 }
 
-func TestMessageHandlerCallsRegisteredHandlerForCommand(t *testing.T) {
+func TestMessageHandlerCallsRegisteredHandlerForEvent(t *testing.T) {
     setupTest()
 
     handlerCalled := false
@@ -65,6 +65,21 @@ func TestMessageHandlerCallsRegisteredHandlerForCommand(t *testing.T) {
 
     RegisterEventMessageHandler(handler)
     handleMessage(api.NewNotification("dev", "prop", "").JSON())
+
+    assert.True(t, handlerCalled)
+}
+
+func TestMessageHandlerCallsRegisteredHandlerForDeviceRegistration(t *testing.T) {
+    setupTest()
+
+    handlerCalled := false
+    handler := func (message api.IMessage) string {
+        handlerCalled = true
+        return ""
+    }
+
+    RegisterDeviceRegistrationMessageHandler(handler)
+    handleMessage(api.NewDeviceRegistration("dev", "model", "addr").JSON())
 
     assert.True(t, handlerCalled)
 }

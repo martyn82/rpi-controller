@@ -43,6 +43,11 @@ func RegisterEventMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_NOTIFICATION] = handler
 }
 
+/* Register a device registration message handler. Existing event message handler will be overwritten. */
+func RegisterDeviceRegistrationMessageHandler(handler MessageHandler) {
+    messageHandlers[api.TYPE_DEVICE_REGISTRATION] = handler
+}
+
 /* Handles a service message */
 func handleMessage(message string) string {
     if message == "" {

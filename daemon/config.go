@@ -6,4 +6,5 @@ import (
 
 type DaemonConfig struct {
     config.Config
+    DatabaseFile string
 }
