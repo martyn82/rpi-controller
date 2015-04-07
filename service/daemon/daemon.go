@@ -1,8 +1,8 @@
 package daemon
 
 import (
+    "github.com/martyn82/rpi-controller/config"
     "github.com/martyn82/rpi-controller/network"
-    "github.com/martyn82/rpi-controller/service/config"
 )
 
 /* Sends the given message to the daemon and returns the daemon response or error */

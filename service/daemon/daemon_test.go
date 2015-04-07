@@ -1,7 +1,7 @@
 package daemon
 
 import (
-    "github.com/martyn82/rpi-controller/service/config"
+    "github.com/martyn82/rpi-controller/config"
     "github.com/martyn82/rpi-controller/testing/assert"
     "net"
     "testing"

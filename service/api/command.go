@@ -6,7 +6,7 @@ import (
 )
 
 /* Create command from arguments */
-func FromArguments(args service.Arguments) api.ICommand {
+func FromArguments(args service.Arguments) api.IMessage {
     if args.IsEventNotification() {
         return api.NewNotification(args.EventDevice, args.Property, args.Value)
     }

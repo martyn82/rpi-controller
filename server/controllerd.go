@@ -1,9 +1,10 @@
 package main
 
 import (
+    "github.com/martyn82/rpi-controller/api"
+    "github.com/martyn82/rpi-controller/config"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
-    "github.com/martyn82/rpi-controller/daemon/config"
     "github.com/martyn82/rpi-controller/network"
     "log"
     "os"
@@ -85,8 +86,9 @@ func loadConfig(configFile string) config.Config {
 func initDaemon(socketInfo network.SocketInfo) {
     log.Printf("Starting daemon...")
 
-    daemon.RegisterMessageHandler("echo:this:", func (message string) string {
-        return "you said: " + message
+    daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
+        log.Println("Received API message: " + message.JSON())
+        return "you said: " + message.JSON()
     })
     daemon.Start(socketInfo)
 

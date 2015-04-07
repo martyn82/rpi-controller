@@ -2,10 +2,10 @@ package main
 
 import (
     "flag"
+    "github.com/martyn82/rpi-controller/config"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/service"
     "github.com/martyn82/rpi-controller/service/api"
-    "github.com/martyn82/rpi-controller/service/config"
     "github.com/martyn82/rpi-controller/service/daemon"
     "os"
     "syscall"
@@ -29,7 +29,7 @@ func main() {
     settings = loadConfig(args.ConfigFile)
 
     command := api.FromArguments(args)
-    response := sendMessageToDaemon(command.String())
+    response := sendMessageToDaemon(command.JSON())
 
     StdOut.Write([]byte(response + "\n"))
 }

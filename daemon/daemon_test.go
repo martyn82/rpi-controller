@@ -1,13 +1,18 @@
 package daemon
 
 import (
-    "testing"
+    "github.com/martyn82/rpi-controller/api"
+    "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/testing/assert"
     "net"
-    "github.com/martyn82/rpi-controller/network"
+    "testing"
 )
 
 var socketInfo = network.SocketInfo{"unix", "/tmp/foo.sock"}
+
+func setupTest() {
+    clearAllMessageHandlers()
+}
 
 func TestStartStartsTheListener(t *testing.T) {
     Start(socketInfo)
@@ -20,31 +25,46 @@ func TestStartStartsTheListener(t *testing.T) {
 }
 
 func TestRegisterMessageHandlerAddsToRegisteredHandlers(t *testing.T) {
+    setupTest()
+
     handlerCalled := false
-    handler := func (message string) string {
+    handler := func (message api.IMessage) string {
         handlerCalled = true
         return ""
     }
 
     assert.Equals(t, 0, len(messageHandlers))
 
-    RegisterMessageHandler("foo", handler)
+    RegisterEventMessageHandler(handler)
     assert.Equals(t, 1, len(messageHandlers))
 }
 
+func TestMessageHandlerReturnsEmptyStringOnEmptyMessage(t *testing.T) {
+    setupTest()
+
+    response := handleMessage("")
+    assert.Equals(t, "", response)
+}
+
 func TestMessageHandlerReturnsEmptyStringWithoutHandler(t *testing.T) {
-    assert.Equals(t, "", handleMessage(""))
+    setupTest()
+
+    message := api.NewNotification("dev", "prop", "val").JSON()
+    response := handleMessage(message)
+    assert.Equals(t, "", response)
 }
 
 func TestMessageHandlerCallsRegisteredHandlerForCommand(t *testing.T) {
+    setupTest()
+
     handlerCalled := false
-    handler := func (message string) string {
+    handler := func (message api.IMessage) string {
         handlerCalled = true
         return ""
     }
 
-    RegisterMessageHandler("foo", handler)
-    handleMessage("foo")
+    RegisterEventMessageHandler(handler)
+    handleMessage(api.NewNotification("dev", "prop", "").JSON())
 
     assert.True(t, handlerCalled)
 }

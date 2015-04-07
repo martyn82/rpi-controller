@@ -1,14 +1,21 @@
 package daemon
 
 import (
+    "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/network"
 )
 
-type MessageHandler func (message string) string
+type MessageHandler func (message api.IMessage) string
 
 var state = STATE_STOPPED
 var server *network.Server
 var messageHandlers = make(map[string]MessageHandler)
+
+/* Clears all message handlers */
+func clearAllMessageHandlers() {
+    messageHandlers = nil
+    messageHandlers = make(map[string]MessageHandler)
+}
 
 /* Starts the service daemon */
 func Start(socketInfo network.SocketInfo) {
@@ -31,16 +38,22 @@ func NotifyState(newState string) {
     state = newState
 }
 
-/* Register a message handler for a given message. An existing handler for given message will be overwritten. */
-func RegisterMessageHandler(messageType string, handler MessageHandler) {
-    messageHandlers[messageType] = handler
+/* Register an event message handler. Existing event message handler will be overwritten. */
+func RegisterEventMessageHandler(handler MessageHandler) {
+    messageHandlers[api.TYPE_NOTIFICATION] = handler
 }
 
 /* Handles a service message */
 func handleMessage(message string) string {
-    if messageHandlers[message] == nil {
+    if message == "" {
         return ""
     }
 
-    return messageHandlers[message](message)
+    msg, _ := api.ParseJSON(message)
+
+    if messageHandlers[msg.Type()] == nil {
+        return ""
+    }
+
+    return messageHandlers[msg.Type()](msg)
 }
