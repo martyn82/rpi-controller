@@ -75,6 +75,7 @@ func (this *Devices) addAllFromDb(db *sql.DB) error {
     return err
 }
 
+/* Adds all given rows to the repository */
 func (this *Devices) addRows(rows *sql.Rows) error {
     var err error
     var (

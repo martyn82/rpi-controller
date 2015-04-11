@@ -80,8 +80,8 @@ func TestConstructLoadsFromDb(t *testing.T) {
 }
 
 func TestConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', NULL, NULL)")
+    queryDb("CREATE TABLE devices (id INT NOT NULL PRIMARY KEY, name TEXT, model TEXT, protocol TEXT, address TEXT);")
+    queryDb("INSERT INTO devices (id, name) VALUES (1, NULL)")
     defer removeDbFile()
 
     _, err := NewDeviceRepository(devicesTestDb)
