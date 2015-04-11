@@ -18,6 +18,19 @@ func TestFromArgumentsEventReturnsNotification(t *testing.T) {
     assert.Type(t, new(api.Notification), cmd)
 }
 
+func TestFromArgumentsDeviceRegistrationReturnsDeviceRegistration(t *testing.T) {
+    args := service.Arguments{}
+    args.RegisterDevice = true
+    args.DeviceName = "dev"
+    args.DeviceModel = "model"
+    args.DeviceAddress = "tcp:sock:port"
+
+    cmd := FromArguments(args)
+
+    assert.NotNil(t, cmd)
+    assert.Type(t, new(api.DeviceRegistration), cmd)
+}
+
 func TestFromArgumentsReturnsNilIfNotCompatible(t *testing.T) {
     args := service.Arguments{}
     cmd := FromArguments(args)

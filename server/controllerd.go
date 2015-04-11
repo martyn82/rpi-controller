@@ -5,6 +5,7 @@ import (
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
     "github.com/martyn82/rpi-controller/network"
+    "github.com/martyn82/rpi-controller/storage"
     "log"
     "os"
     "os/signal"
@@ -12,6 +13,7 @@ import (
 )
 
 var args daemon.Arguments
+var devices *storage.Devices
 var settings daemon.DaemonConfig
 
 /* main entry */
@@ -30,6 +32,7 @@ func start() {
     args = parseArguments()
     settings = loadConfig(args.ConfigFile)
 
+    initDevices(settings.DatabaseFile)
     initDaemon(network.SocketInfo{settings.Socket.Type, settings.Socket.Address})
 
     daemon.NotifyState(daemon.STATE_STARTED)
@@ -94,7 +97,22 @@ func initDaemon(socketInfo network.SocketInfo) {
     /* api.IMessage: api.DeviceRegistration */
     daemon.RegisterDeviceRegistrationMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return "got device registration: " + message.JSON()
+
+        dr := message.(*api.DeviceRegistration)
+
+        device := storage.NewItem()
+        device.Set("name", dr.DeviceName())
+        device.Set("model", dr.DeviceModel())
+        device.Set("protocol", dr.DeviceProtocol())
+        device.Set("address", dr.DeviceAddress())
+
+        _, err := devices.Add(device)
+
+        if err != nil {
+            return "error: " + err.Error()
+        }
+
+        return "device registered by message: " + message.JSON()
     })
 
     daemon.Start(socketInfo)
@@ -109,6 +127,20 @@ func stopDaemon() {
     daemon.Stop()
 
     log.Printf("Daemon stopped")
+}
+
+func initDevices(databaseFile string) {
+    log.Printf("Initializing devices...")
+    log.Printf("Using database located at '%s'", databaseFile)
+
+    var err error
+
+    if devices, err = storage.NewDeviceRepository(databaseFile); err != nil {
+        log.Fatal(err.Error())
+    }
+
+    log.Printf("%d devices loaded.", devices.Size())
+    log.Printf("Devices initialized.")
 }
 
 /* OLD */

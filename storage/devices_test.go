@@ -2,6 +2,7 @@ package storage
 
 import (
     "database/sql"
+    "fmt"
     "github.com/martyn82/rpi-controller/storage/setup"
     "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/mattn/go-sqlite3"
@@ -37,29 +38,70 @@ func removeDbFile() {
     os.Remove(devicesTestDb)
 }
 
-func TestAddDeviceWillAddDeviceToRepository(t *testing.T) {
+func devicesRespositoryInterfaceCheck(repo Repository) {}
+
+func TestDevicesImplementsRepository(t *testing.T) {
     instance, _ := NewDeviceRepository("")
+    devicesRespositoryInterfaceCheck(instance)
+}
+
+func TestAddWillAddItemToRepository(t *testing.T) {
+    setupDb()
+    defer removeDbFile()
+
+    instance, _ := NewDeviceRepository(devicesTestDb)
     assert.Equals(t, 0, instance.Size())
 
-    item := "foo"
-    instance.Add(item)
+    item := NewItem()
+    item.Set("name", "dev0")
+    item.Set("model", "model")
+    item.Set("protocol", "")
+    item.Set("address", "")
+    id, err := instance.Add(item)
+
+    if err != nil {
+        panic(err)
+    }
+
+    assert.True(t, id > 0)
     assert.Equals(t, 1, instance.Size())
 }
 
 func TestFindWithExistingIdentityReturnsTheItem(t *testing.T) {
-    instance, _ := NewDeviceRepository("")
-    item := "foo"
-    identity := instance.Add("foo")
+    setupDb()
+    defer removeDbFile()
 
-    actual := instance.Find(identity)
+    instance, _ := NewDeviceRepository(devicesTestDb)
+
+    item := NewItem()
+    item.Set("name", "dev0")
+    item.Set("model", "model")
+    item.Set("protocol", "")
+    item.Set("address", "")
+
+    identity, err := instance.Add(item)
+
+    assert.Nil(t, err)
+
+    actual, err := instance.Find(identity)
     assert.Equals(t, item, actual)
+    assert.Equals(t, identity, item.Get("id"))
+    assert.Nil(t, err)
 }
 
-func TestFindWithNonExistingIdentityReturnsNil(t *testing.T) {
+func TestFindWithNonExistingIdentityReturnsError(t *testing.T) {
     instance, _ := NewDeviceRepository("")
-    actual := instance.Find(0)
+    id := int64(20)
+    _, err := instance.Find(id)
 
-    assert.Nil(t, actual)
+    assert.Equals(t, fmt.Sprintf(ERR_ITEM_NOT_FOUND, id), err.Error())
+}
+
+func TestAddWithErrorReturnsError(t *testing.T) {
+    instance, _ := NewDeviceRepository("")
+    id, err := instance.Add(NewItem())
+    assert.Equals(t, int64(-1), id)
+    assert.NotNil(t, err)
 }
 
 func TestConstructWithoutDbReturnsError(t *testing.T) {
@@ -77,6 +119,11 @@ func TestConstructLoadsFromDb(t *testing.T) {
 
     assert.Nil(t, err)
     assert.Equals(t, 1, instance.Size())
+
+    item, _ := instance.Find(1)
+
+    assert.Equals(t, "dev0", item.Get("name"))
+    assert.Equals(t, "mod0", item.Get("model"))
 }
 
 func TestConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {

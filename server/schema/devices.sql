@@ -1,5 +1,5 @@
 CREATE TABLE devices (
-    id          INT     NOT NULL    PRIMARY KEY,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT    NOT NULL    UNIQUE,
     model       TEXT    NOT NULL,
     protocol    TEXT    NOT NULL    DEFAULT '',
