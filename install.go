@@ -2,7 +2,7 @@ package main
 
 import (
     "flag"
-    "github.com/martyn82/rpi-controller/data/setup"
+    "github.com/martyn82/rpi-controller/storage/setup"
     "log"
     "os"
 )

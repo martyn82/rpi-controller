@@ -85,14 +85,18 @@ func loadConfig(configFile string) daemon.DaemonConfig {
 func initDaemon(socketInfo network.SocketInfo) {
     log.Printf("Starting daemon...")
 
+    /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
         return "got event: " + message.JSON()
     })
+
+    /* api.IMessage: api.DeviceRegistration */
     daemon.RegisterDeviceRegistrationMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
         return "got device registration: " + message.JSON()
     })
+
     daemon.Start(socketInfo)
 
     log.Printf("Daemon running on socket %q", socketInfo)
