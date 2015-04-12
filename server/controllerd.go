@@ -46,6 +46,7 @@ func stop() {
     daemon.NotifyState(daemon.STATE_STOPPING)
 
     stopDaemon()
+    stopDevices()
 
     daemon.NotifyState(daemon.STATE_STOPPED)
     log.Printf("Stopped")
@@ -132,6 +133,7 @@ func initDevices(databaseFile string) {
     }
 
     connectedCount := 0
+
     for _, dev := range devices.All() {
         d := dev.(device.IDevice)
         if err = d.Connect(); err != nil {
@@ -139,12 +141,35 @@ func initDevices(databaseFile string) {
         } else {
             connectedCount++
             log.Printf("Device connected '%s'", d.Info().String())
+
+            d.SetMessageHandler(func (sender device.IDevice, message string) {
+                log.Printf("Device %s says: %s", sender.Info().String(), message)
+            })
         }
     }
 
     log.Printf("%d devices loaded.", devices.Size())
-    log.Printf("%d devices conncted.", connectedCount)
+    log.Printf("%d devices connected.", connectedCount)
     log.Printf("Devices initialized.")
+}
+
+/* Disconnect devices */
+func stopDevices() {
+    log.Printf("Disconnecting devices...")
+
+    var err error
+
+    for _, dev := range devices.All() {
+        d := dev.(device.IDevice)
+
+        if err = d.Disconnect(); err != nil {
+            log.Printf("Failed to disconnect device '%s': %s.", d.Info().String(), err.Error())
+        } else {
+            log.Printf("Disconnected %s.", d.Info().String())
+        }
+    }
+
+    log.Printf("Devices disconnected.")
 }
 
 /* Handles device registration */

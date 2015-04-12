@@ -310,7 +310,7 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
 
     messageHandlerCalled := false
     messageHandled := ""
-    instance.SetMessageHandler(func (message string) {
+    instance.SetMessageHandler(func (sender IDevice, message string) {
         messageHandlerCalled = true
         messageHandled = message
     })

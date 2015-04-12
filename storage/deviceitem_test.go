@@ -17,3 +17,11 @@ func TestDeviceItemGetUnknownFieldByNameReturnsNil(t *testing.T) {
     val := instance.Get("foo")
     assert.Nil(t, val)
 }
+
+func TestDeviceItemGetKnownProperties(t *testing.T) {
+    instance := NewDeviceItem("name", "model", "protocol", "address")
+    assert.Equals(t, "name", instance.Get("name"))
+    assert.Equals(t, "model", instance.Get("model"))
+    assert.Equals(t, "protocol", instance.Get("protocol"))
+    assert.Equals(t, "address", instance.Get("address"))
+}

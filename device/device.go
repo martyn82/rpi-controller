@@ -16,7 +16,7 @@ const (
     ERR_DEVICE_NOT_CONNECTED = "Device is not connected: %s"
 )
 
-type MessageHandler func (message string)
+type MessageHandler func (sender IDevice, message string)
 
 type IDevice interface {
     Info() IDeviceInfo
@@ -144,7 +144,7 @@ func (this *Device) listen() {
         }
 
         if bytesRead > 0 && this.messageHandler != nil {
-            this.messageHandler(string(buffer[:bytesRead]))
+            this.messageHandler(this, string(buffer[:bytesRead]))
         }
     }
 }
