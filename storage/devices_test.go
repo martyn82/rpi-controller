@@ -128,3 +128,18 @@ func TestConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
     _, err := NewDeviceRepository(devicesTestDb)
     assert.NotNil(t, err)
 }
+
+func TestAllRetrievesAllItems(t *testing.T) {
+    setupDb()
+    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')")
+    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'mod1', '', '')")
+    defer removeDbFile()
+
+    instance, err := NewDeviceRepository(devicesTestDb)
+
+    assert.Nil(t, err)
+    assert.Equals(t, 2, instance.Size())
+
+    items := instance.All()
+    assert.Equals(t, 2, len(items))
+}

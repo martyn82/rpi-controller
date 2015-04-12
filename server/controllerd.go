@@ -4,6 +4,7 @@ import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
+    "github.com/martyn82/rpi-controller/device"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/storage"
     "log"
@@ -13,7 +14,7 @@ import (
 )
 
 var args daemon.Arguments
-var devices *storage.Devices
+var devices *device.Devices
 var settings daemon.DaemonConfig
 
 /* main entry */
@@ -120,8 +121,13 @@ func initDevices(databaseFile string) {
     log.Printf("Using database located at '%s'", databaseFile)
 
     var err error
+    var deviceRepo *storage.Devices
 
-    if devices, err = storage.NewDeviceRepository(databaseFile); err != nil {
+    if deviceRepo, err = storage.NewDeviceRepository(databaseFile); err != nil {
+        log.Fatal(err.Error())
+    }
+
+    if devices, err = device.NewDevices(deviceRepo); err != nil {
         log.Fatal(err.Error())
     }
 
@@ -131,17 +137,35 @@ func initDevices(databaseFile string) {
 
 /* Handles device registration */
 func onDeviceRegistration(message *api.DeviceRegistration) string {
-    device := storage.NewDeviceItem(message.DeviceName(), message.DeviceModel(), message.DeviceProtocol(), message.DeviceAddress())
-
-    var response *api.Response
     var err error
+    var response *api.Response
 
-    if _, err = devices.Add(device); err != nil {
+    dev, err := device.CreateDevice(device.NewDeviceInfo(message.DeviceName(), message.DeviceModel(), message.DeviceProtocol(), message.DeviceAddress()))
+
+    if err != nil {
+        response = api.NewResponse([]error{err})
+        log.Printf("Error registering device: %s", err.Error())
+        return response.JSON()
+    }
+
+    if err = devices.Add(dev); err != nil {
         response = api.NewResponse([]error{err})
         log.Printf("Error registering device: %s", err.Error())
     } else {
         response = api.NewResponse([]error{})
-        log.Printf("Successfully registered device: %s, %s", message.DeviceName(), message.DeviceModel())
+        log.Printf("Successfully registered device: %s", dev.Info().String())
+    }
+
+    if err != nil {
+        return response.JSON()
+    }
+
+    if err = dev.Connect(); err != nil {
+        response = api.NewResponse([]error{err})
+        log.Printf("Error connecting to device %s: '%s'.", dev.Info().String(), err.Error())
+    } else {
+        response = api.NewResponse([]error{err})
+        log.Printf("Device is connected %s", dev.Info().String())
     }
 
     return response.JSON()

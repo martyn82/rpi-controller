@@ -52,6 +52,17 @@ func (this *Devices) Find(identity int64) (Item, error) {
     return nil, errors.New(fmt.Sprintf(ERR_ITEM_NOT_FOUND, identity))
 }
 
+/* Retrievs all items at once */
+func (this *Devices) All() []Item {
+    var items []Item
+
+    for _, v := range this.items {
+        items = append(items, v)
+    }
+
+    return items
+}
+
 /* Retrieves the number of items in the repository */
 func (this *Devices) Size() int {
     return len(this.items)

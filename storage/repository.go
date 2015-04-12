@@ -3,6 +3,7 @@ package storage
 type Repository interface {
     Add(item Item) (int64, error)
     Find(identity int64) (Item, error)
+    All() []Item
     Size() int
 }
 
