@@ -97,22 +97,7 @@ func initDaemon(socketInfo network.SocketInfo) {
     /* api.IMessage: api.DeviceRegistration */
     daemon.RegisterDeviceRegistrationMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-
-        dr := message.(*api.DeviceRegistration)
-        device := storage.NewDeviceItem(dr.DeviceName(), dr.DeviceModel(), dr.DeviceProtocol(), dr.DeviceAddress())
-
-        var response *api.Response
-        var err error
-
-        if _, err = devices.Add(device); err != nil {
-            response = api.NewResponse([]error{err})
-            log.Printf("Error registering device: %s", err.Error())
-        } else {
-            response = api.NewResponse([]error{})
-            log.Printf("Successfully registered device: %s, %s", dr.DeviceName(), dr.DeviceModel())
-        }
-
-        return response.JSON()
+        return onDeviceRegistration(message.(*api.DeviceRegistration))
     })
 
     daemon.Start(socketInfo)
@@ -142,6 +127,24 @@ func initDevices(databaseFile string) {
 
     log.Printf("%d devices loaded.", devices.Size())
     log.Printf("Devices initialized.")
+}
+
+/* Handles device registration */
+func onDeviceRegistration(message *api.DeviceRegistration) string {
+    device := storage.NewDeviceItem(message.DeviceName(), message.DeviceModel(), message.DeviceProtocol(), message.DeviceAddress())
+
+    var response *api.Response
+    var err error
+
+    if _, err = devices.Add(device); err != nil {
+        response = api.NewResponse([]error{err})
+        log.Printf("Error registering device: %s", err.Error())
+    } else {
+        response = api.NewResponse([]error{})
+        log.Printf("Successfully registered device: %s, %s", message.DeviceName(), message.DeviceModel())
+    }
+
+    return response.JSON()
 }
 
 /* OLD */
