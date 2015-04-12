@@ -307,6 +307,9 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
 
     instance := new(Device)
     instance.info = DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address}
+    instance.eventProcessor = func (sender string, event []byte) (string, error) {
+        return string(event), nil
+    }
 
     messageHandlerCalled := false
     messageHandled := ""
@@ -320,4 +323,40 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
 
     assert.True(t, messageHandlerCalled)
     assert.Equals(t, "foo", messageHandled)
+}
+
+func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
+    defer removeSocket(deviceSocketInfo.Address)
+
+    listener := startFakeServer(deviceSocketInfo.Type, deviceSocketInfo.Address)
+    defer listener.Close()
+
+    go func () {
+        var client net.Conn
+        var err error
+
+        if client, err = listener.Accept(); err != nil {
+            panic(err)
+        }
+
+        client.Write([]byte("foo"))
+    }()
+
+    time.Sleep(waitTimeout)
+
+    instance := new(Device)
+    instance.info = DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address}
+
+    messageHandlerCalled := false
+    messageHandled := ""
+    instance.SetMessageHandler(func (sender IDevice, message string) {
+        messageHandlerCalled = true
+        messageHandled = message
+    })
+
+    instance.Connect()
+    time.Sleep(waitTimeout)
+
+    assert.False(t, messageHandlerCalled)
+    assert.Equals(t, "", messageHandled)
 }

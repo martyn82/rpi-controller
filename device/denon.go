@@ -16,7 +16,7 @@ func CreateDenonAvr(info IDeviceInfo) *DenonAvr {
     instance.wait = time.Second * 3
     instance.autoReconnect = true
     
-    instance.eventProcessor = denon.EventProcessor
+    instance.eventProcessor = denonavr.EventProcessor
 
     return instance
 }

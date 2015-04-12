@@ -14,6 +14,7 @@ const (
     ERR_DEVICE_ALREADY_CONNECTED = "Device already connected: %s"
     ERR_DEVICE_NO_NETWORK = "Device does not support network: %s"
     ERR_DEVICE_NOT_CONNECTED = "Device is not connected: %s"
+    ERR_NO_EVENT_PROCESSOR = "Device has no event processor: %s" 
 )
 
 type EventProcessor func (sender string, event []byte) (string, error)
@@ -148,17 +149,18 @@ func (this *Device) listen() {
         }
 
         if bytesRead > 0 && this.messageHandler != nil {
-            this.messageHandler(this, this.mapEvent(buffer[:bytesRead]))
+            if event, err := this.mapEvent(buffer[:bytesRead]); err == nil {
+                this.messageHandler(this, event)
+            }
         }
     }
 }
 
 /* Map a message as event */
-func (this *Device) mapEvent(event []byte) string {
+func (this *Device) mapEvent(event []byte) (string, error) {
     if this.eventProcessor == nil {
-        return nil
+        return "", errors.New(fmt.Sprintf(ERR_NO_EVENT_PROCESSOR, this.Info().String()))
     }
 
-    evt, _ := this.eventProcessor(this.Info().Name(), event)
-    return evt
+    return this.eventProcessor(this.Info().Name(), event)
 }
