@@ -38,11 +38,11 @@ func removeDbFile() {
     os.Remove(devicesTestDb)
 }
 
-func devicesRespositoryInterfaceCheck(repo Repository) {}
+func checkDevicesImplementsRespository(repo Repository) {}
 
 func TestDevicesImplementsRepository(t *testing.T) {
     instance, _ := NewDeviceRepository("")
-    devicesRespositoryInterfaceCheck(instance)
+    checkDevicesImplementsRespository(instance)
 }
 
 func TestAddWillAddItemToRepository(t *testing.T) {
@@ -52,11 +52,7 @@ func TestAddWillAddItemToRepository(t *testing.T) {
     instance, _ := NewDeviceRepository(devicesTestDb)
     assert.Equals(t, 0, instance.Size())
 
-    item := NewItem()
-    item.Set("name", "dev0")
-    item.Set("model", "model")
-    item.Set("protocol", "")
-    item.Set("address", "")
+    item := NewDeviceItem("dev0", "model", "", "")
     id, err := instance.Add(item)
 
     if err != nil {
@@ -73,12 +69,7 @@ func TestFindWithExistingIdentityReturnsTheItem(t *testing.T) {
 
     instance, _ := NewDeviceRepository(devicesTestDb)
 
-    item := NewItem()
-    item.Set("name", "dev0")
-    item.Set("model", "model")
-    item.Set("protocol", "")
-    item.Set("address", "")
-
+    item := NewDeviceItem("dev0", "model", "", "")
     identity, err := instance.Add(item)
 
     assert.Nil(t, err)
@@ -99,7 +90,7 @@ func TestFindWithNonExistingIdentityReturnsError(t *testing.T) {
 
 func TestAddWithErrorReturnsError(t *testing.T) {
     instance, _ := NewDeviceRepository("")
-    id, err := instance.Add(NewItem())
+    id, err := instance.Add(NewDeviceItem("", "", "", ""))
     assert.Equals(t, int64(-1), id)
     assert.NotNil(t, err)
 }
@@ -122,8 +113,11 @@ func TestConstructLoadsFromDb(t *testing.T) {
 
     item, _ := instance.Find(1)
 
-    assert.Equals(t, "dev0", item.Get("name"))
-    assert.Equals(t, "mod0", item.Get("model"))
+    assert.Type(t, new(DeviceItem), item)
+    itm := item.(*DeviceItem)
+
+    assert.Equals(t, "dev0", itm.Name())
+    assert.Equals(t, "mod0", itm.Model())
 }
 
 func TestConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {

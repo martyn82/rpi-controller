@@ -13,7 +13,7 @@ const (
 )
 
 type Devices struct {
-    items []*Item
+    items []*DeviceItem
     dbFile string
 }
 
@@ -30,17 +30,19 @@ func NewDeviceRepository(dbFile string) (*Devices, error) {
 }
 
 /* Adds a device to the repository */
-func (this *Devices) Add(item *Item) (int64, error) {
-    if err := this.store(item); err != nil {
+func (this *Devices) Add(item Item) (int64, error) {
+    itm := item.(*DeviceItem)
+
+    if err := this.store(itm); err != nil {
         return -1, err
     }
 
-    this.items = append(this.items, item)
-    return item.Get("id").(int64), nil
+    this.items = append(this.items, itm)
+    return itm.Id(), nil
 }
 
 /* Retrieves an item with specified identity */
-func (this *Devices) Find(identity int64) (*Item, error) {
+func (this *Devices) Find(identity int64) (Item, error) {
     for _, i := range this.items {
         if i.Get("id") == identity {
             return i, nil
@@ -75,7 +77,7 @@ func (this *Devices) load() error {
 }
 
 /* Saves the item to the storage */
-func (this *Devices) store(item *Item) error {
+func (this *Devices) store(item *DeviceItem) error {
     var err error
     var db *sql.DB
     var result sql.Result
@@ -122,12 +124,8 @@ func (this *Devices) loadRows(rows *sql.Rows) error {
             return err
         }
 
-        item := NewItem()
-        item.Set("id", id)
-        item.Set("name", name)
-        item.Set("model", model)
-        item.Set("protocol", protocol)
-        item.Set("address", address)
+        item := NewDeviceItem(name, model, protocol, address)
+        item.SetId(id)
 
         this.items = append(this.items, item)
     }

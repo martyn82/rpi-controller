@@ -79,22 +79,27 @@ func NewDeviceRegistration(name string, model string, address string) *DeviceReg
     return instance
 }
 
+/* Retrieves device name */
 func (this *DeviceRegistration) DeviceName() string {
     return this.deviceName
 }
 
+/* Retrieves the device model */
 func (this *DeviceRegistration) DeviceModel() string {
     return this.deviceModel
 }
 
+/* Retrieves the device protocol */
 func (this *DeviceRegistration) DeviceProtocol() string {
     return this.deviceProtocol
 }
 
+/* Retrieves the device address */
 func (this *DeviceRegistration) DeviceAddress() string {
     return this.deviceAddress
 }
 
+/* Validates the message */
 func (this *DeviceRegistration) IsValid() (bool, error) {
     if this.deviceName == "" || this.deviceModel == "" {
         return false, errors.New(ERR_INVALID_DEVICE_REGISTRATION)
@@ -103,6 +108,7 @@ func (this *DeviceRegistration) IsValid() (bool, error) {
     return true, nil
 }
 
+/* Convert the message to JSON */
 func (this *DeviceRegistration) JSON() string {
     addr := this.deviceProtocol
 
@@ -113,6 +119,7 @@ func (this *DeviceRegistration) JSON() string {
     return "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"" + this.deviceName + "\",\"Model\":\"" + this.deviceModel + "\",\"Address\":\"" + addr + "\"}}"
 }
 
+/* Retrieves the message type */
 func (this *DeviceRegistration) Type() string {
     return TYPE_DEVICE_REGISTRATION
 }

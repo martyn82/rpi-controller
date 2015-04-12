@@ -99,20 +99,20 @@ func initDaemon(socketInfo network.SocketInfo) {
         log.Println("Received API message: " + message.JSON())
 
         dr := message.(*api.DeviceRegistration)
+        device := storage.NewDeviceItem(dr.DeviceName(), dr.DeviceModel(), dr.DeviceProtocol(), dr.DeviceAddress())
 
-        device := storage.NewItem()
-        device.Set("name", dr.DeviceName())
-        device.Set("model", dr.DeviceModel())
-        device.Set("protocol", dr.DeviceProtocol())
-        device.Set("address", dr.DeviceAddress())
+        var response *api.Response
+        var err error
 
-        _, err := devices.Add(device)
-
-        if err != nil {
-            return "error: " + err.Error()
+        if _, err = devices.Add(device); err != nil {
+            response = api.NewResponse([]error{err})
+            log.Printf("Error registering device: %s", err.Error())
+        } else {
+            response = api.NewResponse([]error{})
+            log.Printf("Successfully registered device: %s, %s", dr.DeviceName(), dr.DeviceModel())
         }
 
-        return "device registered by message: " + message.JSON()
+        return response.JSON()
     })
 
     daemon.Start(socketInfo)
@@ -129,6 +129,7 @@ func stopDaemon() {
     log.Printf("Daemon stopped")
 }
 
+/* Initialize devices from DB */
 func initDevices(databaseFile string) {
     log.Printf("Initializing devices...")
     log.Printf("Using database located at '%s'", databaseFile)

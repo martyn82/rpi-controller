@@ -7,7 +7,7 @@ import (
 
 func TestNewItemReturnsItem(t *testing.T) {
     instance := NewItem()
-    assert.Type(t, new(Item), instance)
+    assert.Type(t, new(GenericItem), instance)
 }
 
 func TestGetFieldRetrievesValueForNamedField(t *testing.T) {
