@@ -1,6 +1,7 @@
 package device
 
 import (
+    "github.com/martyn82/rpi-controller/device/denonavr"
     "time"
 )
 
@@ -14,6 +15,8 @@ func CreateDenonAvr(info IDeviceInfo) *DenonAvr {
     instance.info = info
     instance.wait = time.Second * 3
     instance.autoReconnect = true
+    
+    instance.eventProcessor = denon.EventProcessor
 
     return instance
 }

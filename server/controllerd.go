@@ -136,11 +136,12 @@ func initDevices(databaseFile string) {
 
     for _, dev := range devices.All() {
         d := dev.(device.IDevice)
+
         if err = d.Connect(); err != nil {
             log.Printf("Failed to connect to device '%s': %s.", d.Info().String(), err.Error())
         } else {
-            connectedCount++
             log.Printf("Device connected '%s'", d.Info().String())
+            connectedCount++
 
             d.SetMessageHandler(func (sender device.IDevice, message string) {
                 log.Printf("Device %s says: %s", sender.Info().String(), message)

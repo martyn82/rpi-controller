@@ -16,6 +16,8 @@ const (
     ERR_DEVICE_NOT_CONNECTED = "Device is not connected: %s"
 )
 
+type EventProcessor func (sender string, event []byte) (string, error)
+
 type MessageHandler func (sender IDevice, message string)
 
 type IDevice interface {
@@ -36,6 +38,8 @@ type Device struct {
 
     wait time.Duration
     connection net.Conn
+
+    eventProcessor EventProcessor
 
     messageHandler MessageHandler
 }
@@ -144,7 +148,17 @@ func (this *Device) listen() {
         }
 
         if bytesRead > 0 && this.messageHandler != nil {
-            this.messageHandler(this, string(buffer[:bytesRead]))
+            this.messageHandler(this, this.mapEvent(buffer[:bytesRead]))
         }
     }
+}
+
+/* Map a message as event */
+func (this *Device) mapEvent(event []byte) string {
+    if this.eventProcessor == nil {
+        return nil
+    }
+
+    evt, _ := this.eventProcessor(this.Info().Name(), event)
+    return evt
 }
