@@ -95,9 +95,9 @@ func (this *Devices) store(item *DeviceItem) error {
 
     if db, err = sql.Open("sqlite3", this.dbFile); err == nil {
         defer db.Close()
-        result, err = db.Exec("REPLACE INTO devices (name, model, protocol, address) VALUES (?, ?, ?, ?)", item.Get("name"), item.Get("model"), item.Get("protocol"), item.Get("address"))
+        result, err = db.Exec("REPLACE INTO devices (name, model, protocol, address) VALUES (?, ?, ?, ?)", item.Name(), item.Model(), item.Protocol(), item.Address())
     }
-    
+
     if err == nil {
         id, _ := result.LastInsertId()
         item.Set("id", id)

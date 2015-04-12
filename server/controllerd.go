@@ -14,7 +14,7 @@ import (
 )
 
 var args daemon.Arguments
-var devices *device.Devices
+var devices *device.DeviceCollection
 var settings daemon.DaemonConfig
 
 /* main entry */
@@ -127,11 +127,23 @@ func initDevices(databaseFile string) {
         log.Fatal(err.Error())
     }
 
-    if devices, err = device.NewDevices(deviceRepo); err != nil {
+    if devices, err = device.NewDeviceCollection(deviceRepo); err != nil {
         log.Fatal(err.Error())
     }
 
+    connectedCount := 0
+    for _, dev := range devices.All() {
+        d := dev.(device.IDevice)
+        if err = d.Connect(); err != nil {
+            log.Printf("Failed to connect to device '%s': %s.", d.Info().String(), err.Error())
+        } else {
+            connectedCount++
+            log.Printf("Device connected '%s'", d.Info().String())
+        }
+    }
+
     log.Printf("%d devices loaded.", devices.Size())
+    log.Printf("%d devices conncted.", connectedCount)
     log.Printf("Devices initialized.")
 }
 

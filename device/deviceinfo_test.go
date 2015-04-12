@@ -7,7 +7,7 @@ import (
 )
 
 func TestDeviceInfoReturnsValues(t *testing.T) {
-    instance := NewDeviceInfo("name", "model", "protocol", "address"}
+    instance := NewDeviceInfo("name", "model", "protocol", "address")
     assert.Equals(t, "name", instance.Name())
     assert.Equals(t, "model", instance.Model())
     assert.Equals(t, "protocol", instance.Protocol())
