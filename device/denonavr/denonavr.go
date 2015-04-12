@@ -3,6 +3,7 @@ package denonavr
 import (
     "errors"
     "fmt"
+    "github.com/martyn82/rpi-controller/messages"
     "regexp"
     "strings"
 )
@@ -25,22 +26,22 @@ const (
 )
 
 /* Processes a Denon event */
-func EventProcessor(sender string, event []byte) (string, error) {
+func EventProcessor(sender string, event []byte) (messages.IEvent, error) {
     eventString := strings.TrimSpace(string(event))
 
     // state events
     switch eventString {
         case POWER_ON:
-            return "PowerOn", nil
+            return messages.NewEvent(messages.EVENT_POWER_ON, sender, "Power", "On"), nil
 
         case POWER_OFF:
-            return "PowerOff", nil
+            return messages.NewEvent(messages.EVENT_POWER_OFF, sender, "Power", "Off"), nil
 
         case MUTE_ON:
-            return "MuteOn", nil
+            return messages.NewEvent(messages.EVENT_MUTE_ON, sender, "Mute", "On"), nil
 
         case MUTE_OFF:
-            return "MuteOff", nil
+            return messages.NewEvent(messages.EVENT_MUTE_OFF, sender, "Mute", "Off"), nil
     }
 
     // property events
@@ -55,12 +56,12 @@ func EventProcessor(sender string, event []byte) (string, error) {
     if len(matches) == 3 {
         switch matches[1] {
             case MASTER_VOLUME:
-                return fmt.Sprintf("VolumeChanged:%s", matches[2]), nil
+                return messages.NewEvent(messages.EVENT_VOLUME_CHANGED, sender, "Volume", matches[2]), nil
 
             case SOURCE_INPUT:
-                return fmt.Sprintf("SourceChanged:%s", matches[2]), nil
+                return messages.NewEvent(messages.EVENT_SOURCE_CHANGED, sender, "Source", matches[2]), nil
         }
     }
 
-    return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_EVENT, eventString, DEVICE_TYPE, sender))
+    return nil, errors.New(fmt.Sprintf(ERR_UNKNOWN_EVENT, eventString, DEVICE_TYPE, sender))
 }

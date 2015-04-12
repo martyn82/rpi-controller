@@ -5,6 +5,7 @@ import (
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
     "github.com/martyn82/rpi-controller/device"
+    "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/storage"
     "log"
@@ -143,8 +144,8 @@ func initDevices(databaseFile string) {
             log.Printf("Device connected '%s'", d.Info().String())
             connectedCount++
 
-            d.SetMessageHandler(func (sender device.IDevice, message string) {
-                log.Printf("Device %s says: %s", sender.Info().String(), message)
+            d.SetMessageHandler(func (sender device.IDevice, message messages.IEvent) {
+                log.Printf("Device %s says: %s", sender.Info().String(), message.Type())
             })
         }
     }

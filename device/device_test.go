@@ -2,6 +2,7 @@ package device
 
 import (
     "fmt"
+    "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/testing/assert"
     "net"
@@ -307,15 +308,15 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
 
     instance := new(Device)
     instance.info = DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address}
-    instance.eventProcessor = func (sender string, event []byte) (string, error) {
-        return string(event), nil
+    instance.eventProcessor = func (sender string, event []byte) (messages.IEvent, error) {
+        return messages.NewEvent(string(event), sender, "", ""), nil
     }
 
     messageHandlerCalled := false
     messageHandled := ""
-    instance.SetMessageHandler(func (sender IDevice, message string) {
+    instance.SetMessageHandler(func (sender IDevice, message messages.IEvent) {
         messageHandlerCalled = true
-        messageHandled = message
+        messageHandled = message.Type()
     })
 
     instance.Connect()
@@ -349,9 +350,9 @@ func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
 
     messageHandlerCalled := false
     messageHandled := ""
-    instance.SetMessageHandler(func (sender IDevice, message string) {
+    instance.SetMessageHandler(func (sender IDevice, message messages.IEvent) {
         messageHandlerCalled = true
-        messageHandled = message
+        messageHandled = message.Type()
     })
 
     instance.Connect()

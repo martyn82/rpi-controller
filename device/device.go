@@ -3,6 +3,7 @@ package device
 import (
     "errors"
     "fmt"
+    "github.com/martyn82/rpi-controller/messages"
     "net"
     "time"
 )
@@ -17,9 +18,9 @@ const (
     ERR_NO_EVENT_PROCESSOR = "Device has no event processor: %s" 
 )
 
-type EventProcessor func (sender string, event []byte) (string, error)
+type EventProcessor func (sender string, event []byte) (messages.IEvent, error)
 
-type MessageHandler func (sender IDevice, message string)
+type MessageHandler func (sender IDevice, message messages.IEvent)
 
 type IDevice interface {
     Info() IDeviceInfo
@@ -157,9 +158,9 @@ func (this *Device) listen() {
 }
 
 /* Map a message as event */
-func (this *Device) mapEvent(event []byte) (string, error) {
+func (this *Device) mapEvent(event []byte) (messages.IEvent, error) {
     if this.eventProcessor == nil {
-        return "", errors.New(fmt.Sprintf(ERR_NO_EVENT_PROCESSOR, this.Info().String()))
+        return nil, errors.New(fmt.Sprintf(ERR_NO_EVENT_PROCESSOR, this.Info().String()))
     }
 
     return this.eventProcessor(this.Info().Name(), event)
