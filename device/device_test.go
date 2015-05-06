@@ -12,7 +12,7 @@ import (
 )
 
 var waitTimeout = time.Millisecond
-var deviceSocketInfo = network.SocketInfo{"unix", "/tmp/foo.sock"}
+var deviceSocketInfo = network.SocketInfo{"unix", "/tmp/device_test.sock"}
 
 func startFakeServer(protocol string, address string) net.Listener {
     listener, err := net.Listen(protocol, address)

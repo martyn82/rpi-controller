@@ -8,7 +8,7 @@ import (
     "time"
 )
 
-var socket = config.SocketConfig{"unix", "/tmp/foo.sock"}
+var socket = config.SocketConfig{"unix", "/tmp/service_test.sock"}
 var waitTimeout = time.Millisecond
 
 func TestSendSendsToDaemon(t *testing.T) {
@@ -22,8 +22,11 @@ func TestSendSendsToDaemon(t *testing.T) {
         client.Close()
     }()
 
-    time.Sleep(waitTimeout)
+    time.Sleep(waitTimeout * 2)
 
     response, _ := Send(socket, "foo")
+
+    time.Sleep(waitTimeout)
+
     assert.Equals(t, "true", response)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 var waitTimeout = time.Millisecond
-var serverSocketInfo = SocketInfo{"unix", "/tmp/foo.sock"}
+var serverSocketInfo = SocketInfo{"unix", "/tmp/server_test.sock"}
 
 func TestServerNewConstructsDefaultInstance(t *testing.T) {
     instance := NewServer(serverSocketInfo, nil)
@@ -87,6 +87,8 @@ func TestWaitingForConnectionsWillAcceptIncomingConnections(t *testing.T) {
 
     conn, err := net.Dial(serverSocketInfo.Type, serverSocketInfo.Address)
     defer conn.Close()
+
+    time.Sleep(waitTimeout)
 
     assert.Nil(t, err)
 }

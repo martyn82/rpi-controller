@@ -6,7 +6,7 @@ import (
     "testing"
 )
 
-var clientSocketInfo = SocketInfo{"unix", "/tmp/foo.sock"}
+var clientSocketInfo = SocketInfo{"unix", "/tmp/client_test.sock"}
 type SessionHandler func (session net.Conn)
 
 func startMockServer(sessionHandler SessionHandler) net.Listener {

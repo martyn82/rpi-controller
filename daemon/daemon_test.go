@@ -8,7 +8,7 @@ import (
     "testing"
 )
 
-var socketInfo = network.SocketInfo{"unix", "/tmp/foo.sock"}
+var socketInfo = network.SocketInfo{"unix", "/tmp/daemon_test.sock"}
 
 func setupTest() {
     clearAllMessageHandlers()
