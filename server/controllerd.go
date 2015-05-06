@@ -145,7 +145,7 @@ func initDevices(databaseFile string) {
             connectedCount++
 
             d.SetMessageHandler(func (sender device.IDevice, message messages.IEvent) {
-                log.Printf("Device %s says: %s", sender.Info().String(), message.Type())
+                log.Printf("Device %s says: %s{%s: %s}", sender.Info().String(), message.Type(), message.PropertyName(), message.PropertyValue())
             })
         }
     }
