@@ -7,11 +7,6 @@ import (
     "github.com/mattn/go-sqlite3"
 )
 
-const (
-    ERR_NO_DB = "No database given."
-    ERR_ITEM_NOT_FOUND = "Item not found for identity: '%s'."
-)
-
 type Devices struct {
     items []*DeviceItem
     dbFile string

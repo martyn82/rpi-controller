@@ -1,42 +1,13 @@
 package storage
 
 import (
-    "database/sql"
     "fmt"
-    "github.com/martyn82/rpi-controller/storage/setup"
     "github.com/martyn82/rpi-controller/testing/assert"
-    "github.com/mattn/go-sqlite3"
-    "os"
-    "path"
+    "github.com/martyn82/rpi-controller/testing/db"
     "testing"
 )
 
-var devicesTestDb = "/tmp/db.data"
-
-func setupDb() {
-    dir, _ := os.Getwd()
-    setup.Install(path.Join(dir, "..", "server", "schema"), devicesTestDb)
-}
-
-func queryDb(query string) {
-    sqlite3.Version()
-
-    var err error
-    var db *sql.DB
-
-    if db, err = sql.Open("sqlite3", devicesTestDb); err != nil {
-        panic(err)
-    }
-
-    defer db.Close()
-    if _, err = db.Exec(query); err != nil {
-        panic(err)
-    }
-}
-
-func removeDbFile() {
-    os.Remove(devicesTestDb)
-}
+var devicesTestDb = "/tmp/devices_db.data"
 
 func checkDevicesImplementsRespository(repo Repository) {}
 
@@ -45,9 +16,9 @@ func TestDevicesImplementsRepository(t *testing.T) {
     checkDevicesImplementsRespository(instance)
 }
 
-func TestAddWillAddItemToRepository(t *testing.T) {
-    setupDb()
-    defer removeDbFile()
+func TestDevicesAddWillAddItemToRepository(t *testing.T) {
+    db.SetupDb(devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     instance, _ := NewDeviceRepository(devicesTestDb)
     assert.Equals(t, 0, instance.Size())
@@ -63,9 +34,9 @@ func TestAddWillAddItemToRepository(t *testing.T) {
     assert.Equals(t, 1, instance.Size())
 }
 
-func TestFindWithExistingIdentityReturnsTheItem(t *testing.T) {
-    setupDb()
-    defer removeDbFile()
+func TestDevicesFindWithExistingIdentityReturnsTheItem(t *testing.T) {
+    db.SetupDb(devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     instance, _ := NewDeviceRepository(devicesTestDb)
 
@@ -80,7 +51,7 @@ func TestFindWithExistingIdentityReturnsTheItem(t *testing.T) {
     assert.Nil(t, err)
 }
 
-func TestFindWithNonExistingIdentityReturnsError(t *testing.T) {
+func TestDevicesFindWithNonExistingIdentityReturnsError(t *testing.T) {
     instance, _ := NewDeviceRepository("")
     id := int64(20)
     _, err := instance.Find(id)
@@ -88,23 +59,23 @@ func TestFindWithNonExistingIdentityReturnsError(t *testing.T) {
     assert.Equals(t, fmt.Sprintf(ERR_ITEM_NOT_FOUND, id), err.Error())
 }
 
-func TestAddWithErrorReturnsError(t *testing.T) {
+func TestDevicesAddWithErrorReturnsError(t *testing.T) {
     instance, _ := NewDeviceRepository("")
     id, err := instance.Add(NewDeviceItem("", "", "", ""))
     assert.Equals(t, int64(-1), id)
     assert.NotNil(t, err)
 }
 
-func TestConstructWithoutDbReturnsError(t *testing.T) {
+func TestDevicesConstructWithoutDbReturnsError(t *testing.T) {
     _, err := NewDeviceRepository("")
     assert.NotNil(t, err)
     assert.Equals(t, ERR_NO_DB, err.Error())
 }
 
-func TestConstructLoadsFromDb(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')")
-    defer removeDbFile()
+func TestDevicesConstructLoadsFromDb(t *testing.T) {
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     instance, err := NewDeviceRepository(devicesTestDb)
 
@@ -120,20 +91,20 @@ func TestConstructLoadsFromDb(t *testing.T) {
     assert.Equals(t, "mod0", itm.Model())
 }
 
-func TestConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
-    queryDb("CREATE TABLE devices (id INT NOT NULL PRIMARY KEY, name TEXT, model TEXT, protocol TEXT, address TEXT);")
-    queryDb("INSERT INTO devices (id, name) VALUES (1, NULL)")
-    defer removeDbFile()
+func TestDevicesConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
+    db.QueryDb("CREATE TABLE devices (id INT NOT NULL PRIMARY KEY, name TEXT, model TEXT, protocol TEXT, address TEXT);", devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name) VALUES (1, NULL)", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     _, err := NewDeviceRepository(devicesTestDb)
     assert.NotNil(t, err)
 }
 
-func TestAllRetrievesAllItems(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')")
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'mod1', '', '')")
-    defer removeDbFile()
+func TestDevicesAllRetrievesAllItems(t *testing.T) {
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')", devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'mod1', '', '')", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     instance, err := NewDeviceRepository(devicesTestDb)
 

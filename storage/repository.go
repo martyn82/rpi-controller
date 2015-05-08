@@ -1,5 +1,10 @@
 package storage
 
+const (
+    ERR_NO_DB = "No database given."
+    ERR_ITEM_NOT_FOUND = "Item not found for identity: '%s'."
+)
+
 type Repository interface {
     Add(item Item) (int64, error)
     Find(identity int64) (Item, error)
