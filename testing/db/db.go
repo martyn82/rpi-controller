@@ -5,12 +5,10 @@ import (
     "github.com/martyn82/rpi-controller/storage/setup"
     "github.com/mattn/go-sqlite3"
     "os"
-    "path"
 )
 
-func SetupDb(dbFile string) {
-    dir, _ := os.Getwd()
-    setup.Install(path.Join(dir, "..", "server", "schema"), dbFile)
+func SetupDb(dbFile string, schemaDir string) {
+    setup.Install(schemaDir, dbFile)
 }
 
 func QueryDb(query string, dbFile string) {

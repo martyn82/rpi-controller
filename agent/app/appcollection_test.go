@@ -6,10 +6,14 @@ import (
     "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
     "github.com/martyn82/rpi-controller/testing/socket"
+    "os"
+    "path"
     "testing"
 )
 
 var appsTestDb = "/tmp/apps_db.data"
+var cwd, _ = os.Getwd()
+var schemaDir = path.Join(cwd, "..", "..", "server", "schema")
 
 func checkAppCollectionImplementsCollection(c collection.Collection) {}
 func checkAppImplementsCollectionItem(c collection.Item) {}
@@ -31,7 +35,7 @@ func TestConstructAppCollectionWithoutRepositoryReturnsError(t *testing.T) {
 }
 
 func TestLoadConvertsAllAppItemsToApps(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'name', '', '');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
 
@@ -44,7 +48,7 @@ func TestLoadConvertsAllAppItemsToApps(t *testing.T) {
 }
 
 func TestSizeReturnsNumberOfApps(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'name', '', '');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
 
@@ -56,7 +60,7 @@ func TestSizeReturnsNumberOfApps(t *testing.T) {
 }
 
 func TestGetReturnsAppByName(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'name', '', '');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
 
@@ -71,7 +75,7 @@ func TestGetReturnsAppByName(t *testing.T) {
 }
 
 func TestGetReturnsNilIfNotFound(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     defer db.RemoveDbFile(appsTestDb)
 
     repo, _ := storage.NewAppRepository(appsTestDb)
@@ -82,7 +86,7 @@ func TestGetReturnsNilIfNotFound(t *testing.T) {
 }
 
 func TestAllReturnsAllApps(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'app0', '', '');", appsTestDb)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (2, 'app1', '', '');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
@@ -96,7 +100,7 @@ func TestAllReturnsAllApps(t *testing.T) {
 }
 
 func TestAddAddsApp(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     defer db.RemoveDbFile(appsTestDb)
 
     repo, repoErr := storage.NewAppRepository(appsTestDb)
@@ -124,7 +128,7 @@ func TestBroadcastNotifiesAllApps(t *testing.T) {
         }
     }()
 
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, schemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'app0', 'unix', '" + appSocketFile + "');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
 

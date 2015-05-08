@@ -34,6 +34,7 @@ func start() {
     args = parseArguments()
     settings = loadConfig(args.ConfigFile)
 
+    initApps(settings.DatabaseFile)
     initDevices(settings.DatabaseFile)
     initDaemon(network.SocketInfo{settings.Socket.Type, settings.Socket.Address})
 
@@ -83,9 +84,12 @@ func loadConfig(configFile string) daemon.DaemonConfig {
         log.Fatal(err)
     }
 
+    log.Printf("Using database located at: '%s'", settings.DatabaseFile)
     log.Printf("Configuration loaded")
     return conf
 }
+
+// ########### DAEMON ###########
 
 /* init daemon */
 func initDaemon(socketInfo network.SocketInfo) {
@@ -117,10 +121,11 @@ func stopDaemon() {
     log.Printf("Daemon stopped")
 }
 
+// ########### DEVICES ###########
+
 /* Initialize devices from DB */
 func initDevices(databaseFile string) {
     log.Printf("Initializing devices...")
-    log.Printf("Using database located at '%s'", databaseFile)
 
     var err error
     var deviceRepo *storage.Devices
@@ -210,85 +215,15 @@ func onDeviceRegistration(message *api.DeviceRegistration) string {
     return response.JSON()
 }
 
-/* OLD */
+// ########### APPS ###########
 
-//import (
-//    "errors"
-//    "flag"
-//    "fmt"
-//    "log"
-//    "net"
-//    "os"
-//    "os/signal"
-//    "syscall"
-//
-//    "github.com/martyn82/rpi-controller/action"
-//    "github.com/martyn82/rpi-controller/app"
-//    "github.com/martyn82/rpi-controller/configuration"
-//    "github.com/martyn82/rpi-controller/device"
-//    "github.com/martyn82/rpi-controller/messages"
-//)
+/* initialize apps */
+func initApps(databaseFile string) {
+    log.Printf("Initializing apps...")
 
-//var ActionRegistry *action.ActionRegistry
-//var AppRegistry *app.AppRegistry
-//var DeviceRegistry *device.DeviceRegistry
-//
-//var configFile = flag.String("c", "", "Specify a configuration file name.")
-//
-///* main entry point */
-//func main() {
-//    flag.Parse()
-//
-//    ActionRegistry = action.CreateActionRegistry()
-//    AppRegistry = app.CreateAppRegistry()
-//    DeviceRegistry = device.CreateDeviceRegistry()
-//
-//    initializeDevices(config.Devices)
-//    defer closeDevices()
-//
-//    initializeActions(config.Actions)
-//
-//    server, _ := startServer(config.Socket)
-//    defer server.Close()
-//
-//    wait()
-//}
-//
-///* setup devices and listen to them */
-//func initializeDevices(devices []configuration.DeviceConfiguration) {
-//    for i := range devices {
-//        dev, err := device.CreateDevice(devices[i])
-//
-//        if err != nil {
-//            log.Println(err)
-//            continue
-//        }
-//
-//        dev.SetConnectionStateChangedListener(func (event *device.ConnectionStateChangedEvent) {
-//            log.Println(fmt.Sprintf("Event: %T(%s)", event, event.String()))
-//        })
-//
-//        dev.SetMessageReceivedListener(func (event *device.MessageReceivedEvent) {
-//            log.Println(fmt.Sprintf("Event: %T(%s)", event, event.String()))
-//            handleMessage(event.Message())
-//        })
-//
-//        DeviceRegistry.Register(dev)
-//        connectErr := dev.Connect()
-//
-//        if connectErr != nil {
-//            log.Println(connectErr)
-//        }
-//    }
-//}
-//
-///* close devices */
-//func closeDevices() {
-//    devices := DeviceRegistry.GetAllDevices()
-//    for _, dev := range devices {
-//        dev.Disconnect()
-//    }
-//}
+    log.Printf("%d apps initialized.", 0)
+}
+
 //
 ///* setup actions to be taken on events */
 //func initializeActions(actions []configuration.ActionConfiguration) {
@@ -320,123 +255,7 @@ func onDeviceRegistration(message *api.DeviceRegistration) string {
 //        log.Println(fmt.Sprintf("Registered %d actions for event '%s'", len(thens), actionConfig.When))
 //    }
 //}
-//
-//func startServer(config configuration.SocketConfiguration) (net.Listener, error) {
-//    server, err := net.Listen(config.Type, config.Address)
-//
-//    if err != nil {
-//        log.Fatal("Listen error:", err)
-//        return nil, err
-//    }
-//
-//    go func (server net.Listener) {
-//        for {
-//            client, err := server.Accept()
-//
-//            if err != nil {
-//                log.Println("Accept error:", err)
-//                break
-//            }
-//
-//            go startSession(client)
-//        }
-//    }(server)
-//
-//    log.Println(fmt.Sprintf("Listening on socket [%s]: %s.", config.Type, config.Address))
-//    return server, nil
-//}
-//
-///* spawn new session with client */
-//func startSession(client net.Conn) {
-//    for {
-//        var bytesRead int
-//        var err error
-//
-//        buffer := make([]byte, 512)
-//        if bytesRead, err = client.Read(buffer); err != nil {
-//            return
-//        }
-//
-//        if bytesRead == 0 {
-//            continue
-//        }
-//
-//        message := string(buffer[:bytesRead])
-//        var msg messages.IMessage
-//
-//        if msg, err = messages.Parse(message); err != nil {
-//            log.Println(err.Error())
-//            client.Write([]byte(err.Error()))
-//            continue
-//        }
-//
-//        log.Println("Received message " + message)
-//
-//        if err = handleMessage(msg); err != nil {
-//            log.Println(err.Error())
-//            client.Write([]byte(err.Error()))
-//            continue
-//        }
-//
-//        client.Write([]byte(string(rune(0))))
-//    }
-//}
-//
-///* send command to device */
-//func sendCommand(command messages.IMessage) error {
-//    dev := DeviceRegistry.GetDeviceByName(command.TargetDeviceName())
-//
-//    if dev == nil {
-//        errMsg := fmt.Sprintf("Device not registered '%s'.", command.TargetDeviceName())
-//        log.Println(errMsg)
-//        return errors.New(errMsg)
-//    }
-//
-//    log.Println(fmt.Sprintf("Command: %T to '%s'", command, command.TargetDeviceName()))
-//
-//    if err := dev.Command(command); err != nil {
-//        log.Println(err)
-//        return err
-//    }
-//
-//    return nil
-//}
-//
-///* handle incoming message */
-//func handleMessage(message messages.IMessage) error {
-//    if message.IsCommand() {
-//        return sendCommand(message)
-//    }
-//
-//    if message.IsEvent() {
-//        return handleEvent(message.(messages.IEvent))
-//    }
-//
-//    if message.IsApp() {
-//        return handleApp(message.(messages.IAppMessage))
-//    }
-//
-//    return errors.New("Unsupported message type.")
-//}
-//
-///* handles an event notification */
-//func handleEvent(event messages.IEvent) error {
-//    sendToApps(event)
-//    thenMsg := ActionRegistry.GetActionByWhen(event)
-//
-//    if thenMsg == nil {
-//        errMsg := fmt.Sprintf("No actions defined for event '%s'.", event.String())
-//        log.Println(errMsg)
-//        return errors.New(errMsg)
-//    }
-//
-//    for i := range thenMsg.Then {
-//        handleMessage(thenMsg.Then[i])
-//    }
-//
-//    return nil
-//}
-//
+
 ///* handle application message */
 //func handleApp(message messages.IAppMessage) error {
 //    var t interface {}

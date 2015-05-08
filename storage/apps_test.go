@@ -4,10 +4,14 @@ import (
     "fmt"
     "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
+    "os"
+    "path"
     "testing"
 )
 
 var appsTestDb = "/tmp/apps_db.data"
+var appsCwd, _ = os.Getwd()
+var appsSchemaDir = path.Join(appsCwd, "..", "server", "schema")
 
 func checkAppsImplementsRespository(repo Repository) {}
 
@@ -17,7 +21,7 @@ func TestAppsImplementsRepository(t *testing.T) {
 }
 
 func TestAppsAddWillAddItemToRepository(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, appsSchemaDir)
     defer db.RemoveDbFile(appsTestDb)
 
     instance, _ := NewAppRepository(appsTestDb)
@@ -35,7 +39,7 @@ func TestAppsAddWillAddItemToRepository(t *testing.T) {
 }
 
 func TestAppsFindWithExistingIdentityReturnsTheItem(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, appsSchemaDir)
     defer db.RemoveDbFile(appsTestDb)
 
     instance, _ := NewAppRepository(appsTestDb)
@@ -73,7 +77,7 @@ func TestAppsConstructWithoutDbReturnsError(t *testing.T) {
 }
 
 func TestAppsConstructLoadsFromDb(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, appsSchemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'dev0', '', '')", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
 
@@ -100,7 +104,7 @@ func TestAppsConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
 }
 
 func TestAppsAllRetrievesAllItems(t *testing.T) {
-    db.SetupDb(appsTestDb)
+    db.SetupDb(appsTestDb, appsSchemaDir)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'dev0', '', '')", appsTestDb)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (2, 'dev1', '', '')", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)

@@ -31,6 +31,7 @@ func NewApp(info IAppInfo) *App {
 
     instance := new(App)
     agent.SetupAgent(&instance.Agent, info, 0, connectTimeout, agent.DEFAULT_BUFFER_SIZE, true)
+
     instance.SetOnMessageReceivedHandler(instance.onMessageReceived)
     instance.info = info
 

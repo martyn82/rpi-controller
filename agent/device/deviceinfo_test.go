@@ -2,9 +2,17 @@ package device
 
 import (
     "fmt"
+    "github.com/martyn82/rpi-controller/agent"
     "github.com/martyn82/rpi-controller/testing/assert"
     "testing"
 )
+
+func checkDeviceInfoImplementsIAgentInfo(info agent.IAgentInfo) {}
+
+func TestDeviceInfoImplementsIAgentInfo(t *testing.T) {
+    instance := NewDeviceInfo("name", "model", "protocol", "address")
+    checkDeviceInfoImplementsIAgentInfo(instance)
+}
 
 func TestDeviceInfoReturnsValues(t *testing.T) {
     instance := NewDeviceInfo("name", "model", "protocol", "address")

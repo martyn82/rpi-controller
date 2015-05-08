@@ -4,10 +4,14 @@ import (
     "fmt"
     "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
+    "os"
+    "path"
     "testing"
 )
 
 var devicesTestDb = "/tmp/devices_db.data"
+var devicesCwd, _ = os.Getwd()
+var devicesSchemaDir = path.Join(devicesCwd, "..", "server", "schema")
 
 func checkDevicesImplementsRespository(repo Repository) {}
 
@@ -17,7 +21,7 @@ func TestDevicesImplementsRepository(t *testing.T) {
 }
 
 func TestDevicesAddWillAddItemToRepository(t *testing.T) {
-    db.SetupDb(devicesTestDb)
+    db.SetupDb(devicesTestDb, devicesSchemaDir)
     defer db.RemoveDbFile(devicesTestDb)
 
     instance, _ := NewDeviceRepository(devicesTestDb)
@@ -35,7 +39,7 @@ func TestDevicesAddWillAddItemToRepository(t *testing.T) {
 }
 
 func TestDevicesFindWithExistingIdentityReturnsTheItem(t *testing.T) {
-    db.SetupDb(devicesTestDb)
+    db.SetupDb(devicesTestDb, devicesSchemaDir)
     defer db.RemoveDbFile(devicesTestDb)
 
     instance, _ := NewDeviceRepository(devicesTestDb)
@@ -73,7 +77,7 @@ func TestDevicesConstructWithoutDbReturnsError(t *testing.T) {
 }
 
 func TestDevicesConstructLoadsFromDb(t *testing.T) {
-    db.SetupDb(devicesTestDb)
+    db.SetupDb(devicesTestDb, devicesSchemaDir)
     db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')", devicesTestDb)
     defer db.RemoveDbFile(devicesTestDb)
 
@@ -101,7 +105,7 @@ func TestDevicesConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
 }
 
 func TestDevicesAllRetrievesAllItems(t *testing.T) {
-    db.SetupDb(devicesTestDb)
+    db.SetupDb(devicesTestDb, devicesSchemaDir)
     db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')", devicesTestDb)
     db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'mod1', '', '')", devicesTestDb)
     defer db.RemoveDbFile(devicesTestDb)
