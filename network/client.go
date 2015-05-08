@@ -7,7 +7,7 @@ import (
 )
 
 const (
-    ERR_ALREADY_CONNECTED = "The client is already connected to the daemon."
+    ERR_ALREADY_CONNECTED = "The client is already connected."
     ERR_NOT_CONNECTED = "The client is not connected."
 )
 
