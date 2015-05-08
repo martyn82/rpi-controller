@@ -6,8 +6,6 @@ import (
     "github.com/martyn82/rpi-controller/storage"
 )
 
-const ERR_NO_REPOSITORY = "No repository provided."
-
 type DeviceCollection struct {
     repository *storage.Devices
     devices map[string]IDevice
@@ -24,7 +22,7 @@ func NewDeviceCollection(repository *storage.Devices) (*DeviceCollection, error)
     if instance.repository != nil {
         err = instance.loadAll(repository.All())
     } else {
-        err = errors.New(ERR_NO_REPOSITORY)
+        err = errors.New(collection.ERR_NO_REPOSITORY)
     }
 
     return instance, err

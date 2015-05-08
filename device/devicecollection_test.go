@@ -1,43 +1,14 @@
 package device
 
 import (
-    "database/sql"
     "github.com/martyn82/rpi-controller/collection"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/storage/setup"
     "github.com/martyn82/rpi-controller/testing/assert"
-    "github.com/mattn/go-sqlite3"
-    "os"
-    "path"
+    "github.com/martyn82/rpi-controller/testing/db"
     "testing"
 )
 
-var devicesTestDb = "/tmp/db.data"
-
-func setupDb() {
-    dir, _ := os.Getwd()
-    setup.Install(path.Join(dir, "..", "server", "schema"), devicesTestDb)
-}
-
-func queryDb(query string) {
-    sqlite3.Version()
-
-    var err error
-    var db *sql.DB
-
-    if db, err = sql.Open("sqlite3", devicesTestDb); err != nil {
-        panic(err)
-    }
-
-    defer db.Close()
-    if _, err = db.Exec(query); err != nil {
-        panic(err)
-    }
-}
-
-func removeDbFile() {
-    os.Remove(devicesTestDb)
-}
+var devicesTestDb = "/tmp/devices_db.data"
 
 func checkDeviceCollectionImplementsCollection(c collection.Collection) {}
 func checkDeviceImplementsCollectionItem(c collection.Item) {}
@@ -55,13 +26,13 @@ func TestDeviceImplementsCollectionItem(t *testing.T) {
 func TestConstructDeviceCollectionWithoutRepositoryReturnsError(t *testing.T) {
     _, err := NewDeviceCollection(nil)
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_NO_REPOSITORY, err.Error())
+    assert.Equals(t, collection.ERR_NO_REPOSITORY, err.Error())
 }
 
 func TestLoadConvertsAllDeviceItemsToDevices(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'DENON-AVR', '', '');")
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'DENON-AVR', '', '');", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, repoErr := storage.NewDeviceRepository(devicesTestDb)
     assert.Nil(t, repoErr)
@@ -72,9 +43,9 @@ func TestLoadConvertsAllDeviceItemsToDevices(t *testing.T) {
 }
 
 func TestLoadAllReturnsErrorOnLoadFailure(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'unknown', '', '');")
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'unknown', '', '');", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, repoErr := storage.NewDeviceRepository(devicesTestDb)
     assert.Nil(t, repoErr)
@@ -84,9 +55,9 @@ func TestLoadAllReturnsErrorOnLoadFailure(t *testing.T) {
 }
 
 func TestSizeReturnsNumberOfDevices(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'DENON-AVR', '', '');")
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'DENON-AVR', '', '');", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, repoErr := storage.NewDeviceRepository(devicesTestDb)
     assert.Nil(t, repoErr)
@@ -96,9 +67,9 @@ func TestSizeReturnsNumberOfDevices(t *testing.T) {
 }
 
 func TestGetReturnsDeviceByName(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'DENON-AVR', '', '');")
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'name', 'DENON-AVR', '', '');", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, repoErr := storage.NewDeviceRepository(devicesTestDb)
     assert.Nil(t, repoErr)
@@ -111,8 +82,8 @@ func TestGetReturnsDeviceByName(t *testing.T) {
 }
 
 func TestGetReturnsNilIfNotFound(t *testing.T) {
-    setupDb()
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, _ := storage.NewDeviceRepository(devicesTestDb)
     instance, _ := NewDeviceCollection(repo)
@@ -122,10 +93,10 @@ func TestGetReturnsNilIfNotFound(t *testing.T) {
 }
 
 func TestAllReturnsAllDevices(t *testing.T) {
-    setupDb()
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'DENON-AVR', '', '');")
-    queryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'DENON-AVR', '', '');")
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'DENON-AVR', '', '');", devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'DENON-AVR', '', '');", devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, repoErr := storage.NewDeviceRepository(devicesTestDb)
     assert.Nil(t, repoErr)
@@ -136,8 +107,8 @@ func TestAllReturnsAllDevices(t *testing.T) {
 }
 
 func TestAddAddsDevice(t *testing.T) {
-    setupDb()
-    defer removeDbFile()
+    db.SetupDb(devicesTestDb)
+    defer db.RemoveDbFile(devicesTestDb)
 
     repo, repoErr := storage.NewDeviceRepository(devicesTestDb)
     assert.Nil(t, repoErr)

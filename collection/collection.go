@@ -1,5 +1,7 @@
 package collection
 
+const ERR_NO_REPOSITORY = "No repository provided."
+
 type Collection interface {
     Add(item Item) error
     All() []Item
