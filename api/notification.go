@@ -10,6 +10,8 @@ const (
 
 type INotification interface {
     IMessage
+
+    DeviceName() string
     PropertyName() string
     PropertyValue() string
 }

@@ -72,3 +72,29 @@ func TestDeviceRegistrationIsValidIfNameAndModelAreSet(t *testing.T) {
     assert.True(t, valid)
     assert.Nil(t, err)
 }
+
+func TestAppRegistrationHasName(t *testing.T) {
+    args := Arguments{}
+    args.RegisterApp = true
+    args.AppName = "app"
+
+    assert.True(t, args.IsAppRegistration())
+}
+
+func TestAppRegistrationIsValidIfNameIsSet(t *testing.T) {
+    args := Arguments{}
+    args.RegisterApp = true
+    args.AppName = ""
+    assert.True(t, args.IsAppRegistration())
+
+    // invalid
+    valid, err := args.IsValid()
+    assert.False(t, valid)
+    assert.NotNil(t, err)
+
+    // valid
+    args.AppName = "app"
+    valid, err = args.IsValid()
+    assert.True(t, valid)
+    assert.Nil(t, err)
+}

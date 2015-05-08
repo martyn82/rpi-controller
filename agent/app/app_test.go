@@ -98,5 +98,5 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.True(t, messageHandlerCalled)
-    assert.Equals(t, "app0", messageHandled.DeviceName())
+    assert.Equals(t, api.TYPE_NOTIFICATION, messageHandled.Type())
 }

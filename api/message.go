@@ -16,8 +16,6 @@ const (
 )
 
 type IMessage interface {
-    DeviceName() string
-
     Type() string
     IsValid() (bool, error)
     JSON() string
@@ -42,6 +40,8 @@ func ParseJSON(message string) (IMessage, error) {
             return notificationFromMap(obj[TYPE_NOTIFICATION])
         case TYPE_DEVICE_REGISTRATION:
             return deviceRegistrationFromMap(obj[TYPE_DEVICE_REGISTRATION])
+        case TYPE_APP_REGISTRATION:
+            return appRegistrationFromMap(obj[TYPE_APP_REGISTRATION])
     }
 
     return nil, errors.New(fmt.Sprintf(ERR_UNSUPPORTED_TYPE, msgType))

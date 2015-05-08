@@ -84,6 +84,21 @@ func TestMessageHandlerCallsRegisteredHandlerForDeviceRegistration(t *testing.T)
     assert.True(t, handlerCalled)
 }
 
+func TestMessageHandlerCallsRegisteredHandlerForAppRegistration(t *testing.T) {
+    setupTest()
+
+    handlerCalled := false
+    handler := func (message api.IMessage) string {
+        handlerCalled = true
+        return ""
+    }
+
+    RegisterAppRegistrationMessageHandler(handler)
+    handleMessage(api.NewAppRegistration("app", "addr").JSON())
+
+    assert.True(t, handlerCalled)
+}
+
 func TestDefaultDaemonState(t *testing.T) {
     assert.Equals(t, STATE_STOPPED, State())
 }

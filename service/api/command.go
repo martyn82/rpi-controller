@@ -11,6 +11,8 @@ func FromArguments(args service.Arguments) api.IMessage {
         return api.NewNotification(args.EventDevice, args.Property, args.Value)
     } else if args.IsDeviceRegistration() {
         return api.NewDeviceRegistration(args.DeviceName, args.DeviceModel, args.DeviceAddress)
+    } else if args.IsAppRegistration() {
+        return api.NewAppRegistration(args.AppName, args.AppAddress)
     }
 
     return nil

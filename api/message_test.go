@@ -41,6 +41,23 @@ func TestFromJSONCreatesDeviceRegistrationFromString(t *testing.T) {
     assert.Equals(t, "foo", dr.DeviceAddress())
 }
 
+func TestFromJSONCreatesAppRegistrationFromString(t *testing.T) {
+    message := "{\"" + TYPE_APP_REGISTRATION + "\":{\"Name\":\"app\",\"Address\":\"addr:foo\"}}"
+    msg, err := ParseJSON(message)
+
+    if err != nil {
+        t.Errorf(err.Error())
+    }
+
+    assert.NotNil(t, msg)
+    assert.Type(t, new(AppRegistration), msg)
+
+    ar := msg.(*AppRegistration)
+    assert.Equals(t, "app", ar.AgentName())
+    assert.Equals(t, "addr", ar.AgentProtocol())
+    assert.Equals(t, "foo", ar.AgentAddress())
+}
+
 func TestFromJSONReturnsErrorOnUnknownMessageType(t *testing.T) {
     message := "{\"foo\":{\"bar\":\"baz\"}}"
     msg, err := ParseJSON(message)

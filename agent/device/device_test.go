@@ -2,6 +2,7 @@ package device
 
 import (
     "github.com/martyn82/rpi-controller/agent"
+    "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/testing/assert"
@@ -98,7 +99,7 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
 
     messageHandlerCalled := false
     messageHandled := ""
-    instance.SetMessageHandler(func (sender IDevice, message messages.IEvent) {
+    instance.SetMessageHandler(func (sender IDevice, message api.IMessage) {
         messageHandlerCalled = true
         messageHandled = message.Type()
     })
@@ -107,7 +108,7 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.True(t, messageHandlerCalled)
-    assert.Equals(t, "foo", messageHandled)
+    assert.Equals(t, api.TYPE_NOTIFICATION, messageHandled)
 }
 
 func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
@@ -133,7 +134,7 @@ func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
 
     messageHandlerCalled := false
     messageHandled := ""
-    instance.SetMessageHandler(func (sender IDevice, message messages.IEvent) {
+    instance.SetMessageHandler(func (sender IDevice, message api.IMessage) {
         messageHandlerCalled = true
         messageHandled = message.Type()
     })

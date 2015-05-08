@@ -1,11 +1,11 @@
 package main
 
 import (
+    "github.com/martyn82/rpi-controller/agent/app"
+    "github.com/martyn82/rpi-controller/agent/device"
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
-    "github.com/martyn82/rpi-controller/device"
-    "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/storage"
     "log"
@@ -15,6 +15,7 @@ import (
 )
 
 var args daemon.Arguments
+var apps *app.AppCollection
 var devices *device.DeviceCollection
 var settings daemon.DaemonConfig
 
@@ -48,6 +49,7 @@ func stop() {
     daemon.NotifyState(daemon.STATE_STOPPING)
 
     stopDaemon()
+    stopApps()
     stopDevices()
 
     daemon.NotifyState(daemon.STATE_STOPPED)
@@ -107,6 +109,12 @@ func initDaemon(socketInfo network.SocketInfo) {
         return onDeviceRegistration(message.(*api.DeviceRegistration))
     })
 
+    /* api.IMessage: api.AppRegistration */
+    daemon.RegisterAppRegistrationMessageHandler(func (message api.IMessage) string {
+        log.Println("Received API message: " + message.JSON())
+        return onAppRegistration(message.(*api.AppRegistration))
+    })
+
     daemon.Start(socketInfo)
 
     log.Printf("Daemon running on socket %q", socketInfo)
@@ -149,8 +157,12 @@ func initDevices(databaseFile string) {
             log.Printf("Device connected '%s'", d.Info().String())
             connectedCount++
 
-            d.SetMessageHandler(func (sender device.IDevice, message messages.IEvent) {
-                log.Printf("Device %s says: %s{%s: %s}", sender.Info().String(), message.Type(), message.PropertyName(), message.PropertyValue())
+            d.SetMessageHandler(func (sender device.IDevice, message api.IMessage) {
+                log.Printf("Device %s says: %s", sender.Info().String(), message.JSON())
+
+                log.Printf("Broadcasting message to apps...")
+                notified := apps.Broadcast(message.JSON())
+                log.Printf("%d apps notified.", notified)
             })
         }
     }
@@ -208,7 +220,7 @@ func onDeviceRegistration(message *api.DeviceRegistration) string {
         response = api.NewResponse([]error{err})
         log.Printf("Error connecting to device %s: '%s'.", dev.Info().String(), err.Error())
     } else {
-        response = api.NewResponse([]error{err})
+        response = api.NewResponse([]error{})
         log.Printf("Device is connected %s", dev.Info().String())
     }
 
@@ -221,7 +233,86 @@ func onDeviceRegistration(message *api.DeviceRegistration) string {
 func initApps(databaseFile string) {
     log.Printf("Initializing apps...")
 
-    log.Printf("%d apps initialized.", 0)
+    var err error
+    var appRepo *storage.Apps
+
+    if appRepo, err = storage.NewAppRepository(databaseFile); err != nil {
+        log.Fatal(err.Error())
+    }
+
+    if apps, err = app.NewAppCollection(appRepo); err != nil {
+        log.Fatal(err.Error())
+    }
+
+    connectedCount := 0
+
+    for _, appi := range apps.All() {
+        a := appi.(app.IApp)
+
+        if err = a.Connect(); err != nil {
+            log.Printf("Failed to connect to app '%s': %s.", a.Info().String(), err.Error())
+        } else {
+            log.Printf("App connected '%s'", a.Info().String())
+            connectedCount++
+
+            a.SetMessageHandler(func (sender app.IApp, message api.IMessage) {
+                log.Printf("App %s says: %s", sender.Info().String(), message.JSON())
+            })
+        }
+    }
+
+    log.Printf("%d apps loaded.", apps.Size())
+    log.Printf("%d apps connected.", connectedCount)
+    log.Printf("Apps initialized.")
+}
+
+/* Disconnect apps */
+func stopApps() {
+    log.Printf("Disconnecting apps...")
+
+    var err error
+
+    for _, appi := range apps.All() {
+        a := appi.(app.IApp)
+
+        if err = a.Disconnect(); err != nil {
+            log.Printf("Failed to disconnect app '%s': %s.", a.Info().String(), err.Error())
+        } else {
+            log.Printf("Disconnected %s.", a.Info().String())
+        }
+    }
+
+    log.Printf("Apps disconnected.")
+}
+
+/* Handles app registration */
+func onAppRegistration(message *api.AppRegistration) string {
+    var err error
+    var response *api.Response
+
+    appi := app.NewApp(app.NewAppInfo(message.AgentName(), message.AgentProtocol(), message.AgentAddress()))
+
+    if err = apps.Add(appi); err != nil {
+        response = api.NewResponse([]error{err})
+        log.Printf("Error registering app: %s", err.Error())
+    } else {
+        response = api.NewResponse([]error{})
+        log.Printf("Successfully registered app: %s", appi.Info().String())
+    }
+
+    if err != nil {
+        return response.JSON()
+    }
+
+    if err = appi.Connect(); err != nil {
+        response = api.NewResponse([]error{err})
+        log.Printf("Error connecting to app %s: '%s'.", appi.Info().String(), err.Error())
+    } else {
+        response = api.NewResponse([]error{})
+        log.Printf("App is connected %s", appi.Info().String())
+    }
+
+    return response.JSON()
 }
 
 //

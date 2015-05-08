@@ -4,6 +4,7 @@ import (
     "errors"
     "fmt"
     "github.com/martyn82/rpi-controller/agent"
+    "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/messages"
 )
 
@@ -12,7 +13,7 @@ const (
 )
 
 type EventProcessor func (sender string, event []byte) (messages.IEvent, error)
-type MessageHandler func (sender IDevice, message messages.IEvent)
+type MessageHandler func (sender IDevice, message api.IMessage)
 
 type IDevice interface {
     Info() IDeviceInfo
@@ -54,10 +55,18 @@ func (this *Device) onMessageReceived(message []byte) {
 }
 
 /* Map a message as event */
-func (this *Device) mapEvent(event []byte) (messages.IEvent, error) {
+func (this *Device) mapEvent(event []byte) (api.IMessage, error) {
     if this.eventProcessor == nil {
         return nil, errors.New(fmt.Sprintf(ERR_NO_EVENT_PROCESSOR, this.Info().String()))
     }
 
-    return this.eventProcessor(this.Info().Name(), event)
+    var evt messages.IEvent
+    var msg api.IMessage
+    var err error
+    
+    if evt ,err = this.eventProcessor(this.Info().Name(), event); err == nil {
+        msg = api.NewNotification(evt.Sender(), evt.PropertyName(), evt.PropertyValue())
+    }
+
+    return msg, err
 }

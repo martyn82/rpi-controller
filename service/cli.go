@@ -9,6 +9,7 @@ import (
 const (
     ERR_INVALID_EVENT_NOTIFICATION = "An event notification needs at least %s and %s arguments to be not empty."
     ERR_INVALID_DEVICE_REGISTRATION = "A device registration needs at least %s and %s arguments to be not empty."
+    ERR_INVALID_APP_REGISTRATION = "An app registration needs at least %s argument to be not empty."
     ERR_UNKNOWN = "Unknown series of arguments."
 
     ARG_CONFIG = "config"
@@ -20,6 +21,8 @@ const (
     ARG_NAME = "name"
     ARG_MODEL = "model"
     ARG_ADDRESS = "address"
+
+    ARG_REGISTER_APP = "register-app"
 )
 
 type Arguments struct {
@@ -33,6 +36,10 @@ type Arguments struct {
     DeviceName string
     DeviceModel string
     DeviceAddress string
+
+    RegisterApp bool
+    AppName string
+    AppAddress string
 }
 
 var configFile = flag.String(ARG_CONFIG, "controller.config.json", "Specify a configuration file to load.")
@@ -43,10 +50,15 @@ var eventProperty = flag.String(ARG_EVENT_PROPERTY, "", "Specify the property of
 var eventValue = flag.String(ARG_EVENT_VALUE, "", "Specify the value of the property for the event notification.")
 
 // device registration args
-var registerDevice = flag.Bool(ARG_REGISTER_DEVICE, false, "Specify to request a device regitration.")
-var deviceName = flag.String(ARG_NAME, "", "Specify the unique device name.")
+var registerDevice = flag.Bool(ARG_REGISTER_DEVICE, false, "Specify to request a device registration.")
+var deviceName = flag.String(ARG_NAME, "", "Specify the unique name.")
 var deviceModel = flag.String(ARG_MODEL, "", "Specify the device model.")
-var deviceAddress = flag.String(ARG_ADDRESS, "", "Specify the device address (e.g., tcp:1.2.3.4:1234).")
+var deviceAddress = flag.String(ARG_ADDRESS, "", "Specify the address (e.g., tcp:1.2.3.4:1234).")
+
+// app registration args
+var registerApp = flag.Bool(ARG_REGISTER_APP, false, "Specify to request an app registration.")
+var appName = deviceName
+var appAddress = deviceAddress
 
 /* Parse cli arguments into struct */
 func ParseArguments() Arguments {
@@ -64,6 +76,10 @@ func ParseArguments() Arguments {
     args.DeviceName = *deviceName
     args.DeviceAddress = *deviceAddress
 
+    args.RegisterApp = *registerApp
+    args.AppName = *appName
+    args.AppAddress = *appAddress
+
     return args
 }
 
@@ -78,6 +94,8 @@ func (this Arguments) IsValid() (bool, error) {
         return this.isValidEvent()
     } else if this.IsDeviceRegistration() {
         return this.isValidDeviceRegistration()
+    } else if this.IsAppRegistration() {
+        return this.isValidAppRegistration()
     }
 
     return false, errors.New(ERR_UNKNOWN)
@@ -101,6 +119,15 @@ func (this Arguments) isValidDeviceRegistration() (bool, error) {
     return true, nil
 }
 
+/* Validates an app registration */
+func (this Arguments) isValidAppRegistration() (bool, error) {
+    if !this.RegisterApp || this.AppName == "" {
+        return false, errors.New(fmt.Sprintf(ERR_INVALID_APP_REGISTRATION, flag.Lookup(ARG_NAME).Name))
+    }
+
+    return true, nil
+}
+
 /* Determines whether the instance is an event notification */
 func (this Arguments) IsEventNotification() bool {
     return this.EventDevice != ""
@@ -109,4 +136,9 @@ func (this Arguments) IsEventNotification() bool {
 /* Determines whether the instance is a device registration */
 func (this Arguments) IsDeviceRegistration() bool {
     return this.RegisterDevice
+}
+
+/* Determines whether the instance is an app registration */
+func (this Arguments) IsAppRegistration() bool {
+    return this.RegisterApp
 }

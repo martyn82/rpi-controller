@@ -13,6 +13,8 @@ const (
 
 type IDeviceRegistration interface {
     IMessage
+
+    DeviceName() string
     DeviceModel() string
     DeviceProtocol() string
     DeviceAddress() string

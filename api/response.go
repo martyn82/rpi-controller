@@ -46,6 +46,7 @@ func (this *Response) JSON() string {
         if errorsString != "" {
             errorsString += ","
         }
+
         errorsString += "\"" + err.Error() + "\""
     }
 

@@ -38,14 +38,19 @@ func NotifyState(newState string) {
     state = newState
 }
 
-/* Register an event message handler. Existing event message handler will be overwritten. */
+/* Register an event message handler. Existing message handler will be overwritten. */
 func RegisterEventMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_NOTIFICATION] = handler
 }
 
-/* Register a device registration message handler. Existing event message handler will be overwritten. */
+/* Register a device registration message handler. Existing message handler will be overwritten. */
 func RegisterDeviceRegistrationMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_DEVICE_REGISTRATION] = handler
+}
+
+/* Register an app registration message handler. Existing message handler will be overwritten. */
+func RegisterAppRegistrationMessageHandler(handler MessageHandler) {
+    messageHandlers[api.TYPE_APP_REGISTRATION] = handler
 }
 
 /* Handles a service message */
