@@ -5,6 +5,7 @@ import (
     "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/martyn82/rpi-controller/testing/socket"
     "net"
     "os"
     "testing"
@@ -13,20 +14,6 @@ import (
 
 var waitTimeout = time.Millisecond
 var deviceSocketInfo = network.SocketInfo{"unix", "/tmp/device_test.sock"}
-
-func startFakeServer(protocol string, address string) net.Listener {
-    listener, err := net.Listen(protocol, address)
-
-    if err != nil {
-        panic(err)
-    }
-
-    return listener
-}
-
-func removeSocket(socketFile string) {
-    os.Remove(socketFile)
-}
 
 func TestDeviceInfoIsReturned(t *testing.T) {
     info := DeviceInfo{name: "dev"}
