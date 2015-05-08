@@ -30,7 +30,7 @@ func TestConstructAppCollectionWithoutRepositoryReturnsError(t *testing.T) {
     assert.Equals(t, collection.ERR_NO_REPOSITORY, err.Error())
 }
 
-func TestLoadConvertsAllAppItemsToDevices(t *testing.T) {
+func TestLoadConvertsAllAppItemsToApps(t *testing.T) {
     db.SetupDb(appsTestDb)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'name', '', '');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)
@@ -55,7 +55,7 @@ func TestSizeReturnsNumberOfApps(t *testing.T) {
     assert.Equals(t, 1, instance.Size())
 }
 
-func TestGetReturnsDeviceByName(t *testing.T) {
+func TestGetReturnsAppByName(t *testing.T) {
     db.SetupDb(appsTestDb)
     db.QueryDb("INSERT INTO apps (id, name, protocol, address) VALUES (1, 'name', '', '');", appsTestDb)
     defer db.RemoveDbFile(appsTestDb)

@@ -41,7 +41,7 @@ func (this *AppCollection) loadAll(items []storage.Item) error {
 
 /* Loads a single app item into collection */
 func (this *AppCollection) load(item *storage.AppItem) error {
-    this.apps[item.Name()] = CreateApp(AppInfo{name: item.Name(), protocol: item.Protocol(), address: item.Address()})
+    this.apps[item.Name()] = NewApp(AppInfo{name: item.Name(), protocol: item.Protocol(), address: item.Address()})
     return nil
 }
 

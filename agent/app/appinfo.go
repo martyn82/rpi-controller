@@ -1,6 +1,8 @@
 package app
 
-import "fmt"
+import (
+    "fmt"
+)
 
 type IAppInfo interface {
     Name() string
