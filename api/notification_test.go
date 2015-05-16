@@ -6,38 +6,38 @@ import (
 )
 
 func TestNewNotificationContainsValues(t *testing.T) {
-    deviceName := "dev"
+    agentName := "dev"
     propertyName := "prop"
     propertyValue := "val"
 
-    cmd := NewNotification(deviceName, propertyName, propertyValue)
+    cmd := NewNotification(agentName, propertyName, propertyValue)
 
     assert.Type(t, new(Notification), cmd)
-    assert.Equals(t, deviceName, cmd.DeviceName())
+    assert.Equals(t, agentName, cmd.AgentName())
     assert.Equals(t, propertyName, cmd.PropertyName())
     assert.Equals(t, propertyValue, cmd.PropertyValue())
 }
 
 func TestNotificationToStringReturnsJson(t *testing.T) {
-    deviceName := "dev"
+    agentName := "dev"
     propertyName := "prop"
     propertyValue := "val"
 
-    cmd := NewNotification(deviceName, propertyName, propertyValue)
+    cmd := NewNotification(agentName, propertyName, propertyValue)
 
-    assert.Equals(t, "{\"" + TYPE_NOTIFICATION + "\":{\"Device\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
+    assert.Equals(t, "{\"" + TYPE_NOTIFICATION + "\":{\"Agent\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
 }
 
 func TestNotificationFromMapCreatesNotification(t *testing.T) {
     obj := map[string]string{
-        KEY_DEVICE: "dev",
+        KEY_AGENT: "dev",
         "prop": "val",
     }
 
     cmd, err := notificationFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "dev", cmd.DeviceName())
+    assert.Equals(t, "dev", cmd.AgentName())
     assert.Equals(t, "prop", cmd.PropertyName())
     assert.Equals(t, "val", cmd.PropertyValue())
 }
@@ -51,7 +51,7 @@ func TestNotificationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
     assert.NotNil(t, err)
 }
 
-func TestNotificationIsValidIfItContainsDeviceAndProperty(t *testing.T) {
+func TestNotificationIsValidIfItContainsAgentAndProperty(t *testing.T) {
     msg := NewNotification("dev", "prop", "")
     ok, err := msg.IsValid()
 
@@ -59,7 +59,7 @@ func TestNotificationIsValidIfItContainsDeviceAndProperty(t *testing.T) {
     assert.Nil(t, err)
 }
 
-func TestNotificationIsInvalidIfItMissesDevice(t *testing.T) {
+func TestNotificationIsInvalidIfItMissesAgent(t *testing.T) {
     msg := NewNotification("", "prop", "")
     ok, err := msg.IsValid()
 
@@ -75,7 +75,7 @@ func TestNotificationIsInvalidIfItMissesProperty(t *testing.T) {
     assert.NotNil(t, err)
 }
 
-func TestNotificationIsInvalidIfItMissesDeviceAndProperty(t *testing.T) {
+func TestNotificationIsInvalidIfItMissesAgentAndProperty(t *testing.T) {
     msg := NewNotification("", "", "")
     ok, err := msg.IsValid()
 

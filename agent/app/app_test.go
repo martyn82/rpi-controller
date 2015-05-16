@@ -80,7 +80,7 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
             panic(err)
         }
 
-        client.Write([]byte("{\"Event\":{\"Device\":\"app0\",\"Volume\":\"30\"}}"))
+        client.Write([]byte("{\"Event\":{\"Agent\":\"app0\",\"Volume\":\"30\"}}"))
     }()
 
     time.Sleep(waitTimeout)

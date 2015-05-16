@@ -6,8 +6,8 @@ import (
     "testing"
 )
 
-func TestFromJSONCreatesNotificationFromString(t *testing.T) {
-    message := "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_DEVICE + "\":\"dev\",\"prop\":\"val\"}}"
+func TestParseJSONCreatesNotificationFromString(t *testing.T) {
+    message := "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_AGENT + "\":\"dev\",\"prop\":\"val\"}}"
     msg, err := ParseJSON(message)
 
     if err != nil {
@@ -18,12 +18,12 @@ func TestFromJSONCreatesNotificationFromString(t *testing.T) {
     assert.Type(t, new(Notification), msg)
 
     not := msg.(*Notification)
-    assert.Equals(t, "dev", not.DeviceName())
+    assert.Equals(t, "dev", not.AgentName())
     assert.Equals(t, "prop", not.PropertyName())
     assert.Equals(t, "val", not.PropertyValue())
 }
 
-func TestFromJSONCreatesDeviceRegistrationFromString(t *testing.T) {
+func TestParseJSONCreatesDeviceRegistrationFromString(t *testing.T) {
     message := "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"dev\",\"Model\":\"model\",\"Address\":\"addr:foo\"}}"
     msg, err := ParseJSON(message)
 
@@ -41,7 +41,7 @@ func TestFromJSONCreatesDeviceRegistrationFromString(t *testing.T) {
     assert.Equals(t, "foo", dr.DeviceAddress())
 }
 
-func TestFromJSONCreatesAppRegistrationFromString(t *testing.T) {
+func TestParseJSONCreatesAppRegistrationFromString(t *testing.T) {
     message := "{\"" + TYPE_APP_REGISTRATION + "\":{\"Name\":\"app\",\"Address\":\"addr:foo\"}}"
     msg, err := ParseJSON(message)
 
@@ -58,7 +58,7 @@ func TestFromJSONCreatesAppRegistrationFromString(t *testing.T) {
     assert.Equals(t, "foo", ar.AgentAddress())
 }
 
-func TestFromJSONReturnsErrorOnUnknownMessageType(t *testing.T) {
+func TestParseJSONReturnsErrorOnUnknownMessageType(t *testing.T) {
     message := "{\"foo\":{\"bar\":\"baz\"}}"
     msg, err := ParseJSON(message)
 
@@ -67,7 +67,7 @@ func TestFromJSONReturnsErrorOnUnknownMessageType(t *testing.T) {
     assert.Equals(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "foo"), err.Error())
 }
 
-func TestFromJSONReturnsErrorOnInvalidMessageFormat(t *testing.T) {
+func TestParseJSONReturnsErrorOnInvalidMessageFormat(t *testing.T) {
     message := "{\"foo\":\"bar\"}"
     msg, err := ParseJSON(message)
 

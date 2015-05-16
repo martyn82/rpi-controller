@@ -11,33 +11,33 @@ const (
 type INotification interface {
     IMessage
 
-    DeviceName() string
+    AgentName() string
     PropertyName() string
     PropertyValue() string
 }
 
 type Notification struct {
-    deviceName string
+    agentName string
     propertyName string
     propertyValue string
 }
 
 /* Create a Notification from map */
 func notificationFromMap(message map[string]string) (*Notification, error) {
-    var deviceName string
+    var agentName string
     var propertyName string
     var propertyValue string
 
     for k, v := range message {
-        if k == KEY_DEVICE {
-            deviceName = v
+        if k == KEY_AGENT {
+            agentName = v
         } else {
             propertyName = k
             propertyValue = v
         }
     }
 
-    result := NewNotification(deviceName, propertyName, propertyValue)
+    result := NewNotification(agentName, propertyName, propertyValue)
 
     if _, err := result.IsValid(); err != nil {
         return nil, err
@@ -47,17 +47,17 @@ func notificationFromMap(message map[string]string) (*Notification, error) {
 }
 
 /* Create a Notification command */
-func NewNotification(deviceName string, propertyName string, propertyValue string) *Notification {
+func NewNotification(agentName string, propertyName string, propertyValue string) *Notification {
     instance := new(Notification)
-    instance.deviceName = deviceName
+    instance.agentName = agentName
     instance.propertyName = propertyName
     instance.propertyValue = propertyValue
     return instance
 }
 
 /* Retrieve the device name */
-func (this *Notification) DeviceName() string {
-    return this.deviceName
+func (this *Notification) AgentName() string {
+    return this.agentName
 }
 
 /* Retrieve the property name */
@@ -72,7 +72,7 @@ func (this *Notification) PropertyValue() string {
 
 /* Validates the notification */
 func (this *Notification) IsValid() (bool, error) {
-    if this.deviceName == "" || this.propertyName == "" {
+    if this.agentName == "" || this.propertyName == "" {
         return false, errors.New(ERR_INVALID_NOTIFICATION)
     }
 
@@ -86,5 +86,5 @@ func (this *Notification) Type() string {
 
 /* Convert notification to string */
 func (this *Notification) JSON() string {
-    return "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_DEVICE + "\":\"" + this.deviceName + "\",\"" + this.propertyName + "\":\"" + this.propertyValue + "\"}}"
+    return "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_AGENT + "\":\"" + this.agentName + "\",\"" + this.propertyName + "\":\"" + this.propertyValue + "\"}}"
 }

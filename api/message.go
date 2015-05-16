@@ -7,7 +7,7 @@ import (
 )
 
 const (
-    KEY_DEVICE = "Device"
+    KEY_AGENT = "Agent"
     KEY_NAME = "Name"
     KEY_MODEL = "Model"
     KEY_ADDRESS = "Address"
