@@ -58,6 +58,31 @@ func TestParseJSONCreatesAppRegistrationFromString(t *testing.T) {
     assert.Equals(t, "foo", ar.AgentAddress())
 }
 
+func TestParseJSONCreatesActionRegistrationFromString(t *testing.T) {
+    message := "{\"" + TYPE_ACTION_REGISTRATION + "\":{"
+    message += "\"When\":[{\"" + KEY_AGENT + "\":\"agent1\",\"prop1\":\"val1\"}],"
+    message += "\"Then\":[{\"" + KEY_AGENT + "\":\"agent2\",\"prop2\":\"val2\"}]"
+    message += "}}"
+
+    msg, err := ParseJSON(message)
+
+    if err != nil {
+        t.Errorf(err.Error())
+    }
+
+    assert.NotNil(t, msg)
+    assert.Type(t, new(ActionRegistration), msg)
+
+    ar := msg.(*ActionRegistration)
+    assert.Equals(t, "agent1", ar.When().AgentName())
+    assert.Equals(t, "prop1", ar.When().PropertyName())
+    assert.Equals(t, "val1", ar.When().PropertyValue())
+
+    assert.Equals(t, "agent2", ar.Then()[0].AgentName())
+    assert.Equals(t, "prop2", ar.Then()[0].PropertyName())
+    assert.Equals(t, "val2", ar.Then()[0].PropertyValue())
+}
+
 func TestParseJSONReturnsErrorOnUnknownMessageType(t *testing.T) {
     message := "{\"foo\":{\"bar\":\"baz\"}}"
     msg, err := ParseJSON(message)

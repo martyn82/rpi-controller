@@ -7,12 +7,20 @@ import (
     "testing"
 )
 
+func TestFromArgumentsUnknownTypeReturnsError(t *testing.T) {
+    args := service.Arguments{}
+    _, err := FromArguments(args)
+
+    assert.NotNil(t, err)
+    assert.Equals(t, ERR_UNKNOWN_MESSAGE, err.Error())
+}
+
 func TestFromArgumentsEventReturnsNotification(t *testing.T) {
     args := service.Arguments{}
     args.EventDevice = "dev"
     args.Property = "prop"
 
-    cmd := FromArguments(args)
+    cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
     assert.Type(t, new(api.Notification), cmd)
@@ -25,7 +33,7 @@ func TestFromArgumentsDeviceRegistrationReturnsDeviceRegistration(t *testing.T) 
     args.DeviceModel = "model"
     args.DeviceAddress = "tcp:sock:port"
 
-    cmd := FromArguments(args)
+    cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
     assert.Type(t, new(api.DeviceRegistration), cmd)
@@ -37,7 +45,7 @@ func TestFromArgumentsAppRegistrationReturnsAppRegistration(t *testing.T) {
     args.AppName = "app"
     args.AppAddress = "tcp:sock:port"
 
-    cmd := FromArguments(args)
+    cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
     assert.Type(t, new(api.AppRegistration), cmd)
@@ -45,7 +53,31 @@ func TestFromArgumentsAppRegistrationReturnsAppRegistration(t *testing.T) {
 
 func TestFromArgumentsReturnsNilIfNotCompatible(t *testing.T) {
     args := service.Arguments{}
-    cmd := FromArguments(args)
+    cmd, _ := FromArguments(args)
 
     assert.Nil(t, cmd)
+}
+
+func TestFromArgumentsActionRegistrationReturnsActionRegistration(t *testing.T) {
+    args := service.Arguments{}
+    args.RegisterAction = true
+    args.EventAgentName = "agent1"
+    args.EventPropertyName = "prop1"
+    args.EventPropertyValue = "val1"
+    args.Actions = make([]service.ActionArguments, 1)
+    args.Actions[0].ActionAgentName = "agent2"
+    args.Actions[0].ActionPropertyName = "prop2"
+    args.Actions[0].ActionPropertyValue = "val2"
+
+    cmd, _ := FromArguments(args)
+
+    assert.NotNil(t, cmd)
+    assert.Type(t, new(api.ActionRegistration), cmd)
+
+    assert.Equals(t, len(args.Actions), len(cmd.(*api.ActionRegistration).Then()))
+
+    action := cmd.(*api.ActionRegistration).Then()[0]
+    assert.Equals(t, args.Actions[0].ActionAgentName, action.AgentName())
+    assert.Equals(t, args.Actions[0].ActionPropertyName, action.PropertyName())
+    assert.Equals(t, args.Actions[0].ActionPropertyValue, action.PropertyValue())
 }

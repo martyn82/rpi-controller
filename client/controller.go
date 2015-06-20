@@ -2,10 +2,11 @@ package main
 
 import (
     "flag"
+    "github.com/martyn82/rpi-controller/api" 
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/service"
-    "github.com/martyn82/rpi-controller/service/api"
     "os"
+    service_api "github.com/martyn82/rpi-controller/service/api"
     "syscall"
 )
 
@@ -26,9 +27,15 @@ func main() {
     args = parseArguments()
     settings = loadConfig(args.ConfigFile)
 
-    command := api.FromArguments(args)
-    response := sendMessageToDaemon(command.JSON())
+    var command api.IMessage
+    var err error
 
+    if command, err = service_api.FromArguments(args); err != nil {
+        StdErr.Write([]byte(err.Error() + "\n"))
+        os.Exit(ERR_WRONG_USAGE)
+    }
+
+    response := sendMessageToDaemon(command.JSON())
     StdOut.Write([]byte(response + "\n"))
 }
 
