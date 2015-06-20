@@ -5,7 +5,7 @@ import "errors"
 const (
     TYPE_TRIGGER_REGISTRATION = "Action"
 
-    ERR_INVALID_ACTION_REGISTRATION = "Invalid action registration."
+    ERR_INVALID_TRIGGER_REGISTRATION = "Invalid trigger registration."
 )
 
 type ITriggerRegistration interface {
@@ -23,7 +23,7 @@ type TriggerRegistration struct {
     then []*Action
 }
 
-/* Create action registration from map */
+/* Create trigger registration from map */
 func triggerRegistrationFromMap(message map[string][]map[string]string) (*TriggerRegistration, error) {
     var eventAgentName string
     var eventPropertyName string
@@ -89,7 +89,7 @@ func triggerRegistrationFromMap(message map[string][]map[string]string) (*Trigge
     return result, nil
 }
 
-/* Constructs a new action registration message */
+/* Constructs a new trigger registration message */
 func NewTriggerRegistration(when *Notification, then []*Action) *TriggerRegistration {
     instance := new(TriggerRegistration)
     instance.when = when
@@ -128,7 +128,7 @@ func (this *TriggerRegistration) When() *Notification {
     return this.when
 }
 
-/* Retrieves the action list for the action */
+/* Retrieves the action list for the trigger */
 func (this *TriggerRegistration) Then() []*Action {
     return this.then
 }
@@ -141,7 +141,7 @@ func (this *TriggerRegistration) Type() string {
 /* Determines if the message is valid */
 func (this *TriggerRegistration) IsValid() (bool, error) {
     if this.when.AgentName() == "" || this.when.PropertyName() == "" || len(this.then) == 0 || this.then[0] == nil || this.then[0].AgentName() == "" {
-        return false, errors.New(ERR_INVALID_ACTION_REGISTRATION)
+        return false, errors.New(ERR_INVALID_TRIGGER_REGISTRATION)
     }
 
     return true, nil

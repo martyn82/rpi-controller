@@ -54,7 +54,7 @@ func RegisterAppRegistrationMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_APP_REGISTRATION] = handler
 }
 
-/* Register an action registration message handler. Existing message handler will be overwritten. */
+/* Register a trigger registration message handler. Existing message handler will be overwritten. */
 func RegisterTriggerRegistrationMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_TRIGGER_REGISTRATION] = handler
 }

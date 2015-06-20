@@ -321,7 +321,7 @@ func onAppRegistration(message *api.AppRegistration) string {
     return response.JSON()
 }
 
-/* Handles action registration */
+/* Handles trigger registration */
 func onTriggerRegistration(message *api.TriggerRegistration) string {
     return ""
 }

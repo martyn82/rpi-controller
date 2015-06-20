@@ -10,7 +10,7 @@ const (
     ERR_INVALID_EVENT_NOTIFICATION = "An event notification needs at least %s and %s arguments to be not empty."
     ERR_INVALID_DEVICE_REGISTRATION = "A device registration needs at least %s and %s arguments to be not empty."
     ERR_INVALID_APP_REGISTRATION = "An app registration needs at least %s argument to be not empty."
-    ERR_INVALID_ACTION_REGISTRATION = "An action registration needs at least %s, %s, and %s to be not empty."
+    ERR_INVALID_TRIGGER_REGISTRATION = "A trigger registration needs at least %s, %s, and %s to be not empty."
     ERR_UNKNOWN = "Unknown series of arguments."
 
     ARG_CONFIG = "config"
@@ -113,7 +113,7 @@ func ParseArguments() Arguments {
 func startTriggerRegistration(args *Arguments) {
     var err error
 
-    fmt.Println("Action registration for an event.")
+    fmt.Println("Trigger registration for an event.")
 
     fmt.Print("Event agent? > ")
     var eventAgentName string
@@ -239,10 +239,10 @@ func (this Arguments) isValidAppRegistration() (bool, error) {
     return true, nil
 }
 
-/* Validates an action registration */
+/* Validates a trigger registration */
 func (this Arguments) isValidTriggerRegistration() (bool, error) {
     if !this.RegisterTrigger || this.EventAgentName == "" || this.EventPropertyName == "" || len(this.Actions) == 0 {
-        return false, errors.New(fmt.Sprintf(ERR_INVALID_ACTION_REGISTRATION, "Event Agent Name", "Event Property Name", "Actions"))
+        return false, errors.New(fmt.Sprintf(ERR_INVALID_TRIGGER_REGISTRATION, "Event Agent Name", "Event Property Name", "Actions"))
     }
 
     return true, nil
@@ -263,7 +263,7 @@ func (this Arguments) IsAppRegistration() bool {
     return this.RegisterApp
 }
 
-/* Determines whether the instance is an action registration */
+/* Determines whether the instance is a trigger registration */
 func (this Arguments) IsTriggerRegistration() bool {
     return this.RegisterTrigger
 }
