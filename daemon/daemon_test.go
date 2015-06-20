@@ -99,6 +99,24 @@ func TestMessageHandlerCallsRegisteredHandlerForAppRegistration(t *testing.T) {
     assert.True(t, handlerCalled)
 }
 
+func TestMessageHandlerCallsRegisteredHandlerForTriggerRegistration(t *testing.T) {
+    setupTest()
+
+    handlerCalled := false
+    handler := func (message api.IMessage) string {
+        handlerCalled = true
+        return ""
+    }
+
+    RegisterTriggerRegistrationMessageHandler(handler)
+
+    actions := make([]*api.Action, 1)
+    actions[0] = api.NewAction("agent2", "prop2", "val2")
+    handleMessage(api.NewTriggerRegistration(api.NewNotification("agent1", "prop1", "val1"), actions).JSON())
+
+    assert.True(t, handlerCalled)
+}
+
 func TestDefaultDaemonState(t *testing.T) {
     assert.Equals(t, STATE_STOPPED, State())
 }

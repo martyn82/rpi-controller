@@ -115,6 +115,12 @@ func initDaemon(socketInfo network.SocketInfo) {
         return onAppRegistration(message.(*api.AppRegistration))
     })
 
+    /* api.IMessage: api.TriggerRegistration */
+    daemon.RegisterTriggerRegistrationMessageHandler(func (message api.IMessage) string {
+        log.Println("Received API message: " + message.JSON())
+        return onTriggerRegistration(message.(*api.TriggerRegistration))
+    })
+
     daemon.Start(socketInfo)
 
     log.Printf("Daemon running on socket %q", socketInfo)
@@ -313,6 +319,11 @@ func onAppRegistration(message *api.AppRegistration) string {
     }
 
     return response.JSON()
+}
+
+/* Handles action registration */
+func onTriggerRegistration(message *api.TriggerRegistration) string {
+    return ""
 }
 
 //

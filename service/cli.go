@@ -25,7 +25,7 @@ const (
 
     ARG_REGISTER_APP = "register-app"
 
-    ARG_REGISTER_ACTION = "register-action"
+    ARG_REGISTER_TRIGGER = "register-trigger"
 )
 
 type Arguments struct {
@@ -44,7 +44,7 @@ type Arguments struct {
     AppName string
     AppAddress string
 
-    RegisterAction bool
+    RegisterTrigger bool
     EventAgentName string
     EventPropertyName string
     EventPropertyValue string
@@ -75,8 +75,8 @@ var registerApp = flag.Bool(ARG_REGISTER_APP, false, "Specify to request an app 
 var appName = deviceName
 var appAddress = deviceAddress
 
-// action registration args
-var registerAction = flag.Bool(ARG_REGISTER_ACTION, false, "Specify to request an action registration.")
+// trigger registration args
+var registerTrigger = flag.Bool(ARG_REGISTER_TRIGGER, false, "Specify to request a trigger registration.")
 
 var reader = fmt.Scanf
 
@@ -100,17 +100,17 @@ func ParseArguments() Arguments {
     args.AppName = *appName
     args.AppAddress = *appAddress
 
-    args.RegisterAction = *registerAction
+    args.RegisterTrigger = *registerTrigger
     args.Actions = make([]ActionArguments, 0)
 
-    if args.RegisterAction {
-        startActionRegistration(&args)
+    if args.RegisterTrigger {
+        startTriggerRegistration(&args)
     }
 
     return args
 }
 
-func startActionRegistration(args *Arguments) {
+func startTriggerRegistration(args *Arguments) {
     var err error
 
     fmt.Println("Action registration for an event.")
@@ -140,10 +140,10 @@ func startActionRegistration(args *Arguments) {
     args.EventPropertyName = eventPropertyName
     args.EventPropertyValue = eventPropertyValue
 
-    actionRegistration(args)
+    triggerRegistration(args)
 }
 
-func actionRegistration(args *Arguments) {
+func triggerRegistration(args *Arguments) {
     var err error
 
     fmt.Print("Action agent name? > ")
@@ -188,7 +188,7 @@ func actionRegistration(args *Arguments) {
     }
 
     if repeat == "y" {
-        actionRegistration(args)
+        triggerRegistration(args)
     }
 }
 
@@ -205,8 +205,8 @@ func (this Arguments) IsValid() (bool, error) {
         return this.isValidDeviceRegistration()
     } else if this.IsAppRegistration() {
         return this.isValidAppRegistration()
-    } else if this.IsActionRegistration() {
-        return this.isValidActionRegistration()
+    } else if this.IsTriggerRegistration() {
+        return this.isValidTriggerRegistration()
     }
 
     return false, errors.New(ERR_UNKNOWN)
@@ -240,8 +240,8 @@ func (this Arguments) isValidAppRegistration() (bool, error) {
 }
 
 /* Validates an action registration */
-func (this Arguments) isValidActionRegistration() (bool, error) {
-    if !this.RegisterAction || this.EventAgentName == "" || this.EventPropertyName == "" || len(this.Actions) == 0 {
+func (this Arguments) isValidTriggerRegistration() (bool, error) {
+    if !this.RegisterTrigger || this.EventAgentName == "" || this.EventPropertyName == "" || len(this.Actions) == 0 {
         return false, errors.New(fmt.Sprintf(ERR_INVALID_ACTION_REGISTRATION, "Event Agent Name", "Event Property Name", "Actions"))
     }
 
@@ -264,6 +264,6 @@ func (this Arguments) IsAppRegistration() bool {
 }
 
 /* Determines whether the instance is an action registration */
-func (this Arguments) IsActionRegistration() bool {
-    return this.RegisterAction
+func (this Arguments) IsTriggerRegistration() bool {
+    return this.RegisterTrigger
 }

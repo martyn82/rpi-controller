@@ -29,9 +29,9 @@ func TestParseArgumentsCreatesArgumentsInstance(t *testing.T) {
     assert.Type(t, Arguments{}, args)
 }
 
-func TestParseArgumentsForActionRegistrationCreatesActionArguments(t *testing.T) {
+func TestParseArgumentsForTriggerRegistrationCreatesActionArguments(t *testing.T) {
     mock := true
-    registerAction = &mock
+    registerTrigger = &mock
     reader = fakeReader
     mockResponses = []string{
         "event_agent",
@@ -142,9 +142,9 @@ func TestAppRegistrationIsValidIfNameIsSet(t *testing.T) {
 
 func TestActionRegistationIsValidIfAgentAndPropertyNameAreSetAndActionsNotEmpty(t *testing.T) {
     args := Arguments{}
-    args.RegisterAction = true
+    args.RegisterTrigger = true
     args.EventAgentName = ""
-    assert.True(t, args.IsActionRegistration())
+    assert.True(t, args.IsTriggerRegistration())
 
     // invalid
     valid, err := args.IsValid()

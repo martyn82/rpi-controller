@@ -58,9 +58,9 @@ func TestFromArgumentsReturnsNilIfNotCompatible(t *testing.T) {
     assert.Nil(t, cmd)
 }
 
-func TestFromArgumentsActionRegistrationReturnsActionRegistration(t *testing.T) {
+func TestFromArgumentsTriggerRegistrationReturnsTriggerRegistration(t *testing.T) {
     args := service.Arguments{}
-    args.RegisterAction = true
+    args.RegisterTrigger = true
     args.EventAgentName = "agent1"
     args.EventPropertyName = "prop1"
     args.EventPropertyValue = "val1"
@@ -72,11 +72,11 @@ func TestFromArgumentsActionRegistrationReturnsActionRegistration(t *testing.T) 
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.ActionRegistration), cmd)
+    assert.Type(t, new(api.TriggerRegistration), cmd)
 
-    assert.Equals(t, len(args.Actions), len(cmd.(*api.ActionRegistration).Then()))
+    assert.Equals(t, len(args.Actions), len(cmd.(*api.TriggerRegistration).Then()))
 
-    action := cmd.(*api.ActionRegistration).Then()[0]
+    action := cmd.(*api.TriggerRegistration).Then()[0]
     assert.Equals(t, args.Actions[0].ActionAgentName, action.AgentName())
     assert.Equals(t, args.Actions[0].ActionPropertyName, action.PropertyName())
     assert.Equals(t, args.Actions[0].ActionPropertyValue, action.PropertyValue())

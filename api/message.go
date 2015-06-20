@@ -86,8 +86,8 @@ func parseJSONComplex(message string) (IMessage, error, int) {
     }
 
     switch msgType {
-        case TYPE_ACTION_REGISTRATION:
-            msg, err := actionRegistrationFromMap(obj[TYPE_ACTION_REGISTRATION])
+        case TYPE_TRIGGER_REGISTRATION:
+            msg, err := triggerRegistrationFromMap(obj[TYPE_TRIGGER_REGISTRATION])
             return msg, err, ERR_LEVEL_NONE
     }
 

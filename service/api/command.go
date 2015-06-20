@@ -16,7 +16,7 @@ func FromArguments(args service.Arguments) (api.IMessage, error) {
         return api.NewDeviceRegistration(args.DeviceName, args.DeviceModel, args.DeviceAddress), nil
     } else if args.IsAppRegistration() {
         return api.NewAppRegistration(args.AppName, args.AppAddress), nil
-    } else if args.IsActionRegistration() {
+    } else if args.IsTriggerRegistration() {
         when := api.NewNotification(args.EventAgentName, args.EventPropertyName, args.EventPropertyValue)
 
         var then []*api.Action
@@ -27,7 +27,7 @@ func FromArguments(args service.Arguments) (api.IMessage, error) {
             then = append(then, action)
         }
 
-        return api.NewActionRegistration(when, then), nil
+        return api.NewTriggerRegistration(when, then), nil
     }
 
     return nil, errors.New(ERR_UNKNOWN_MESSAGE)

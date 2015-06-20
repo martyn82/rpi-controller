@@ -17,7 +17,7 @@ func TestNewActionContainsValues(t *testing.T) {
     assert.Equals(t, propertyValue, instance.PropertyValue())
 }
 
-func TestNewActionRegistrationContainsValues(t *testing.T) {
+func TestNewTriggerRegistrationContainsValues(t *testing.T) {
     whenAgent := "agent1"
     whenPropName := "prop1"
     whenPropValue := "val1"
@@ -32,7 +32,7 @@ func TestNewActionRegistrationContainsValues(t *testing.T) {
     then[0].propertyName = thenPropName
     then[0].propertyValue = thenPropValue
 
-    instance := NewActionRegistration(when, then)
+    instance := NewTriggerRegistration(when, then)
 
     assert.Equals(t, whenAgent, instance.when.AgentName())
     assert.Equals(t, whenPropName, instance.when.PropertyName())
@@ -42,7 +42,7 @@ func TestNewActionRegistrationContainsValues(t *testing.T) {
     assert.Equals(t, thenPropValue, instance.then[0].PropertyValue())
 }
 
-func TestActionRegistrationToStringReturnsJson(t *testing.T) {
+func TestTriggerRegistrationToStringReturnsJson(t *testing.T) {
     whenAgent := "agent1"
     whenPropName := "prop1"
     whenPropValue := "val1"
@@ -57,8 +57,8 @@ func TestActionRegistrationToStringReturnsJson(t *testing.T) {
     then[0].propertyName = thenPropName
     then[0].propertyValue = thenPropValue
 
-    instance := NewActionRegistration(when, then)
-    expectedJson := "{\"" + TYPE_ACTION_REGISTRATION + "\":{"
+    instance := NewTriggerRegistration(when, then)
+    expectedJson := "{\"" + TYPE_TRIGGER_REGISTRATION + "\":{"
     expectedJson += "\"When\":[{"
     expectedJson += "\"" + KEY_AGENT + "\":\"" + whenAgent + "\","
     expectedJson += "\"" + whenPropName + "\":\"" + whenPropValue + "\"}],"
@@ -70,7 +70,7 @@ func TestActionRegistrationToStringReturnsJson(t *testing.T) {
     assert.Equals(t, expectedJson, instance.JSON())
 }
 
-func TestActionRegistrationFromMapCreatesActionRegistration(t *testing.T) {
+func TestTriggerRegistrationFromMapCreatesTriggerRegistration(t *testing.T) {
     obj := map[string][]map[string]string{
         "When": {{
             KEY_AGENT: "agent1",
@@ -82,7 +82,7 @@ func TestActionRegistrationFromMapCreatesActionRegistration(t *testing.T) {
         }},
     }
 
-    cmd, err := actionRegistrationFromMap(obj)
+    cmd, err := triggerRegistrationFromMap(obj)
 
     assert.Nil(t, err)
     assert.Equals(t, "agent1", cmd.When().AgentName())
@@ -94,7 +94,7 @@ func TestActionRegistrationFromMapCreatesActionRegistration(t *testing.T) {
     assert.Equals(t, "val2", cmd.Then()[0].PropertyValue())
 }
 
-func TestActionRegistrationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
+func TestTriggerRegistrationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
     obj := map[string][]map[string]string{
         "If": {{
             "agent": "agent",
@@ -102,50 +102,50 @@ func TestActionRegistrationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
         }},
     }
 
-    _, err := actionRegistrationFromMap(obj)
+    _, err := triggerRegistrationFromMap(obj)
     assert.NotNil(t, err)
 }
 
-func TestActionRegistrationIsValidIfItContainsWhenAgentAndWhenPropertyAndAtLeastOneThen(t *testing.T) {
+func TestTriggerRegistrationIsValidIfItContainsWhenAgentAndWhenPropertyAndAtLeastOneThen(t *testing.T) {
     then := make([]*Action, 1)
     then[0] = NewAction("agent", "", "")
-    instance := NewActionRegistration(NewNotification("agent", "prop", ""), then)
+    instance := NewTriggerRegistration(NewNotification("agent", "prop", ""), then)
     ok, err := instance.IsValid()
 
     assert.True(t, ok)
     assert.Nil(t, err)
 }
 
-func TestActionRegistrationIsInvalidIfItMissesWhenAgentName(t *testing.T) {
+func TestTriggerRegistrationIsInvalidIfItMissesWhenAgentName(t *testing.T) {
     then := make([]*Action, 1)
     then[0] = NewAction("agent", "", "")
-    instance := NewActionRegistration(NewNotification("", "", ""), then)
+    instance := NewTriggerRegistration(NewNotification("", "", ""), then)
     ok, err := instance.IsValid()
 
     assert.False(t, ok)
     assert.NotNil(t, err)
 }
 
-func TestActionRegistrationIsInvalidIfItMissesThenAgentName(t *testing.T) {
+func TestTriggerRegistrationIsInvalidIfItMissesThenAgentName(t *testing.T) {
     then := make([]*Action, 1)
-    instance := NewActionRegistration(NewNotification("agent", "prop", ""), then)
+    instance := NewTriggerRegistration(NewNotification("agent", "prop", ""), then)
     ok, err := instance.IsValid()
 
     assert.False(t, ok)
     assert.NotNil(t, err)
 }
 
-func TestActionRegistrationIsValidIfItMissesWhenPropertyValue(t *testing.T) {
+func TestTriggerRegistrationIsValidIfItMissesWhenPropertyValue(t *testing.T) {
     then := make([]*Action, 1)
     then[0] = NewAction("agent", "", "")
-    instance := NewActionRegistration(NewNotification("agent", "prop", ""), then)
+    instance := NewTriggerRegistration(NewNotification("agent", "prop", ""), then)
     ok, err := instance.IsValid()
 
     assert.True(t, ok)
     assert.Nil(t, err)
 }
 
-func TestTypeOfReturnsActionRegistration(t *testing.T) {
-    instance := NewActionRegistration(NewNotification("", "", ""), make([]*Action, 1))
-    assert.Equals(t, TYPE_ACTION_REGISTRATION, instance.Type())
+func TestTypeOfReturnsTriggerRegistration(t *testing.T) {
+    instance := NewTriggerRegistration(NewNotification("", "", ""), make([]*Action, 1))
+    assert.Equals(t, TYPE_TRIGGER_REGISTRATION, instance.Type())
 }

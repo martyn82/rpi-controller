@@ -58,8 +58,8 @@ func TestParseJSONCreatesAppRegistrationFromString(t *testing.T) {
     assert.Equals(t, "foo", ar.AgentAddress())
 }
 
-func TestParseJSONCreatesActionRegistrationFromString(t *testing.T) {
-    message := "{\"" + TYPE_ACTION_REGISTRATION + "\":{"
+func TestParseJSONCreatesTriggerRegistrationFromString(t *testing.T) {
+    message := "{\"" + TYPE_TRIGGER_REGISTRATION + "\":{"
     message += "\"When\":[{\"" + KEY_AGENT + "\":\"agent1\",\"prop1\":\"val1\"}],"
     message += "\"Then\":[{\"" + KEY_AGENT + "\":\"agent2\",\"prop2\":\"val2\"}]"
     message += "}}"
@@ -71,9 +71,9 @@ func TestParseJSONCreatesActionRegistrationFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Type(t, new(ActionRegistration), msg)
+    assert.Type(t, new(TriggerRegistration), msg)
 
-    ar := msg.(*ActionRegistration)
+    ar := msg.(*TriggerRegistration)
     assert.Equals(t, "agent1", ar.When().AgentName())
     assert.Equals(t, "prop1", ar.When().PropertyName())
     assert.Equals(t, "val1", ar.When().PropertyValue())

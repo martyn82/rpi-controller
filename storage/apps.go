@@ -7,8 +7,6 @@ import (
     "github.com/mattn/go-sqlite3"
 )
 
-const ()
-
 type Apps struct {
     items []*AppItem
     dbFile string
@@ -26,7 +24,7 @@ func NewAppRepository(dbFile string) (*Apps, error) {
     return instance, nil
 }
 
-/* Adds a device to the repository */
+/* Adds an item to the repository */
 func (this *Apps) Add(item Item) (int64, error) {
     itm := item.(*AppItem)
 

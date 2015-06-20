@@ -3,12 +3,12 @@ package api
 import "errors"
 
 const (
-    TYPE_ACTION_REGISTRATION = "Action"
+    TYPE_TRIGGER_REGISTRATION = "Action"
 
     ERR_INVALID_ACTION_REGISTRATION = "Invalid action registration."
 )
 
-type IActionRegistration interface {
+type ITriggerRegistration interface {
     IMessage
 }
 
@@ -18,13 +18,13 @@ type Action struct {
     propertyValue string
 }
 
-type ActionRegistration struct {
+type TriggerRegistration struct {
     when *Notification
     then []*Action
 }
 
 /* Create action registration from map */
-func actionRegistrationFromMap(message map[string][]map[string]string) (*ActionRegistration, error) {
+func triggerRegistrationFromMap(message map[string][]map[string]string) (*TriggerRegistration, error) {
     var eventAgentName string
     var eventPropertyName string
     var eventPropertyValue string
@@ -80,7 +80,7 @@ func actionRegistrationFromMap(message map[string][]map[string]string) (*ActionR
     }
 
     when := NewNotification(eventAgentName, eventPropertyName, eventPropertyValue)
-    result := NewActionRegistration(when, then)
+    result := NewTriggerRegistration(when, then)
 
     if _, err := result.IsValid(); err != nil {
         return nil, err
@@ -90,8 +90,8 @@ func actionRegistrationFromMap(message map[string][]map[string]string) (*ActionR
 }
 
 /* Constructs a new action registration message */
-func NewActionRegistration(when *Notification, then []*Action) *ActionRegistration {
-    instance := new(ActionRegistration)
+func NewTriggerRegistration(when *Notification, then []*Action) *TriggerRegistration {
+    instance := new(TriggerRegistration)
     instance.when = when
     instance.then = then
 
@@ -124,22 +124,22 @@ func (this *Action) PropertyValue() string {
 }
 
 /* Retrieves the event trigger for the action */
-func (this *ActionRegistration) When() *Notification {
+func (this *TriggerRegistration) When() *Notification {
     return this.when
 }
 
 /* Retrieves the action list for the action */
-func (this *ActionRegistration) Then() []*Action {
+func (this *TriggerRegistration) Then() []*Action {
     return this.then
 }
 
 /* Retrieves the message type */
-func (this *ActionRegistration) Type() string {
-    return TYPE_ACTION_REGISTRATION
+func (this *TriggerRegistration) Type() string {
+    return TYPE_TRIGGER_REGISTRATION
 }
 
 /* Determines if the message is valid */
-func (this *ActionRegistration) IsValid() (bool, error) {
+func (this *TriggerRegistration) IsValid() (bool, error) {
     if this.when.AgentName() == "" || this.when.PropertyName() == "" || len(this.then) == 0 || this.then[0] == nil || this.then[0].AgentName() == "" {
         return false, errors.New(ERR_INVALID_ACTION_REGISTRATION)
     }
@@ -147,9 +147,9 @@ func (this *ActionRegistration) IsValid() (bool, error) {
     return true, nil
 }
 
-/* Converts the action registration to JSON */
-func (this *ActionRegistration) JSON() string {
-    result := "{\"" + TYPE_ACTION_REGISTRATION + "\":{\"When\":[{\"" + KEY_AGENT + "\":\""
+/* Converts the trigger registration to JSON */
+func (this *TriggerRegistration) JSON() string {
+    result := "{\"" + TYPE_TRIGGER_REGISTRATION + "\":{\"When\":[{\"" + KEY_AGENT + "\":\""
     result += this.when.AgentName() + "\",\""
     result += this.when.PropertyName() + "\":\""
     result += this.when.PropertyValue() + "\"}],\"Then\":["
