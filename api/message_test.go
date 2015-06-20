@@ -83,13 +83,22 @@ func TestParseJSONCreatesTriggerRegistrationFromString(t *testing.T) {
     assert.Equals(t, "val2", ar.Then()[0].PropertyValue())
 }
 
-func TestParseJSONReturnsErrorOnUnknownMessageType(t *testing.T) {
+func TestParseJSONReturnsErrorOnUnknownSimpleMessageType(t *testing.T) {
     message := "{\"foo\":{\"bar\":\"baz\"}}"
     msg, err := ParseJSON(message)
 
     assert.NotNil(t, err)
     assert.Nil(t, msg)
     assert.Equals(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "foo"), err.Error())
+}
+
+func TestParseJSONReturnsErrorOnUnknownComplexMessageType(t *testing.T) {
+    message := "{\"foo\":{\"bar\":[{\"baz\":\"boo\"}]},\"far\":{\"faz\":[{\"fbaz\":\"fboo\"}]}}"
+    msg, err := ParseJSON(message)
+
+    assert.NotNil(t, err)
+    assert.Nil(t, msg)
+    assert.Equals(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "far"), err.Error())
 }
 
 func TestParseJSONReturnsErrorOnInvalidMessageFormat(t *testing.T) {
