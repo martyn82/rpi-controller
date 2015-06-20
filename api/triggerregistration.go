@@ -3,7 +3,7 @@ package api
 import "errors"
 
 const (
-    TYPE_TRIGGER_REGISTRATION = "Action"
+    TYPE_TRIGGER_REGISTRATION = "Trigger"
 
     ERR_INVALID_TRIGGER_REGISTRATION = "Invalid trigger registration."
 )

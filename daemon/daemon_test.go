@@ -117,6 +117,12 @@ func TestMessageHandlerCallsRegisteredHandlerForTriggerRegistration(t *testing.T
     assert.True(t, handlerCalled)
 }
 
+func TestHandleMessageReturnsEmptyStringOnError(t *testing.T) {
+    message := "{\"Trigger\":{\"When\":[{\"Agent\":\"agent1\",\"prop1\":\"val1\"}]},{\"If\":[]}}"
+    msg := handleMessage(message)
+    assert.Equals(t, "", msg)
+}
+
 func TestDefaultDaemonState(t *testing.T) {
     assert.Equals(t, STATE_STOPPED, State())
 }
