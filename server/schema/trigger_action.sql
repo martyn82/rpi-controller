@@ -1,7 +1,7 @@
 CREATE TABLE trigger_action (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     trigger_id      INTEGER NOT NULL    DEFAULT 0,
-    agentName       TEXT    NOT NULL    DEFAULT '',
-    propertyName    TEXT    NOT NULL    DEFAULT '',
-    propertyValue   TEXT    NOT NULL    DEFAULT ''
+    agent_name      TEXT    NOT NULL    DEFAULT '',
+    property_name   TEXT    NOT NULL    DEFAULT '',
+    property_value  TEXT    NOT NULL    DEFAULT ''
 );

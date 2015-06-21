@@ -8,12 +8,12 @@ import (
 func checkTriggerItemImplementsItem(itm Item) {}
 
 func TestTriggerItemImplementsItem(t *testing.T) {
-    instance := NewTriggerItem(nil, nil)
+    instance := NewTriggerItem(new(TriggerEvent), make([]*TriggerAction, 0))
     checkTriggerItemImplementsItem(instance)
 }
 
 func TestTriggerItemGetUnknownFieldByNameReturnsNil(t *testing.T) {
-    instance := NewTriggerItem(nil, nil)
+    instance := NewTriggerItem(new(TriggerEvent), make([]*TriggerAction, 0))
     val := instance.Get("foo")
     assert.Nil(t, val)
 }
@@ -26,6 +26,7 @@ func TestTriggerItemGetKnownProperties(t *testing.T) {
     instance := NewTriggerItem(event, actions)
 
     assert.NotNil(t, instance.Get("id"))
+    assert.NotNil(t, instance.Get("uuid"))
     assert.NotNil(t, instance.Get("event"))
     assert.NotNil(t, instance.Get("actions"))
 }
@@ -35,7 +36,7 @@ func TestTriggerItemSetKnownProperties(t *testing.T) {
     actions := make([]*TriggerAction, 1)
     actions[0] = new(TriggerAction)
 
-    instance := NewTriggerItem(nil, nil)
+    instance := NewTriggerItem(new(TriggerEvent), make([]*TriggerAction, 0))
 
     instance.Set("id", int64(1))
     assert.Equals(t, int64(1), instance.Id())
@@ -46,4 +47,7 @@ func TestTriggerItemSetKnownProperties(t *testing.T) {
     instance.Set("actions", actions)
     getActions := instance.Get("actions")
     assert.Equals(t, actions[0], getActions.([]*TriggerAction)[0])
+
+    instance.Set("uuid", "foo")
+    assert.Equals(t, "foo", instance.Get("uuid"))
 }
