@@ -4,8 +4,8 @@ import (
     "database/sql"
     "errors"
     "github.com/mattn/go-sqlite3"
-    "path"
     "io/ioutil"
+    "path"
     "os"
 )
 
@@ -47,7 +47,6 @@ func installSchema(schemaPath string, db *sql.DB) (int, error) {
         return 0, err
     }
 
-    var stmt *sql.Stmt
     filesImported := 0
 
     for _, info := range infos {
@@ -60,6 +59,8 @@ func installSchema(schemaPath string, db *sql.DB) (int, error) {
         if contents, err = ioutil.ReadFile(path.Join(schemaPath, info.Name())); err != nil {
             return filesImported, err
         }
+
+        var stmt *sql.Stmt
 
         if stmt, err = db.Prepare(string(contents)); err != nil {
             return filesImported, err
