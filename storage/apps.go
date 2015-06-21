@@ -47,7 +47,7 @@ func (this *Apps) Find(identity int64) (Item, error) {
     return nil, errors.New(fmt.Sprintf(ERR_ITEM_NOT_FOUND, identity))
 }
 
-/* Retrievs all items at once */
+/* Retrieves all items at once */
 func (this *Apps) All() []Item {
     var items []Item
 
@@ -101,7 +101,7 @@ func (this *Apps) store(item *AppItem) error {
     return err
 }
 
-/* Adds all devices from DB */
+/* Adds all items from DB */
 func (this *Apps) loadAllFromDb(db *sql.DB) error {
     var err error
     var rows *sql.Rows
