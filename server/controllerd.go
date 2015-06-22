@@ -152,17 +152,20 @@ func stopDaemon() {
 func onCommand(message *api.Command) string {
     log.Printf("Dispatch command...")
 
-    var response *api.Response
     dev := devices.Get(message.AgentName())
 
     if dev == nil {
-        response = api.NewResponse([]error{errors.New(fmt.Sprintf("Device '%s' not registered.", message.AgentName()))})
-    } else {
-        err := dev.(device.IDevice).Command(message)
-        response = api.NewResponse([]error{err})
+        log.Printf("Device '%s' not registered.", message.AgentName())
+        return api.NewResponse([]error{errors.New(fmt.Sprintf("Device '%s' not registered.", message.AgentName()))}).JSON()
     }
 
-    return response.JSON()
+    if err := dev.(device.IDevice).Command(message); err != nil {
+        log.Printf("Error dispatching command: %s", err.Error())
+        return api.NewResponse([]error{err}).JSON()
+    }
+ 
+    log.Printf("Dispatch complete.")
+    return api.NewResponse([]error{}).JSON()
 }
 
 /* Handles an event notification */
