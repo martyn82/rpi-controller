@@ -141,3 +141,26 @@ func TestTriggersAllRetrievesAllItems(t *testing.T) {
     items := instance.All()
     assert.Equals(t, 2, len(items))
 }
+
+func TestTriggersSubsequentAdditionsDoNotOverwrite(t *testing.T) {
+    db.SetupDb(triggersTestDb, triggersSchemaDir)
+    defer db.RemoveDbFile(triggersTestDb)
+
+    instance, err := NewTriggerRepository(triggersTestDb)
+    assert.Nil(t, err)
+    assert.Equals(t, 0, instance.Size())
+
+    actions := make([]*TriggerAction, 1)
+    actions[0] = NewTriggerAction("agent1.2", "prop1.2", "val1.2")
+    first := NewTriggerItem(NewTriggerEvent("agent1.1", "prop1.1", "val1.1"), actions)
+    instance.Add(first)
+    assert.Equals(t, int64(1), first.Id())
+    assert.Equals(t, int64(1), first.event.Id())
+
+    actions = make([]*TriggerAction, 1)
+    actions[0] = NewTriggerAction("agent2.2", "prop2.2", "val2.2")
+    second := NewTriggerItem(NewTriggerEvent("agent2.1", "prop2.1", "val2.1"), actions)
+    instance.Add(second)
+    assert.Equals(t, int64(2), second.Id())
+    assert.Equals(t, int64(2), second.event.Id())
+}

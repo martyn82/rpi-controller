@@ -98,7 +98,7 @@ func (this *Triggers) store(item *TriggerItem) error {
         triggerId, _ = result.LastInsertId()
         item.Set("id", triggerId)
 
-        result, err = db.Exec("REPLACE INTO trigger_event (id, trigger_id, agent_name, property_name, property_value) VALUES (?, ?, ?, ?, ?)", item.event.id, triggerId, item.event.agentName, item.event.propertyName, item.event.propertyValue)
+        result, err = db.Exec("REPLACE INTO trigger_event (trigger_id, agent_name, property_name, property_value) VALUES (?, ?, ?, ?)", triggerId, item.event.agentName, item.event.propertyName, item.event.propertyValue)
     }
 
     if err == nil {
@@ -106,7 +106,7 @@ func (this *Triggers) store(item *TriggerItem) error {
         actions := item.actions
 
         for _, v := range actions {
-            result, _ = db.Exec("REPLACE INTO trigger_action (id, trigger_id, agent_name, property_name, property_value) VALUES (?, ?, ?, ?, ?)", v.id, triggerId, v.agentName, v.propertyName, v.propertyValue)
+            result, _ = db.Exec("REPLACE INTO trigger_action (trigger_id, agent_name, property_name, property_value) VALUES (?, ?, ?, ?)", triggerId, v.agentName, v.propertyName, v.propertyValue)
             v.id, _ = result.LastInsertId()
         }
     }
