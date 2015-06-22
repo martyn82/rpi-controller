@@ -28,7 +28,7 @@ func TestQueryToStringReturnsJson(t *testing.T) {
 func TestQueryFromMapCreatesQuery(t *testing.T) {
     obj := map[string]string{
         KEY_AGENT: "dev",
-        "Property": "prop",
+        KEY_PROPERTY: "prop",
     }
 
     qry, err := queryFromMap(obj)

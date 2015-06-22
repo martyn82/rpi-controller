@@ -75,5 +75,5 @@ func (this *Query) Type() string {
 
 /* Converts the Query to string */
 func (this *Query) JSON() string {
-     return "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"" + this.agentName + "\",\"Property\":\"" + this.propertyName + "\"}}"
+     return "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"" + this.agentName + "\",\"" + KEY_PROPERTY + "\":\"" + this.propertyName + "\"}}"
 }

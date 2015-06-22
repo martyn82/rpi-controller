@@ -125,3 +125,17 @@ func TestParseJSONReturnsErrorOnInvalidMessageFormat(t *testing.T) {
     assert.NotNil(t, err)
     assert.Nil(t, msg)
 }
+
+func TestParseJSONCreatesQueryFromString(t *testing.T) {
+    message := "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"agent\",\"" + KEY_PROPERTY + "\":\"prop\"}}"
+    msg, err := ParseJSON(message)
+
+    qry := msg.(*Query)
+
+    assert.Nil(t, err)
+    assert.NotNil(t, qry)
+    assert.Type(t, new(Query), qry)
+
+    assert.Equals(t, "agent", qry.AgentName())
+    assert.Equals(t, "prop", qry.PropertyName())
+}

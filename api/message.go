@@ -11,6 +11,7 @@ const (
     KEY_NAME = "Name"
     KEY_MODEL = "Model"
     KEY_ADDRESS = "Address"
+    KEY_PROPERTY = "Property"
 
     ERR_UNSUPPORTED_TYPE = "Unsupported message type '%s'."
 
@@ -68,6 +69,9 @@ func parseJSONSimple(message string) (IMessage, error, int) {
             return msg, err, ERR_LEVEL_NONE
         case TYPE_APP_REGISTRATION:
             msg, err := appRegistrationFromMap(obj[TYPE_APP_REGISTRATION])
+            return msg, err, ERR_LEVEL_NONE
+        case TYPE_QUERY:
+            msg, err := queryFromMap(obj[TYPE_QUERY])
             return msg, err, ERR_LEVEL_NONE
     }
 
