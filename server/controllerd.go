@@ -148,11 +148,13 @@ func onEventNotification(message *api.Notification) string {
     trs := triggers.FindByEvent(trigger.NewTriggerEvent(message.AgentName(), message.PropertyName(), message.PropertyValue()))
     log.Printf("Found %d triggers to process...", len(trs))
 
-    for _, t := range trs {
-        for _, a := range t.Actions() {
-            daemon.ExecuteAPIMessage(api.NewNotification(a.AgentName(), a.PropertyName(), a.PropertyValue()))
+    go func (trs []trigger.ITrigger) {
+        for _, t := range trs {
+            for _, a := range t.Actions() {
+                daemon.ExecuteAPIMessage(api.NewNotification(a.AgentName(), a.PropertyName(), a.PropertyValue()))
+            }
         }
-    }
+    }(trs)
 
     response = api.NewResponse([]error{})
     return response.JSON()
