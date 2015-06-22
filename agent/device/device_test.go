@@ -28,6 +28,9 @@ func CreateGenericDevice(info IDeviceInfo) *Device {
     instance.commandProcessor = func (sender string, command api.ICommand) (string, error) {
         return command.PropertyName() + command.PropertyValue(), nil
     }
+    instance.queryProcessor = func (sender string, query api.IQuery) (string, error) {
+        return query.PropertyName(), nil
+    }
 
     return instance
 }
@@ -163,4 +166,57 @@ func TestCommandReturnsErrorIfNoCommandProcessorDefined(t *testing.T) {
 
     assert.NotNil(t, err)
     assert.Equals(t, fmt.Sprintf(ERR_NO_COMMAND_PROCESSOR, instance.Info().String()), err.Error())
+}
+
+func TestQueryReturnsErrorIfNoQueryProcessorIsDefined(t *testing.T) {
+    defer socket.RemoveSocket(deviceSocketInfo.Address)
+
+    listener := socket.StartFakeServer(deviceSocketInfo.Type, deviceSocketInfo.Address)
+    defer listener.Close()
+
+    instance := CreateGenericDevice(DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address})
+    instance.queryProcessor = nil
+    err := instance.Query(api.NewQuery("", ""))
+
+    assert.NotNil(t, err)
+    assert.Equals(t, fmt.Sprintf(ERR_NO_QUERY_PROCESSOR, instance.Info().String()), err.Error())
+}
+
+func TestQueryIsSent(t *testing.T) {
+    defer socket.RemoveSocket(deviceSocketInfo.Address)
+
+    listener := socket.StartFakeServer(deviceSocketInfo.Type, deviceSocketInfo.Address)
+    defer listener.Close()
+
+    var receivedMessage string
+    go func () {
+        var client net.Conn
+        var err error
+
+        if client, err = listener.Accept(); err != nil {
+            panic(err)
+        }
+
+        buffer := make([]byte, 512)
+        bytesRead, _ := client.Read(buffer)
+        receivedMessage = string(buffer[:bytesRead])
+    }()
+
+    time.Sleep(waitTimeout)
+
+    instance := CreateGenericDevice(DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address})
+
+    var err error
+    err = instance.Connect()
+    assert.Nil(t, err)
+
+    time.Sleep(waitTimeout)
+
+    qry := api.NewQuery("", "foo")
+    err = instance.Query(qry)
+    assert.Nil(t, err)
+
+    time.Sleep(waitTimeout)
+
+    assert.Equals(t, "foo", receivedMessage)
 }

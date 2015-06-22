@@ -13,8 +13,9 @@ const (
     DEVICE_TYPE = "DENON-AVR"
     PAUSE_CHAR = "\r"
 
-    ERR_UNKNOWN_EVENT = "Unknown event '%s' for device '%s' with name '%s'."
     ERR_UNKNOWN_COMMAND = "Unknown command '%s' for device '%s' with name '%s'."
+    ERR_UNKNOWN_EVENT = "Unknown event '%s' for device '%s' with name '%s'."
+    ERR_UNKNOWN_QUERY = "Unknown query property '%s' for device '%s' with name '%s'."
 
     // states
     POWER_ON = "PWON"
@@ -25,6 +26,12 @@ const (
     // properties
     MASTER_VOLUME = "MV"
     SOURCE_INPUT = "SI"
+
+    // queries
+    QUERY_POWER = "PW?"
+    QUERY_MUTE = "MU?"
+    QUERY_MASTER_VOLUME = "MV?"
+    QUERY_SOURCE_INPUT = "SI?"
 )
 
 /* Process a command for Denon */
@@ -110,4 +117,25 @@ func EventProcessor(sender string, event []byte) (messages.IEvent, error) {
     }
 
     return nil, errors.New(fmt.Sprintf(ERR_UNKNOWN_EVENT, eventString, DEVICE_TYPE, sender))
+}
+
+/* Processes a Denon query */
+func QueryProcessor(sender string, query api.IQuery) (string, error) {
+    property := query.PropertyName()
+
+    switch property {
+        case api.PROPERTY_POWER:
+            return QUERY_POWER + PAUSE_CHAR, nil
+
+        case api.PROPERTY_MUTE:
+            return QUERY_MUTE + PAUSE_CHAR, nil
+
+        case api.PROPERTY_VOLUME:
+            return QUERY_MASTER_VOLUME + PAUSE_CHAR, nil
+
+        case api.PROPERTY_SOURCE:
+            return QUERY_SOURCE_INPUT + PAUSE_CHAR, nil
+    }
+
+    return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_QUERY, property, DEVICE_TYPE, sender))
 }

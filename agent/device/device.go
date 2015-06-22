@@ -11,10 +11,12 @@ import (
 const (
     ERR_NO_COMMAND_PROCESSOR = "Device has no command processor: %s"
     ERR_NO_EVENT_PROCESSOR = "Device has no event processor: %s"
+    ERR_NO_QUERY_PROCESSOR = "Device has no query processor: %s"
 )
 
 type CommandProcessor func (sender string, command api.ICommand) (string, error)
 type EventProcessor func (sender string, event []byte) (messages.IEvent, error)
+type QueryProcessor func (sender string, query api.IQuery) (string, error)
 type MessageHandler func (sender IDevice, message api.IMessage)
 
 type IDevice interface {
@@ -22,6 +24,7 @@ type IDevice interface {
     Connect() error
     Disconnect() error
     Command(command api.ICommand) error
+    Query(query api.IQuery) error
     SetMessageHandler(handler MessageHandler)
 }
 
@@ -32,6 +35,7 @@ type Device struct {
     info IDeviceInfo
     commandProcessor CommandProcessor
     eventProcessor EventProcessor
+    queryProcessor QueryProcessor
     messageHandler MessageHandler
 }
 
@@ -51,6 +55,22 @@ func (this *Device) Command(command api.ICommand) error {
 
     if commandString, err = this.commandProcessor(this.Info().Name(), command); err == nil {
         err = this.Send([]byte(commandString))
+    }
+
+    return err
+}
+
+/* Sends the query to the agent */
+func (this *Device) Query(query api.IQuery) error {
+    if this.queryProcessor == nil {
+        return errors.New(fmt.Sprintf(ERR_NO_QUERY_PROCESSOR, this.Info().String()))
+    }
+
+    var err error
+    var queryString string
+
+    if queryString, err = this.queryProcessor(this.Info().Name(), query); err == nil {
+        err = this.Send([]byte(queryString))
     }
 
     return err
