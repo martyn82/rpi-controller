@@ -5,7 +5,7 @@ import "errors"
 const (
     TYPE_NOTIFICATION = "Event"
 
-    ERR_INVALID_NOTIFICATION = "Invalid event notification; missing device and/or property name."
+    ERR_INVALID_NOTIFICATION = "Invalid event notification; missing agent and/or property name."
 )
 
 type INotification interface {
