@@ -204,7 +204,7 @@ func onEventNotification(message *api.Notification) string {
     go func (trs []trigger.ITrigger) {
         for _, t := range trs {
             for _, a := range t.Actions() {
-                daemon.ExecuteAPIMessage(api.NewNotification(a.AgentName(), a.PropertyName(), a.PropertyValue()))
+                daemon.ExecuteAPIMessage(api.NewCommand(a.AgentName(), a.PropertyName(), a.PropertyValue()))
             }
         }
     }(trs)
@@ -247,6 +247,9 @@ func initDevices(databaseFile string) {
                 log.Printf("Broadcasting message to apps...")
                 notified := apps.Broadcast(message.JSON())
                 log.Printf("%d apps notified.", notified)
+
+                notification := message.(api.INotification)
+                daemon.ExecuteAPIMessage(notification)
             })
         }
     }
