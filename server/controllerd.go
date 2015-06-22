@@ -8,6 +8,7 @@ import (
     "github.com/martyn82/rpi-controller/daemon"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/storage"
+    "github.com/martyn82/rpi-controller/trigger"
     "log"
     "os"
     "os/signal"
@@ -17,6 +18,7 @@ import (
 var args daemon.Arguments
 var apps *app.AppCollection
 var devices *device.DeviceCollection
+var triggers *trigger.TriggerCollection
 var settings daemon.DaemonConfig
 
 /* main entry */
@@ -37,6 +39,7 @@ func start() {
 
     initApps(settings.DatabaseFile)
     initDevices(settings.DatabaseFile)
+    initTriggers(settings.DatabaseFile)
     initDaemon(network.SocketInfo{settings.Socket.Type, settings.Socket.Address})
 
     daemon.NotifyState(daemon.STATE_STARTED)
@@ -100,7 +103,7 @@ func initDaemon(socketInfo network.SocketInfo) {
     /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return "got event: " + message.JSON()
+        return onEventNotification(message.(*api.Notification))
     })
 
     /* api.IMessage: api.DeviceRegistration */
@@ -133,6 +136,26 @@ func stopDaemon() {
     daemon.Stop()
 
     log.Printf("Daemon stopped")
+}
+
+// ########### EVENT ###########
+
+/* Handles an event notification */
+func onEventNotification(message *api.Notification) string {
+    var response *api.Response
+
+    log.Printf("Executing triggers...")
+    trs := triggers.FindByEvent(trigger.NewTriggerEvent(message.AgentName(), message.PropertyName(), message.PropertyValue()))
+    log.Printf("Found %d triggers to process...", len(trs))
+
+    for _, t := range trs {
+        for _, a := range t.Actions() {
+            daemon.ExecuteAPIMessage(api.NewNotification(a.AgentName(), a.PropertyName(), a.PropertyValue()))
+        }
+    }
+
+    response = api.NewResponse([]error{})
+    return response.JSON()
 }
 
 // ########### DEVICES ###########
@@ -321,93 +344,48 @@ func onAppRegistration(message *api.AppRegistration) string {
     return response.JSON()
 }
 
-/* Handles trigger registration */
-func onTriggerRegistration(message *api.TriggerRegistration) string {
-    return ""
+// ########### TRIGGERS ###########
+
+/* Initialize triggers */
+func initTriggers(databaseFile string) {
+    log.Printf("Initializing triggers...")
+
+    var err error
+    var triggerRepo *storage.Triggers
+
+    if triggerRepo, err = storage.NewTriggerRepository(databaseFile); err != nil {
+        log.Fatal(err.Error())
+    }
+
+    if triggers, err = trigger.NewTriggerCollection(triggerRepo); err != nil {
+        log.Fatal(err.Error())
+    }
+
+    log.Printf("%d triggers loaded.", triggers.Size())
+    log.Printf("Triggers initialized.")
 }
 
-//
-///* setup actions to be taken on events */
-//func initializeActions(actions []configuration.ActionConfiguration) {
-//    for i :=range actions {
-//        actionConfig := actions[i]
-//        msgWhen, parseErr := messages.Parse(messages.MSG_TYPE_EVENT + " " + actionConfig.When)
-//
-//        if parseErr != nil {
-//            log.Println(parseErr)
-//            break
-//        }
-//
-//        thens := make([]messages.IMessage, len(actionConfig.Then))
-//        for i := range actionConfig.Then {
-//            msgThen, err := messages.Parse(actionConfig.Then[i])
-//            thens[i] = msgThen
-//
-//            if err != nil {
-//                log.Println(err)
-//                break
-//            }
-//        }
-//
-//        if len(thens) > 0 {
-//            action := action.NewAction(msgWhen, thens)
-//            ActionRegistry.Register(action)
-//        }
-//
-//        log.Println(fmt.Sprintf("Registered %d actions for event '%s'", len(thens), actionConfig.When))
-//    }
-//}
+/* Handles trigger registration */
+func onTriggerRegistration(message *api.TriggerRegistration) string {
+    var err error
+    var response *api.Response
 
-///* handle application message */
-//func handleApp(message messages.IAppMessage) error {
-//    var t interface {}
-//    t = message
-//
-//    switch t.(type) {
-//        case *messages.AppRegistration:
-//            return registerApp(message.(*messages.AppRegistration))
-//    }
-//
-//    return errors.New("Unsupported app message type.")
-//}
-//
-//func registerApp(message *messages.AppRegistration) error {
-//    application := app.CreateApp(message.Name(), message.Protocol(), message.Address())
-//    log.Println("Connecting to app... " + application.Name())
-//
-//    if err := application.Connect(); err != nil {
-//        return err
-//    }
-//
-//    AppRegistry.Register(application)
-//    log.Println(fmt.Sprintf("Registered app '%s'.", application.Name()))
-//
-//    return nil
-//}
-//
-//func sendToApps(event messages.IEvent) {
-//    var err error
-//    apps := AppRegistry.GetAllApps()
-//    
-//    log.Println(fmt.Sprintf("Notifying %d apps.", len(apps)))
-//
-//    for _, app := range apps {
-//        log.Println("Notifying app " + app.Name())
-//
-//        if err = app.Notify(createAppNotification(event)); err != nil {
-//            log.Println(err.Error())
-//        }
-//    }
-//}
-//
-//func createAppNotification(event messages.IEvent) *app.Notification {
-//    not := new(app.Notification)
-//    not.EventType = event.Type()
-//    not.DeviceName = event.TargetDeviceName()
-//
-//    if _, ok := event.(*messages.ValueEvent); ok {
-//        not.Value = event.(*messages.ValueEvent).Value()
-//    }
-//
-//    return not
-//}
+    event := trigger.NewTriggerEvent(message.When().AgentName(), message.When().PropertyName(), message.When().PropertyValue())
+    actions := make([]*trigger.TriggerAction, len(message.Then()))
+
+    for i, v := range message.Then() {
+        actions[i] = trigger.NewTriggerAction(v.AgentName(), v.PropertyName(), v.PropertyValue())
+    }
+
+    trigger := trigger.NewTrigger("", event, actions)
+
+    if err = triggers.Add(trigger); err != nil {
+        response = api.NewResponse([]error{err})
+        log.Printf("Error registering trigger: %s", err.Error())
+    } else {
+        response = api.NewResponse([]error{})
+        log.Printf("Successfully registered trigger.")
+    }
+
+    return response.JSON()
+}
