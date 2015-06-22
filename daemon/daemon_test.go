@@ -131,3 +131,17 @@ func TestNotifyStateChangesState(t *testing.T) {
     NotifyState(STATE_STARTED)
     assert.Equals(t, STATE_STARTED, State())
 }
+
+func TestExecuteAPIMessageCallsHandleMessage(t *testing.T) {
+    message := api.NewNotification("agent", "prop", "val")
+    msgJson := message.JSON()
+
+    handleMessageCalled := false
+    RegisterEventMessageHandler(func (message api.IMessage) string {
+        handleMessageCalled = true
+        assert.Equals(t, msgJson, message.JSON())
+        return ""
+    })
+
+    ExecuteAPIMessage(message)
+}

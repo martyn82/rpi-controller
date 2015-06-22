@@ -3,7 +3,6 @@ package daemon
 import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/network"
-    "log"
 )
 
 type MessageHandler func (message api.IMessage) string
@@ -75,7 +74,6 @@ func handleMessage(message string) string {
 
     if msg, err = api.ParseJSON(message); err != nil {
         // swallow error, message cannot be understood
-        log.Println("Error: " + err.Error())
         return ""
     }
 
