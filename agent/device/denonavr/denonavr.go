@@ -50,7 +50,13 @@ func CommandProcessor(sender string, command api.ICommand) (string, error) {
             break
 
         case api.PROPERTY_VOLUME:
-            return MASTER_VOLUME + value + PAUSE_CHAR, nil
+            r, _ := regexp.Compile("^(\\d+)$")
+            matches := r.FindStringSubmatch(value)
+
+            if len(matches) == 2 {
+                return MASTER_VOLUME + matches[1] + PAUSE_CHAR, nil
+            }
+            break
 
         case api.PROPERTY_SOURCE:
             return SOURCE_INPUT + value + PAUSE_CHAR, nil
@@ -90,7 +96,13 @@ func EventProcessor(sender string, event []byte) (messages.IEvent, error) {
     if len(matches) == 3 {
         switch matches[1] {
             case MASTER_VOLUME:
-                return messages.NewEvent(messages.EVENT_VOLUME_CHANGED, sender, api.PROPERTY_VOLUME, matches[2]), nil
+                r, _ = regexp.Compile("^(\\d+)$")
+                matches = r.FindStringSubmatch(matches[2])
+
+                if len(matches) == 2 {
+                    return messages.NewEvent(messages.EVENT_VOLUME_CHANGED, sender, api.PROPERTY_VOLUME, matches[1]), nil
+                }
+                break
 
             case SOURCE_INPUT:
                 return messages.NewEvent(messages.EVENT_SOURCE_CHANGED, sender, api.PROPERTY_SOURCE, matches[2]), nil

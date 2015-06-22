@@ -80,6 +80,12 @@ func TestEventProcessorVolumeChange(t *testing.T) {
     assert.Equals(t, evt.PropertyValue(), event.PropertyValue())
 }
 
+func TestEventProcessorVolumeMustBeNumeric(t *testing.T) {
+    event, err := EventProcessor("name", []byte(MASTER_VOLUME + "M 70" + PAUSE_CHAR))
+    assert.Nil(t, event)
+    assert.Equals(t, fmt.Sprintf(ERR_UNKNOWN_EVENT, MASTER_VOLUME + "M 70", DEVICE_TYPE, "name"), err.Error())
+}
+
 func TestCommandProcessorUnknownCommandReturnsError(t *testing.T) {
     cmd, err := CommandProcessor("name", api.NewCommand("name", "foo", "bar"))
     assert.Equals(t, "", cmd)
@@ -131,6 +137,12 @@ func TestCommandProcessorVolumeChange(t *testing.T) {
     assert.Nil(t, err)
 
     assert.Equals(t, cmd, MASTER_VOLUME + "335" + PAUSE_CHAR)
+}
+
+func TestCommandProcessorVolumeMustBeNumeric(t *testing.T) {
+    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_VOLUME, "M 70"))
+    assert.Equals(t, "", cmd)
+    assert.Equals(t, fmt.Sprintf(ERR_UNKNOWN_COMMAND, api.PROPERTY_VOLUME + ":M 70", DEVICE_TYPE, "name"), err.Error())
 }
 
 func TestCommandProcessorSourceChange(t *testing.T) {
