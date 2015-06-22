@@ -9,27 +9,12 @@ type TriggerItem struct {
     actions []*TriggerAction
 }
 
-type TriggerEvent struct {
-    id int64
-    agentName string
-    propertyName string
-    propertyValue string
-}
-
-type TriggerAction struct {
-    id int64
-    agentName string
-    propertyName string
-    propertyValue string
-}
-
 /* Create new trigger item */
 func NewTriggerItem(event *TriggerEvent, actions []*TriggerAction) *TriggerItem {
     instance := new(TriggerItem)
     instance.uuid = uuid.New()
     instance.event = event
     instance.actions = actions
-
     return instance
 }
 
