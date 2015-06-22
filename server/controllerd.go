@@ -108,6 +108,11 @@ func initDaemon(socketInfo network.SocketInfo) {
         return onCommand(message.(*api.Command))
     })
 
+    daemon.RegisterQueryMessageHandler(func (message api.IMessage) string {
+        log.Println("Received API message: " + message.JSON())
+        return onQuery(message.(*api.Query))
+    })
+
     /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
@@ -146,7 +151,27 @@ func stopDaemon() {
     log.Printf("Daemon stopped")
 }
 
-// ########### EVENTS/COMMANDS ###########
+// ########### EVENT/COMMAND/QUERY ###########
+
+/* Handles a query */
+func onQuery(message *api.Query) string {
+    log.Printf("Dispatch query...")
+
+    dev := devices.Get(message.AgentName())
+
+    if dev == nil {
+        log.Printf("Device '%s' not registered.", message.AgentName())
+        return api.NewResponse([]error{errors.New(fmt.Sprintf("Device '%s' not registered.", message.AgentName()))}).JSON()
+    }
+
+    if err := dev.(device.IDevice).Query(message); err != nil {
+        log.Printf("Error dispatching query: %s", err.Error())
+        return api.NewResponse([]error{err}).JSON()
+    }
+
+    log.Printf("Dispatch complete.")
+    return api.NewResponse([]error{}).JSON()
+}
 
 /* Handles a command */
 func onCommand(message *api.Command) string {
