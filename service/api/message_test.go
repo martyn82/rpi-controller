@@ -92,3 +92,14 @@ func TestFromArgumentsTriggerRegistrationReturnsTriggerRegistration(t *testing.T
     assert.Equals(t, args.Actions[0].ActionPropertyName, action.PropertyName())
     assert.Equals(t, args.Actions[0].ActionPropertyValue, action.PropertyValue())
 }
+
+func TestFromArgumentsQueryReturnsQuery(t *testing.T) {
+    args := service.Arguments{}
+    args.QueryDevice = "dev"
+    args.Property = "prop"
+
+    cmd, _ := FromArguments(args)
+
+    assert.NotNil(t, cmd)
+    assert.Type(t, new(api.Query), cmd)
+}

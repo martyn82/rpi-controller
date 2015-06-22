@@ -14,6 +14,8 @@ func FromArguments(args service.Arguments) (api.IMessage, error) {
         return api.NewNotification(args.EventDevice, args.Property, args.Value), nil
     } else if args.IsCommand() {
         return api.NewCommand(args.CommandDevice, args.Property, args.Value), nil
+    } else if args.IsQuery() {
+        return api.NewQuery(args.QueryDevice, args.Property), nil
     } else if args.IsDeviceRegistration() {
         return api.NewDeviceRegistration(args.DeviceName, args.DeviceModel, args.DeviceAddress), nil
     } else if args.IsAppRegistration() {
