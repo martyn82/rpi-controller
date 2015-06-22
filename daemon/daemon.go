@@ -59,6 +59,11 @@ func RegisterTriggerRegistrationMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_TRIGGER_REGISTRATION] = handler
 }
 
+/* Handles an API message */
+func ExecuteAPIMessage(message api.IMessage) string {
+    return handleMessage(message.JSON())
+}
+
 /* Handles a service message */
 func handleMessage(message string) string {
     if message == "" {
