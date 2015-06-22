@@ -55,15 +55,15 @@ func (this *Device) onMessageReceived(message []byte) {
 }
 
 /* Map a message as event */
-func (this *Device) mapEvent(event []byte) (api.IMessage, error) {
+func (this *Device) mapEvent(event []byte) (api.INotification, error) {
     if this.eventProcessor == nil {
         return nil, errors.New(fmt.Sprintf(ERR_NO_EVENT_PROCESSOR, this.Info().String()))
     }
 
     var evt messages.IEvent
-    var msg api.IMessage
+    var msg api.INotification
     var err error
-    
+
     if evt ,err = this.eventProcessor(this.Info().Name(), event); err == nil {
         msg = api.NewNotification(evt.Sender(), evt.PropertyName(), evt.PropertyValue())
     }
