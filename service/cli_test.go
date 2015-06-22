@@ -113,6 +113,31 @@ func TestEventNotificationIsValidIfDeviceAndPropertyAreSet(t *testing.T) {
     assert.Nil(t, err)
 }
 
+func TestQueryHasDeviceValue(t *testing.T) {
+    args := Arguments{}
+    args.QueryDevice = "device"
+
+    assert.True(t, args.IsQuery())
+}
+
+func TestQueryIsValidIfDeviceAndPropertyAreSet(t *testing.T) {
+    args := Arguments{}
+    args.QueryDevice = "device"
+
+    assert.True(t, args.IsQuery())
+
+    // invalid
+    valid, err := args.IsValid()
+    assert.False(t, valid)
+    assert.NotNil(t, err)
+
+    // valid
+    args.Property = "prop"
+    valid, err = args.IsValid()
+    assert.True(t, valid)
+    assert.Nil(t, err)
+}
+
 func TestDeviceRegistrationHasName(t *testing.T) {
     args := Arguments{}
     args.RegisterDevice = true

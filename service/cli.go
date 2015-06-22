@@ -9,6 +9,7 @@ import (
 const (
     ERR_INVALID_COMMAND = "A command needs at least %s and %s arguments to be not empty."
     ERR_INVALID_EVENT_NOTIFICATION = "An event notification needs at least %s and %s arguments to be not empty."
+    ERR_INVALID_QUERY = "A query needs at least %s and %s arguments to be not empty."
     ERR_INVALID_DEVICE_REGISTRATION = "A device registration needs at least %s and %s arguments to be not empty."
     ERR_INVALID_APP_REGISTRATION = "An app registration needs at least %s argument to be not empty."
     ERR_INVALID_TRIGGER_REGISTRATION = "A trigger registration needs at least %s, %s, and %s to be not empty."
@@ -24,6 +25,9 @@ const (
     ARG_EVENT_PROPERTY = "property"
     ARG_EVENT_VALUE = "value"
 
+    ARG_QUERY_DEVICE = "get"
+    ARG_QUERY_PROPERTY = "property"
+
     ARG_REGISTER_DEVICE = "register-device"
     ARG_NAME = "name"
     ARG_MODEL = "model"
@@ -38,8 +42,9 @@ type Arguments struct {
     ConfigFile string
 
     CommandDevice string
-
     EventDevice string
+    QueryDevice string
+
     Property string
     Value string
 
@@ -75,6 +80,9 @@ var eventValue = flag.String(ARG_EVENT_VALUE, "", "Specify the value of the prop
 // command args
 var commandDevice = flag.String(ARG_COMMAND_DEVICE, "", "Specify the device name for the command.")
 
+// query args
+var queryDevice = flag.String(ARG_QUERY_DEVICE, "", "Specify the device name for the query.") 
+
 // device registration args
 var registerDevice = flag.Bool(ARG_REGISTER_DEVICE, false, "Specify to request a device registration.")
 var deviceName = flag.String(ARG_NAME, "", "Specify the unique name.")
@@ -99,8 +107,9 @@ func ParseArguments() Arguments {
     args.ConfigFile = *configFile
 
     args.CommandDevice = *commandDevice
-
+    args.QueryDevice = *queryDevice
     args.EventDevice = *eventDevice
+
     args.Property = *eventProperty
     args.Value = *eventValue
 
@@ -216,6 +225,8 @@ func (this Arguments) IsValid() (bool, error) {
         return this.isValidEvent()
     } else if this.IsCommand() {
         return this.isValidCommand()
+    } else if this.IsQuery() {
+        return this.isValidQuery()
     } else if this.IsDeviceRegistration() {
         return this.isValidDeviceRegistration()
     } else if this.IsAppRegistration() {
@@ -240,6 +251,15 @@ func (this Arguments) isValidCommand() (bool, error) {
 func (this Arguments) isValidEvent() (bool, error) {
     if this.EventDevice == "" || this.Property == "" {
         return false, errors.New(fmt.Sprintf(ERR_INVALID_EVENT_NOTIFICATION, flag.Lookup(ARG_EVENT_DEVICE).Name, flag.Lookup(ARG_EVENT_PROPERTY).Name))
+    }
+
+    return true, nil
+}
+
+/* Validates a query */
+func (this Arguments) isValidQuery() (bool, error) {
+    if this.QueryDevice == "" || this.Property == "" {
+        return false, errors.New(fmt.Sprintf(ERR_INVALID_QUERY, flag.Lookup(ARG_QUERY_DEVICE).Name, flag.Lookup(ARG_QUERY_PROPERTY).Name))
     }
 
     return true, nil
@@ -280,6 +300,11 @@ func (this Arguments) IsCommand() bool {
 /* Determines whether the instance is an event notification */
 func (this Arguments) IsEventNotification() bool {
     return this.EventDevice != ""
+}
+
+/* Determines whether the instance is a query */
+func (this Arguments) IsQuery() bool {
+    return this.QueryDevice != ""
 }
 
 /* Determines whether the instance is a device registration */
