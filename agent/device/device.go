@@ -9,9 +9,11 @@ import (
 )
 
 const (
+    ERR_NO_COMMAND_PROCESSOR = "Device has no command processor: %s"
     ERR_NO_EVENT_PROCESSOR = "Device has no event processor: %s"
 )
 
+type CommandProcessor func (sender string, command api.ICommand) (string, error)
 type EventProcessor func (sender string, event []byte) (messages.IEvent, error)
 type MessageHandler func (sender IDevice, message api.IMessage)
 
@@ -19,7 +21,7 @@ type IDevice interface {
     Info() IDeviceInfo
     Connect() error
     Disconnect() error
-    Command(command string) error
+    Command(command api.ICommand) error
     SetMessageHandler(handler MessageHandler)
 }
 
@@ -28,6 +30,7 @@ type Device struct {
     agent.Agent
 
     info IDeviceInfo
+    commandProcessor CommandProcessor
     eventProcessor EventProcessor
     messageHandler MessageHandler
 }
@@ -37,9 +40,21 @@ func (this *Device) Info() IDeviceInfo {
     return this.info
 }
 
-/* Sends the command to the device */
-func (this *Device) Command(command string) error {
-    return this.Send([]byte(command))
+/* Sends the command to the agent */
+func (this *Device) Command(command api.ICommand) error {
+    if this.commandProcessor == nil {
+        return errors.New(fmt.Sprintf(ERR_NO_COMMAND_PROCESSOR, this.Info().String()))
+    }
+
+    var err error
+    var commandString string
+
+    if commandString, err = this.commandProcessor(this.Info().Name(), command); err == nil {
+        println("Sending command: " + commandString)
+        err = this.Send([]byte(commandString))
+    }
+
+    return err
 }
 
 /* Sets a handler for device messages */

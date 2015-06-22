@@ -19,6 +19,7 @@ func CreateDenonAvr(info IDeviceInfo) *DenonAvr {
 
     instance.info = info
     instance.SetOnMessageReceivedHandler(instance.onMessageReceived)
+    instance.commandProcessor = denonavr.CommandProcessor
     instance.eventProcessor = denonavr.EventProcessor
 
     return instance

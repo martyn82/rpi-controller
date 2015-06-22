@@ -1,6 +1,7 @@
 package device
 
 import (
+    "fmt"
     "github.com/martyn82/rpi-controller/agent"
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/messages"
@@ -24,6 +25,9 @@ func CreateGenericDevice(info IDeviceInfo) *Device {
 
     instance.SetOnMessageReceivedHandler(instance.onMessageReceived)
     instance.info = info
+    instance.commandProcessor = func (sender string, command api.ICommand) (string, error) {
+        return command.PropertyName() + command.PropertyValue(), nil
+    }
 
     return instance
 }
@@ -65,7 +69,8 @@ func TestCommandIsSent(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    err = instance.Command("foo")
+    cmd := api.NewCommand("", "foo", "")
+    err = instance.Command(cmd)
     assert.Nil(t, err)
 
     time.Sleep(waitTimeout)
@@ -144,4 +149,18 @@ func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
 
     assert.False(t, messageHandlerCalled)
     assert.Equals(t, "", messageHandled)
+}
+
+func TestCommandReturnsErrorIfNoCommandProcessorDefined(t *testing.T) {
+    defer socket.RemoveSocket(deviceSocketInfo.Address)
+
+    listener := socket.StartFakeServer(deviceSocketInfo.Type, deviceSocketInfo.Address)
+    defer listener.Close()
+
+    instance := CreateGenericDevice(DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address})
+    instance.commandProcessor = nil
+    err := instance.Command(api.NewCommand("", "", ""))
+
+    assert.NotNil(t, err)
+    assert.Equals(t, fmt.Sprintf(ERR_NO_COMMAND_PROCESSOR, instance.Info().String()), err.Error())
 }
