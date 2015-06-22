@@ -160,3 +160,18 @@ func TestExecuteAPIMessageCallsHandleMessage(t *testing.T) {
 
     ExecuteAPIMessage(message)
 }
+
+func TestMessageHandlerCallsRegisteredHandlerForQuery(t *testing.T) {
+    setupTest()
+
+    handlerCalled := false
+    handler := func (message api.IMessage) string {
+        handlerCalled = true
+        return ""
+    }
+
+    RegisterQueryMessageHandler(handler)
+    handleMessage(api.NewQuery("agent", "prop").JSON())
+
+    assert.True(t, handlerCalled)
+}

@@ -43,6 +43,11 @@ func RegisterCommandMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_COMMAND] = handler
 }
 
+/* Register a query message handler. Existing message handler will be overwritten. */
+func RegisterQueryMessageHandler(handler MessageHandler) {
+    messageHandlers[api.TYPE_QUERY] = handler
+}
+
 /* Register an event message handler. Existing message handler will be overwritten. */
 func RegisterEventMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_NOTIFICATION] = handler
