@@ -8,7 +8,7 @@ import (
 
 const ERR_UNKNOWN_MESSAGE = "Unknown message type."
 
-/* Create command from arguments */
+/* Create message from arguments */
 func FromArguments(args service.Arguments) (api.IMessage, error) {
     if args.IsEventNotification() {
         return api.NewNotification(args.EventDevice, args.Property, args.Value), nil

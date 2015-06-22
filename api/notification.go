@@ -46,7 +46,7 @@ func notificationFromMap(message map[string]string) (*Notification, error) {
     return result, nil
 }
 
-/* Create a Notification command */
+/* Create a Notification message */
 func NewNotification(agentName string, propertyName string, propertyValue string) *Notification {
     instance := new(Notification)
     instance.agentName = agentName
