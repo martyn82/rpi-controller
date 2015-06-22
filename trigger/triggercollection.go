@@ -113,3 +113,16 @@ func (this *TriggerCollection) Get(identity interface{}) collection.Item {
 
     return nil
 }
+
+/* Retrieves all triggers by given event */
+func (this *TriggerCollection) FindByEvent(event *TriggerEvent) []ITrigger {
+    triggers := make([]ITrigger, 0)
+
+    for _, v := range this.triggers {
+        if event.agentName == v.Event().agentName && event.propertyName == v.Event().propertyName && event.propertyValue == v.Event().propertyValue {
+            triggers = append(triggers, v)
+        }
+    }
+
+    return triggers
+}

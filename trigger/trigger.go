@@ -12,14 +12,6 @@ type Trigger struct {
     actions []*TriggerAction
 }
 
-type TriggerEvent struct {
-    agentName, propertyName, propertyValue string
-}
-
-type TriggerAction struct {
-    agentName, propertyName, propertyValue string
-}
-
 /* Constructs a new Trigger */
 func NewTrigger(uuid string, event *TriggerEvent, actions []*TriggerAction) *Trigger {
     instance := new(Trigger)

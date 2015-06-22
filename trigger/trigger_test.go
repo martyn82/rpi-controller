@@ -1,7 +1,6 @@
 package trigger
 
 import (
-//    "github.com/martyn82/rpi-controller/testing/assert"
     "testing"
 )
 

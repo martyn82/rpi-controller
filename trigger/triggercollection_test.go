@@ -5,7 +5,6 @@ import (
     "github.com/martyn82/rpi-controller/storage"
     "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
-//    "github.com/martyn82/rpi-controller/testing/socket"
     "os"
     "path"
     "testing"
@@ -124,4 +123,22 @@ func TestAddAddsTrigger(t *testing.T) {
 
     d := instance.Get("abc")
     assert.Equals(t, tr, d)
+}
+
+func TestFindByEventReturnsRegisteredTriggersForEvent(t *testing.T) {
+    db.SetupDb(triggersTestDb, schemaDir)
+    db.QueryDb("INSERT INTO triggers (id, uuid) VALUES (1, 'abc');", triggersTestDb)
+    db.QueryDb("INSERT INTO trigger_event (id, trigger_id, agent_name, property_name, property_value) VALUES (1, 1, 'agent1', 'prop1', 'val1');", triggersTestDb)
+    db.QueryDb("INSERT INTO trigger_action (id, trigger_id, agent_name, property_name, property_value) VALUES (1, 1, 'agent2', 'prop2', 'val2');", triggersTestDb)
+    defer db.RemoveDbFile(triggersTestDb)
+
+    repo, repoErr := storage.NewTriggerRepository(triggersTestDb)
+    assert.Nil(t, repoErr)
+
+    instance, _ := NewTriggerCollection(repo)
+    triggers := instance.FindByEvent(NewTriggerEvent("foo", "bar", "baz"))
+    assert.Equals(t, 0, len(triggers))
+
+    triggers = instance.FindByEvent(NewTriggerEvent("agent1", "prop1", "val1"))
+    assert.Equals(t, 1, len(triggers))
 }
