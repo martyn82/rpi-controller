@@ -75,6 +75,7 @@ func (this *Command) IsValid() (bool, error) {
     if this.agentName == "" || this.propertyName == "" {
         return false, errors.New(ERR_INVALID_COMMAND)
     }
+
     return true, nil
 }
 

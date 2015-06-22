@@ -117,6 +117,21 @@ func TestMessageHandlerCallsRegisteredHandlerForTriggerRegistration(t *testing.T
     assert.True(t, handlerCalled)
 }
 
+func TestMessageHandlerCallsRegisteredHandlerForCommand(t *testing.T) {
+    setupTest()
+
+    handlerCalled := false
+    handler := func (message api.IMessage) string {
+        handlerCalled = true
+        return ""
+    }
+
+    RegisterCommandMessageHandler(handler)
+    handleMessage(api.NewCommand("dev", "prop", "val").JSON())
+
+    assert.True(t, handlerCalled)
+}
+
 func TestHandleMessageReturnsEmptyStringOnError(t *testing.T) {
     message := "{\"Trigger\":{\"When\":[{\"Agent\":\"agent1\",\"prop1\":\"val1\"}]},{\"If\":[]}}"
     msg := handleMessage(message)

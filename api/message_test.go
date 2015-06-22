@@ -6,6 +6,23 @@ import (
     "testing"
 )
 
+func TestParseJSONCreatesCommandFromString(t *testing.T) {
+    message := "{\"" + TYPE_COMMAND + "\":{\"" + KEY_AGENT + "\":\"dev\",\"prop\":\"val\"}}"
+    msg, err := ParseJSON(message)
+
+    if err != nil {
+        t.Errorf(err.Error())
+    }
+
+    assert.NotNil(t, msg)
+    assert.Type(t, new(Command), msg)
+
+    cmd := msg.(*Command)
+    assert.Equals(t, "dev", cmd.AgentName())
+    assert.Equals(t, "prop", cmd.PropertyName())
+    assert.Equals(t, "val", cmd.PropertyValue())
+}
+
 func TestParseJSONCreatesNotificationFromString(t *testing.T) {
     message := "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_AGENT + "\":\"dev\",\"prop\":\"val\"}}"
     msg, err := ParseJSON(message)

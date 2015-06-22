@@ -63,6 +63,31 @@ func TestUnknownArgumentsReturnsError(t *testing.T) {
     assert.True(t, IsUnknownArgumentsError(err))
 }
 
+func TestCommandHasDeviceValue(t *testing.T) {
+    args := Arguments{}
+    args.CommandDevice = "device"
+
+    assert.True(t, args.IsCommand())
+}
+
+func TestCommandIsValidIfDeviceAndPropertyAreSet(t *testing.T) {
+    args := Arguments{}
+    args.CommandDevice = "device"
+
+    assert.True(t, args.IsCommand())
+
+    // invalid
+    valid, err := args.IsValid()
+    assert.False(t, valid)
+    assert.NotNil(t, err)
+
+    // valid
+    args.Property = "prop"
+    valid, err = args.IsValid()
+    assert.True(t, valid)
+    assert.Nil(t, err)
+}
+
 func TestEventNotificationHasDeviceValue(t *testing.T) {
     args := Arguments{}
     args.EventDevice = "device"

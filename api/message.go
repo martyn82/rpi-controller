@@ -60,6 +60,9 @@ func parseJSONSimple(message string) (IMessage, error, int) {
         case TYPE_NOTIFICATION:
             msg, err := notificationFromMap(obj[TYPE_NOTIFICATION])
             return msg, err, ERR_LEVEL_NONE
+        case TYPE_COMMAND:
+            msg, err := commandFromMap(obj[TYPE_COMMAND])
+            return msg, err, ERR_LEVEL_NONE
         case TYPE_DEVICE_REGISTRATION:
             msg, err := deviceRegistrationFromMap(obj[TYPE_DEVICE_REGISTRATION])
             return msg, err, ERR_LEVEL_NONE

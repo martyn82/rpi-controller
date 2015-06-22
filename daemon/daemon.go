@@ -38,6 +38,11 @@ func NotifyState(newState string) {
     state = newState
 }
 
+/* Register a command message handler. Existing message handler will be overwritten. */
+func RegisterCommandMessageHandler(handler MessageHandler) {
+    messageHandlers[api.TYPE_COMMAND] = handler
+}
+
 /* Register an event message handler. Existing message handler will be overwritten. */
 func RegisterEventMessageHandler(handler MessageHandler) {
     messageHandlers[api.TYPE_NOTIFICATION] = handler

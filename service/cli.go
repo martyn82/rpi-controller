@@ -7,6 +7,7 @@ import (
 )
 
 const (
+    ERR_INVALID_COMMAND = "A command needs at least %s and %s arguments to be not empty."
     ERR_INVALID_EVENT_NOTIFICATION = "An event notification needs at least %s and %s arguments to be not empty."
     ERR_INVALID_DEVICE_REGISTRATION = "A device registration needs at least %s and %s arguments to be not empty."
     ERR_INVALID_APP_REGISTRATION = "An app registration needs at least %s argument to be not empty."
@@ -14,6 +15,11 @@ const (
     ERR_UNKNOWN = "Unknown series of arguments."
 
     ARG_CONFIG = "config"
+
+    ARG_COMMAND_DEVICE = "set"
+    ARG_COMMAND_PROPERTY = "property"
+    ARG_COMMAND_VALUE = "value"
+
     ARG_EVENT_DEVICE = "event"
     ARG_EVENT_PROPERTY = "property"
     ARG_EVENT_VALUE = "value"
@@ -30,6 +36,8 @@ const (
 
 type Arguments struct {
     ConfigFile string
+
+    CommandDevice string
 
     EventDevice string
     Property string
@@ -64,6 +72,9 @@ var eventDevice = flag.String(ARG_EVENT_DEVICE, "", "Specify the device name for
 var eventProperty = flag.String(ARG_EVENT_PROPERTY, "", "Specify the property of the event notification.")
 var eventValue = flag.String(ARG_EVENT_VALUE, "", "Specify the value of the property for the event notification.")
 
+// command args
+var commandDevice = flag.String(ARG_COMMAND_DEVICE, "", "Specify the device name for the command.")
+
 // device registration args
 var registerDevice = flag.Bool(ARG_REGISTER_DEVICE, false, "Specify to request a device registration.")
 var deviceName = flag.String(ARG_NAME, "", "Specify the unique name.")
@@ -86,6 +97,8 @@ func ParseArguments() Arguments {
 
     args := Arguments{}
     args.ConfigFile = *configFile
+
+    args.CommandDevice = *commandDevice
 
     args.EventDevice = *eventDevice
     args.Property = *eventProperty
@@ -201,6 +214,8 @@ func IsUnknownArgumentsError(err error) bool {
 func (this Arguments) IsValid() (bool, error) {
     if this.IsEventNotification() {
         return this.isValidEvent()
+    } else if this.IsCommand() {
+        return this.isValidCommand()
     } else if this.IsDeviceRegistration() {
         return this.isValidDeviceRegistration()
     } else if this.IsAppRegistration() {
@@ -210,6 +225,15 @@ func (this Arguments) IsValid() (bool, error) {
     }
 
     return false, errors.New(ERR_UNKNOWN)
+}
+
+/* Validates a command */
+func (this Arguments) isValidCommand() (bool, error) {
+    if this.CommandDevice == "" || this.Property == "" {
+        return false, errors.New(fmt.Sprintf(ERR_INVALID_COMMAND, flag.Lookup(ARG_COMMAND_DEVICE).Name, flag.Lookup(ARG_COMMAND_PROPERTY).Name))
+    }
+
+    return true, nil
 }
 
 /* Validates an event notification */
@@ -246,6 +270,11 @@ func (this Arguments) isValidTriggerRegistration() (bool, error) {
     }
 
     return true, nil
+}
+
+/* Determines whether the instance is a command */
+func (this Arguments) IsCommand() bool {
+    return this.CommandDevice != ""
 }
 
 /* Determines whether the instance is an event notification */

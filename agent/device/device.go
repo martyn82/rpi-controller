@@ -50,7 +50,6 @@ func (this *Device) Command(command api.ICommand) error {
     var commandString string
 
     if commandString, err = this.commandProcessor(this.Info().Name(), command); err == nil {
-        println("Sending command: " + commandString)
         err = this.Send([]byte(commandString))
     }
 

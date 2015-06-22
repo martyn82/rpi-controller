@@ -1,6 +1,8 @@
 package main
 
 import (
+    "errors"
+    "fmt"
     "github.com/martyn82/rpi-controller/agent/app"
     "github.com/martyn82/rpi-controller/agent/device"
     "github.com/martyn82/rpi-controller/api"
@@ -100,6 +102,12 @@ func loadConfig(configFile string) daemon.DaemonConfig {
 func initDaemon(socketInfo network.SocketInfo) {
     log.Printf("Starting daemon...")
 
+    /* api.IMessage: api.Command */
+    daemon.RegisterCommandMessageHandler(func (message api.IMessage) string {
+        log.Println("Received API message: " + message.JSON())
+        return onCommand(message.(*api.Command))
+    })
+
     /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
@@ -138,7 +146,24 @@ func stopDaemon() {
     log.Printf("Daemon stopped")
 }
 
-// ########### EVENT ###########
+// ########### EVENTS/COMMANDS ###########
+
+/* Handles a command */
+func onCommand(message *api.Command) string {
+    log.Printf("Dispatch command...")
+
+    var response *api.Response
+    dev := devices.Get(message.AgentName())
+
+    if dev == nil {
+        response = api.NewResponse([]error{errors.New(fmt.Sprintf("Device '%s' not registered.", message.AgentName()))})
+    } else {
+        err := dev.(device.IDevice).Command(message)
+        response = api.NewResponse([]error{err})
+    }
+
+    return response.JSON()
+}
 
 /* Handles an event notification */
 func onEventNotification(message *api.Notification) string {

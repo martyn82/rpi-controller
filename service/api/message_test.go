@@ -15,6 +15,17 @@ func TestFromArgumentsUnknownTypeReturnsError(t *testing.T) {
     assert.Equals(t, ERR_UNKNOWN_MESSAGE, err.Error())
 }
 
+func TestFromArgumentsCommandReturnsCommand(t *testing.T) {
+    args := service.Arguments{}
+    args.CommandDevice = "dev"
+    args.Property = "prop"
+
+    cmd, _ := FromArguments(args)
+
+    assert.NotNil(t, cmd)
+    assert.Type(t, new(api.Command), cmd)
+}
+
 func TestFromArgumentsEventReturnsNotification(t *testing.T) {
     args := service.Arguments{}
     args.EventDevice = "dev"
