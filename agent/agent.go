@@ -22,6 +22,7 @@ type IAgent interface {
     Connect() error
     Disconnect() error
     Send(message []byte) error
+    SupportsNetwork() bool
     SetOnMessageReceivedHandler(handler OnMessageReceivedHandler)
 }
 
@@ -63,7 +64,7 @@ func (this *Agent) Connect() error {
         return errors.New(fmt.Sprintf(ERR_AGENT_ALREADY_CONNECTED, this.info.String()))
     }
 
-    if !this.supportsNetwork() {
+    if !this.SupportsNetwork() {
         return errors.New(fmt.Sprintf(ERR_AGENT_NO_NETWORK, this.info.String()))
     }
 
@@ -115,7 +116,7 @@ func (this *Agent) Send(message []byte) error {
 }
 
 /* Determines whether the agent supports network communication */
-func (this *Agent) supportsNetwork() bool {
+func (this *Agent) SupportsNetwork() bool {
     return this.info != nil && this.info.Protocol() != "" && this.info.Address() != ""
 }
 

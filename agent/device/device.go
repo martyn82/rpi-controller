@@ -25,6 +25,7 @@ type IDevice interface {
     Disconnect() error
     Command(command api.ICommand) error
     Query(query api.IQuery) error
+    SupportsNetwork() bool
     SetMessageHandler(handler MessageHandler)
 }
 
@@ -39,9 +40,25 @@ type Device struct {
     messageHandler MessageHandler
 }
 
+/* Constructs a new Device */
+func NewDevice(info IDeviceInfo, commandProcessor CommandProcessor, eventProcessor EventProcessor, queryProcessor QueryProcessor) *Device {
+    instance := new(Device)
+    agent.SetupAgent(&instance.Agent, info, 0, 0, agent.DEFAULT_BUFFER_SIZE, true)
+    instance.info = info
+    instance.commandProcessor = commandProcessor
+    instance.eventProcessor = eventProcessor
+    instance.queryProcessor = queryProcessor
+    return instance
+}
+
 /* Retrieves the device information */
 func (this *Device) Info() IDeviceInfo {
     return this.info
+}
+
+/* Determines whether the device supports network communication */
+func (this *Device) SupportsNetwork() bool {
+    return this.Agent.SupportsNetwork()
 }
 
 /* Sends the command to the agent */

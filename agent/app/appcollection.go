@@ -61,6 +61,8 @@ func (this *AppCollection) Add(item collection.Item) error {
         if _, err = this.repository.Add(appItem); err == nil {
             this.apps[app.Info().Name()] = app
         }
+    } else {
+        this.apps[app.Info().Name()] = app
     }
 
     return err

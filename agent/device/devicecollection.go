@@ -69,6 +69,8 @@ func (this *DeviceCollection) Add(item collection.Item) error {
         if _, err = this.repository.Add(devItem); err == nil {
             this.devices[device.Info().Name()] = device
         }
+    } else {
+        this.devices[device.Info().Name()] = device
     }
 
     return err

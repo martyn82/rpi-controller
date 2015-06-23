@@ -87,6 +87,8 @@ func (this *TriggerCollection) Add(item collection.Item) error {
         if _, err = this.repository.Add(triggerItem); err == nil {
             this.triggers[trigger.UUID()] = trigger
         }
+    } else {
+        this.triggers[trigger.UUID()] = trigger
     }
 
     return err

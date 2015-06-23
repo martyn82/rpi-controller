@@ -65,16 +65,16 @@ func TestAgentSupportsNetworkIfProtocolAndAddressAreSet(t *testing.T) {
     instance := new(Agent)
 
     instance.info = info
-    assert.True(t, instance.supportsNetwork())
+    assert.True(t, instance.SupportsNetwork())
 
     info.protocol = ""
     instance.info = info
-    assert.False(t, instance.supportsNetwork())
+    assert.False(t, instance.SupportsNetwork())
 
     info.protocol = "tcp"
     info.address = ""
     instance.info = info
-    assert.False(t, instance.supportsNetwork())
+    assert.False(t, instance.SupportsNetwork())
 }
 
 func TestAgentIsConnectedIfConnectedAndConnectionIsNotNil(t *testing.T) {
