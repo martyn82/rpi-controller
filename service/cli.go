@@ -133,30 +133,20 @@ func ParseArguments() Arguments {
 }
 
 func startTriggerRegistration(args *Arguments) {
-    var err error
+    var eventAgentName string
+    var eventPropertyName string
+    var eventPropertyValue string
 
     fmt.Println("Trigger registration for an event.")
 
     fmt.Print("Event agent? > ")
-    var eventAgentName string
-    if _, err = reader("%s", &eventAgentName); err != nil {
-        fmt.Errorf(err.Error())
-        return
-    }
+    reader("%s", &eventAgentName)
 
     fmt.Print("Event agent property? > ")
-    var eventPropertyName string
-    if _, err = reader("%s", &eventPropertyName); err != nil {
-        fmt.Errorf(err.Error())
-        return
-    }
+    reader("%s", &eventPropertyName)
 
     fmt.Print("Event agent property value? > ")
-    var eventPropertyValue string
-    if _, err = reader("%s", &eventPropertyValue); err != nil {
-        fmt.Errorf(err.Error())
-        return
-    }
+    reader("%s", &eventPropertyValue)
 
     args.EventAgentName = eventAgentName
     args.EventPropertyName = eventPropertyName
@@ -166,28 +156,18 @@ func startTriggerRegistration(args *Arguments) {
 }
 
 func triggerRegistration(args *Arguments) {
-    var err error
+    var actionAgentName string
+    var actionPropertyName string
+    var actionPropertyValue string
 
     fmt.Print("Action agent name? > ")
-    var actionAgentName string
-    if _, err = reader("%s", &actionAgentName); err != nil {
-        fmt.Errorf(err.Error())
-        return
-    }
+    reader("%s", &actionAgentName)
 
     fmt.Print("Action property name? > ")
-    var actionPropertyName string
-    if _, err = reader("%s", &actionPropertyName); err != nil {
-        fmt.Errorf(err.Error())
-        return
-    }
+    reader("%s", &actionPropertyName)
 
     fmt.Print("Action property value? > ")
-    var actionPropertyValue string
-    if _, err = reader("%s", &actionPropertyValue); err != nil {
-        fmt.Errorf(err.Error())
-        return
-    }
+    reader("%s", &actionPropertyValue)
 
     actionArgs := ActionArguments{}
     actionArgs.ActionAgentName = actionAgentName
@@ -199,10 +179,7 @@ func triggerRegistration(args *Arguments) {
 
     for {
         fmt.Print("Register another action for current event? (y/n) > ")
-        if _, err = reader("%s", &repeat); err != nil {
-            fmt.Errorf(err.Error())
-            return
-        }
+        reader("%s", &repeat)
 
         if repeat == "y" || repeat == "n" {
             break
