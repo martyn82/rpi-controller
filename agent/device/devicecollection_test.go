@@ -127,3 +127,15 @@ func TestAddAddsDevice(t *testing.T) {
     d := instance.Get("name")
     assert.Equals(t, dev, d)
 }
+
+func TestAddAddsDeviceWithoutRepository(t *testing.T) {
+    instance, _ := NewDeviceCollection(nil)
+    dev := new(Device)
+    dev.info = NewDeviceInfo("name", "DENON-AVR", "", "")
+
+    err := instance.Add(dev)
+    assert.Nil(t, err)
+
+    d := instance.Get("name")
+    assert.Equals(t, dev, d)
+}

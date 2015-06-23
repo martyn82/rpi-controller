@@ -125,6 +125,21 @@ func TestAddAddsTrigger(t *testing.T) {
     assert.Equals(t, tr, d)
 }
 
+func TestAddAddsTriggerWithoutRepository(t *testing.T) {
+    instance, _ := NewTriggerCollection(nil)
+    tr := new(Trigger)
+    tr.uuid = "abc"
+    tr.event = new(TriggerEvent)
+    tr.actions = make([]*TriggerAction, 1)
+    tr.actions[0] = new(TriggerAction)
+
+    err := instance.Add(tr)
+    assert.Nil(t, err)
+
+    d := instance.Get("abc")
+    assert.Equals(t, tr, d)
+}
+
 func TestFindByEventReturnsRegisteredTriggersForEvent(t *testing.T) {
     db.SetupDb(triggersTestDb, schemaDir)
     db.QueryDb("INSERT INTO triggers (id, uuid) VALUES (1, 'abc');", triggersTestDb)

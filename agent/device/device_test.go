@@ -35,6 +35,19 @@ func CreateGenericDevice(info IDeviceInfo) *Device {
     return instance
 }
 
+func TestNewDeviceCreatesSimpleDevice(t *testing.T) {
+    devInfo := NewDeviceInfo("name", "", "", "")
+    instance := NewDevice(devInfo, nil, nil, nil)
+
+    assert.Equals(t, devInfo, instance.Info())
+}
+
+func TestDeviceSupportsNetworkIfProtocolAndAddressAreSet(t *testing.T) {
+    devInfo := NewDeviceInfo("name", "model", "protocol", "address")
+    instance := NewDevice(devInfo, nil, nil, nil)
+    assert.True(t, instance.SupportsNetwork())
+}
+
 func TestDeviceInfoIsReturned(t *testing.T) {
     info := DeviceInfo{name: "dev"}
     instance := CreateGenericDevice(info)

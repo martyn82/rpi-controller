@@ -117,6 +117,18 @@ func TestAddAddsApp(t *testing.T) {
     assert.Equals(t, app, d)
 }
 
+func TestAddAddsAppWithoutRepository(t *testing.T) {
+    instance, _ := NewAppCollection(nil)
+    app := new(App)
+    app.info = NewAppInfo("name", "", "")
+
+    err := instance.Add(app)
+    assert.Nil(t, err)
+
+    d := instance.Get("name")
+    assert.Equals(t, app, d)
+}
+
 func TestBroadcastNotifiesAllApps(t *testing.T) {
     appSocketFile := "/tmp/app_test.sock"
     defer socket.RemoveSocket(appSocketFile)
