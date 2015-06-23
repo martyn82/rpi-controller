@@ -8,6 +8,7 @@ import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/config/loader"
     "github.com/martyn82/rpi-controller/daemon"
+    "github.com/martyn82/rpi-controller/daemon/messagehandler"
     "github.com/martyn82/rpi-controller/network"
     "github.com/martyn82/rpi-controller/storage"
     "github.com/martyn82/rpi-controller/trigger"
@@ -105,36 +106,37 @@ func initDaemon(socketInfo network.SocketInfo) {
     /* api.IMessage: api.Command */
     daemon.RegisterCommandMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return onCommand(message.(*api.Command))
+        return messagehandler.OnCommand(message.(*api.Command), devices).JSON()
     })
 
+    /* api.IMessage: api.Query */
     daemon.RegisterQueryMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return onQuery(message.(*api.Query))
+        return messagehandler.OnQuery(message.(*api.Query), devices).JSON()
     })
 
     /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return onEventNotification(message.(*api.Notification))
+        return messagehandler.OnEventNotification(message.(*api.Notification)).JSON()
     })
 
     /* api.IMessage: api.DeviceRegistration */
     daemon.RegisterDeviceRegistrationMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return onDeviceRegistration(message.(*api.DeviceRegistration))
+        return messagehandler.OnDeviceRegistration(message.(*api.DeviceRegistration), devices).JSON()
     })
 
     /* api.IMessage: api.AppRegistration */
     daemon.RegisterAppRegistrationMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return onAppRegistration(message.(*api.AppRegistration))
+        return messagehandler.OnAppRegistration(message.(*api.AppRegistration), apps).JSON()
     })
 
     /* api.IMessage: api.TriggerRegistration */
     daemon.RegisterTriggerRegistrationMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return onTriggerRegistration(message.(*api.TriggerRegistration))
+        return messagehandler.OnTriggerRegistration(message.(*api.TriggerRegistration), triggers).JSON()
     })
 
     daemon.Start(socketInfo)
@@ -149,68 +151,6 @@ func stopDaemon() {
     daemon.Stop()
 
     log.Printf("Daemon stopped")
-}
-
-// ########### EVENT/COMMAND/QUERY ###########
-
-/* Handles a query */
-func onQuery(message *api.Query) string {
-    log.Printf("Dispatch query...")
-
-    dev := devices.Get(message.AgentName())
-
-    if dev == nil {
-        log.Printf("Device '%s' not registered.", message.AgentName())
-        return api.NewResponse([]error{errors.New(fmt.Sprintf("Device '%s' not registered.", message.AgentName()))}).JSON()
-    }
-
-    if err := dev.(device.IDevice).Query(message); err != nil {
-        log.Printf("Error dispatching query: %s", err.Error())
-        return api.NewResponse([]error{err}).JSON()
-    }
-
-    log.Printf("Dispatch complete.")
-    return api.NewResponse([]error{}).JSON()
-}
-
-/* Handles a command */
-func onCommand(message *api.Command) string {
-    log.Printf("Dispatch command...")
-
-    dev := devices.Get(message.AgentName())
-
-    if dev == nil {
-        log.Printf("Device '%s' not registered.", message.AgentName())
-        return api.NewResponse([]error{errors.New(fmt.Sprintf("Device '%s' not registered.", message.AgentName()))}).JSON()
-    }
-
-    if err := dev.(device.IDevice).Command(message); err != nil {
-        log.Printf("Error dispatching command: %s", err.Error())
-        return api.NewResponse([]error{err}).JSON()
-    }
- 
-    log.Printf("Dispatch complete.")
-    return api.NewResponse([]error{}).JSON()
-}
-
-/* Handles an event notification */
-func onEventNotification(message *api.Notification) string {
-    var response *api.Response
-
-    log.Printf("Executing triggers...")
-    trs := triggers.FindByEvent(trigger.NewTriggerEvent(message.AgentName(), message.PropertyName(), message.PropertyValue()))
-    log.Printf("Found %d triggers to process...", len(trs))
-
-    go func (trs []trigger.ITrigger) {
-        for _, t := range trs {
-            for _, a := range t.Actions() {
-                daemon.ExecuteAPIMessage(api.NewCommand(a.AgentName(), a.PropertyName(), a.PropertyValue()))
-            }
-        }
-    }(trs)
-
-    response = api.NewResponse([]error{})
-    return response.JSON()
 }
 
 // ########### DEVICES ###########
@@ -278,42 +218,6 @@ func stopDevices() {
     log.Printf("Devices disconnected.")
 }
 
-/* Handles device registration */
-func onDeviceRegistration(message *api.DeviceRegistration) string {
-    var err error
-    var response *api.Response
-
-    dev, err := device.CreateDevice(device.NewDeviceInfo(message.DeviceName(), message.DeviceModel(), message.DeviceProtocol(), message.DeviceAddress()))
-
-    if err != nil {
-        response = api.NewResponse([]error{err})
-        log.Printf("Error registering device: %s", err.Error())
-        return response.JSON()
-    }
-
-    if err = devices.Add(dev); err != nil {
-        response = api.NewResponse([]error{err})
-        log.Printf("Error registering device: %s", err.Error())
-    } else {
-        response = api.NewResponse([]error{})
-        log.Printf("Successfully registered device: %s", dev.Info().String())
-    }
-
-    if err != nil {
-        return response.JSON()
-    }
-
-    if err = dev.Connect(); err != nil {
-        response = api.NewResponse([]error{err})
-        log.Printf("Error connecting to device %s: '%s'.", dev.Info().String(), err.Error())
-    } else {
-        response = api.NewResponse([]error{})
-        log.Printf("Device is connected %s", dev.Info().String())
-    }
-
-    return response.JSON()
-}
-
 // ########### APPS ###########
 
 /* initialize apps */
@@ -372,36 +276,6 @@ func stopApps() {
     log.Printf("Apps disconnected.")
 }
 
-/* Handles app registration */
-func onAppRegistration(message *api.AppRegistration) string {
-    var err error
-    var response *api.Response
-
-    appi := app.NewApp(app.NewAppInfo(message.AgentName(), message.AgentProtocol(), message.AgentAddress()))
-
-    if err = apps.Add(appi); err != nil {
-        response = api.NewResponse([]error{err})
-        log.Printf("Error registering app: %s", err.Error())
-    } else {
-        response = api.NewResponse([]error{})
-        log.Printf("Successfully registered app: %s", appi.Info().String())
-    }
-
-    if err != nil {
-        return response.JSON()
-    }
-
-    if err = appi.Connect(); err != nil {
-        response = api.NewResponse([]error{err})
-        log.Printf("Error connecting to app %s: '%s'.", appi.Info().String(), err.Error())
-    } else {
-        response = api.NewResponse([]error{})
-        log.Printf("App is connected %s", appi.Info().String())
-    }
-
-    return response.JSON()
-}
-
 // ########### TRIGGERS ###########
 
 /* Initialize triggers */
@@ -421,29 +295,4 @@ func initTriggers(databaseFile string) {
 
     log.Printf("%d triggers loaded.", triggers.Size())
     log.Printf("Triggers initialized.")
-}
-
-/* Handles trigger registration */
-func onTriggerRegistration(message *api.TriggerRegistration) string {
-    var err error
-    var response *api.Response
-
-    event := trigger.NewTriggerEvent(message.When().AgentName(), message.When().PropertyName(), message.When().PropertyValue())
-    actions := make([]*trigger.TriggerAction, len(message.Then()))
-
-    for i, v := range message.Then() {
-        actions[i] = trigger.NewTriggerAction(v.AgentName(), v.PropertyName(), v.PropertyValue())
-    }
-
-    trigger := trigger.NewTrigger("", event, actions)
-
-    if err = triggers.Add(trigger); err != nil {
-        response = api.NewResponse([]error{err})
-        log.Printf("Error registering trigger: %s", err.Error())
-    } else {
-        response = api.NewResponse([]error{})
-        log.Printf("Successfully registered trigger.")
-    }
-
-    return response.JSON()
 }
