@@ -78,9 +78,7 @@ func TestWaitingForConnectionsWillAcceptIncomingConnections(t *testing.T) {
     defer listener.Close()
 
     go func () {
-        if err := instance.waitForConnections(listener); err != nil {
-            t.Errorf(err.Error())
-        }
+        instance.waitForConnections(listener)
     }()
 
     time.Sleep(waitTimeout)
