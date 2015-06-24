@@ -5,12 +5,12 @@ import (
     "testing"
 )
 
-func TestFactory(t *testing.T) {
+func TestFactoryCreatesDenonAvr(t *testing.T) {
     instance, _ := CreateDevice(DeviceInfo{model: DENON_AVR})
     assert.Type(t, new(DenonAvr), instance)
 }
 
-func TestConstructor(t *testing.T) {
+func TestConstructorCreatesDenonAvr(t *testing.T) {
     info := DeviceInfo{name: "dev", model: DENON_AVR}
     instance := CreateDenonAvr(info)
     assert.Type(t, new(DenonAvr), instance)
