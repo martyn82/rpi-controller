@@ -6,7 +6,7 @@ import (
 )
 
 type RemoteControlInfo struct {
-    Name, MacAddress, IPAddress string
+    Name, MacAddress, IPAddress, AppName string
 }
 
 /* Computes encoded length of given value */
@@ -20,12 +20,8 @@ func encode(value string) string {
     return base64.StdEncoding.EncodeToString([]byte(value))
 }
 
-func (this RemoteControlInfo) tvAppName() string {
-    return this.Name + ".iapp.samsung"
-}
-
 /* Creates an Authenticate message */
-func CreateAuthenticateMessage(info RemoteControlInfo) string {
+func CreateAuthenticateMessage(info *RemoteControlInfo) string {
     encodedRemoteIP := encode(info.IPAddress)
     encodedRemoteMac := encode(info.MacAddress)
     encodedRemoteName := encode(info.Name)
@@ -35,17 +31,17 @@ func CreateAuthenticateMessage(info RemoteControlInfo) string {
         length(encodedRemoteMac) + "\x00" + encodedRemoteMac +
         length(encodedRemoteName) + "\x00" + encodedRemoteName
 
-    return "\x00" + length(info.tvAppName()) + "\x00" + info.tvAppName() +
+    return "\x00" + length(info.AppName) + "\x00" + info.AppName +
         length(authenticatePayload) + "\x00" + authenticatePayload
 }
 
 /* Creates a Key message */
-func CreateKeyMessage(info RemoteControlInfo, key string) string {
+func CreateKeyMessage(info *RemoteControlInfo, key string) string {
     encodedKey := encode(key)
 
     keyPayload := "\x00\x00\x00" +
         length(encodedKey) + "\x00" + encodedKey
 
-    return "\x00" + length(info.tvAppName()) + "\x00" + info.tvAppName() +
+    return "\x00" + length(info.AppName) + "\x00" + info.AppName +
         length(keyPayload) + "\x00" + keyPayload
 }
