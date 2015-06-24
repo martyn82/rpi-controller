@@ -7,6 +7,7 @@ import (
 
 const (
     DENON_AVR = "DENON-AVR"
+    SAMSUNG_TV = "SAMSUNG-TV"
 
     ERR_UNSUPPORTED_DEVICE = "Unsupported device model: '%s'."
 )
@@ -16,6 +17,9 @@ func CreateDevice(info IDeviceInfo) (IDevice, error) {
     switch info.Model() {
         case DENON_AVR:
             return CreateDenonAvr(info), nil
+
+        case SAMSUNG_TV:
+            return CreateSamsungTv(info), nil
     }
 
     return nil, errors.New(fmt.Sprintf(ERR_UNSUPPORTED_DEVICE, info.Model()))
