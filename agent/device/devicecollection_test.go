@@ -1,9 +1,9 @@
 package device
 
 import (
+    "github.com/martyn82/go-testing/db"
     "github.com/martyn82/rpi-controller/collection"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/testing/db"
     "github.com/stretchr/testify/assert"
     "os"
     "path"

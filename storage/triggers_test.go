@@ -2,7 +2,7 @@ package storage
 
 import (
     "fmt"
-    "github.com/martyn82/rpi-controller/testing/db"
+    "github.com/martyn82/go-testing/db"
     "github.com/stretchr/testify/assert"
     "testing"
     "os"

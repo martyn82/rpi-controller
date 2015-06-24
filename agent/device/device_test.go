@@ -2,12 +2,12 @@ package device
 
 import (
     "fmt"
+    "github.com/martyn82/go-testing/socket"
     "github.com/martyn82/rpi-controller/agent"
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
     "github.com/stretchr/testify/assert"
-    "github.com/martyn82/rpi-controller/testing/socket"
     "net"
     "testing"
     "time"

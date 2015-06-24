@@ -1,9 +1,9 @@
 package device
 
 import (
+    "github.com/martyn82/go-testing/socket"
     "github.com/martyn82/rpi-controller/agent/device/samsungtv"
     "github.com/stretchr/testify/assert"
-    "github.com/martyn82/rpi-controller/testing/socket"
     "net"
     "testing"
 )

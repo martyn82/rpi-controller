@@ -1,10 +1,10 @@
 package app
 
 import (
+    "github.com/martyn82/go-testing/socket"
     "github.com/martyn82/rpi-controller/agent"
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/network"
-    "github.com/martyn82/rpi-controller/testing/socket"
     "github.com/stretchr/testify/assert"
     "net"
     "testing"
