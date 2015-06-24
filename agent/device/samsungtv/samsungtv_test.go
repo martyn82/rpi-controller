@@ -38,35 +38,40 @@ func TestCommandProcessorPowerOn(t *testing.T) {
     cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_POWER, api.VALUE_ON))
     assert.Nil(t, err)
 
-    assert.Equal(t, "\x00\x12\x00metis.iapp.samsung\x15\x00\x00\x00\x00\x10\x00S0VZX1BPV0VST04=", cmd)
+    rc := GetRemoteControlInfo()
+    assert.Equal(t, "\x00\x12\x00" + rc.AppName + "\x15\x00\x00\x00\x00\x10\x00S0VZX1BPV0VST04=", cmd)
 }
 
 func TestCommandProcessorPowerOff(t *testing.T) {
     cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_POWER, api.VALUE_OFF))
     assert.Nil(t, err)
 
-    assert.Equal(t, "\x00\x12\x00metis.iapp.samsung\x15\x00\x00\x00\x00\x10\x00S0VZX1BPV0VST0ZG", cmd)
+    rc := GetRemoteControlInfo()
+    assert.Equal(t, "\x00\x12\x00" + rc.AppName + "\x15\x00\x00\x00\x00\x10\x00S0VZX1BPV0VST0ZG", cmd)
 }
 
 func TestCommandProcessorMuteToggle(t *testing.T) {
     cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_MUTE, api.VALUE_ON))
     assert.Nil(t, err)
 
-    assert.Equal(t, "\x00\x12\x00metis.iapp.samsung\x11\x00\x00\x00\x00\f\x00S0VZX01VVEU=", cmd)
+    rc := GetRemoteControlInfo()
+    assert.Equal(t, "\x00\x12\x00" + rc.AppName + "\x11\x00\x00\x00\x00\f\x00S0VZX01VVEU=", cmd)
 }
 
 func TestCommandProcessorVolumeUp(t *testing.T) {
     cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_VOLUME, "10"))
     assert.Nil(t, err)
 
-    assert.Equal(t, "\x00\x12\x00metis.iapp.samsung\x11\x00\x00\x00\x00\f\x00S0VZX1ZPTFVQ", cmd)
+    rc := GetRemoteControlInfo()
+    assert.Equal(t, "\x00\x12\x00" + rc.AppName + "\x11\x00\x00\x00\x00\f\x00S0VZX1ZPTFVQ", cmd)
 }
 
 func TestCommandProcessorVolumeDown(t *testing.T) {
     cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_VOLUME, "-10"))
     assert.Nil(t, err)
 
-    assert.Equal(t, "\x00\x12\x00metis.iapp.samsung\x15\x00\x00\x00\x00\x10\x00S0VZX1ZPTERPV04=", cmd)
+    rc := GetRemoteControlInfo()
+    assert.Equal(t, "\x00\x12\x00" + rc.AppName + "\x15\x00\x00\x00\x00\x10\x00S0VZX1ZPTERPV04=", cmd)
 }
 
 func TestCommandProcessorVolumeMustBeNumeric(t *testing.T) {
