@@ -1,7 +1,7 @@
 package service
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -26,7 +26,7 @@ var fakeReader = func (format string, a ...interface{}) (int, error) {
 func TestParseArgumentsCreatesArgumentsInstance(t *testing.T) {
     args := ParseArguments()
     assert.NotNil(t, args)
-    assert.Type(t, Arguments{}, args)
+    assert.IsType(t, Arguments{}, args)
 }
 
 func TestParseArgumentsForTriggerRegistrationCreatesActionArguments(t *testing.T) {
@@ -49,7 +49,7 @@ func TestParseArgumentsForTriggerRegistrationCreatesActionArguments(t *testing.T
 
     args := ParseArguments()
     assert.NotNil(t, args.Actions)
-    assert.Equals(t, 2, len(args.Actions))
+    assert.Equal(t, 2, len(args.Actions))
 }
 
 func TestUnknownArgumentsReturnsError(t *testing.T) {
@@ -59,7 +59,7 @@ func TestUnknownArgumentsReturnsError(t *testing.T) {
     assert.False(t, valid)
     assert.NotNil(t, err)
 
-    assert.Equals(t, ERR_UNKNOWN, err.Error())
+    assert.Equal(t, ERR_UNKNOWN, err.Error())
     assert.True(t, IsUnknownArgumentsError(err))
 }
 

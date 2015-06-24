@@ -3,8 +3,8 @@ package trigger
 import (
     "github.com/martyn82/rpi-controller/collection"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
+    "github.com/stretchr/testify/assert"
     "os"
     "path"
     "testing"
@@ -30,7 +30,7 @@ func TestTriggerImplementsCollectionItem(t *testing.T) {
 func TestConstructTriggerCollectionWithoutRepositoryReturnsError(t *testing.T) {
     _, err := NewTriggerCollection(nil)
     assert.NotNil(t, err)
-    assert.Equals(t, collection.ERR_NO_REPOSITORY, err.Error())
+    assert.Equal(t, collection.ERR_NO_REPOSITORY, err.Error())
 }
 
 func TestLoadConvertsAllTriggerItemsToTriggers(t *testing.T) {
@@ -45,7 +45,7 @@ func TestLoadConvertsAllTriggerItemsToTriggers(t *testing.T) {
 
     instance, err := NewTriggerCollection(repo)
     assert.Nil(t, err)
-    assert.Equals(t, 1, len(instance.triggers))
+    assert.Equal(t, 1, len(instance.triggers))
 }
 
 func TestSizeReturnsNumberOfTriggers(t *testing.T) {
@@ -59,7 +59,7 @@ func TestSizeReturnsNumberOfTriggers(t *testing.T) {
     assert.Nil(t, repoErr)
 
     instance, _ := NewTriggerCollection(repo)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 }
 
 func TestGetReturnsTriggerByUuid(t *testing.T) {
@@ -76,7 +76,7 @@ func TestGetReturnsTriggerByUuid(t *testing.T) {
 
     tr := instance.Get("abc").(ITrigger)
     assert.NotNil(t, tr)
-    assert.Equals(t, "abc", tr.UUID())
+    assert.Equal(t, "abc", tr.UUID())
 }
 
 func TestGetReturnsNilIfNotFound(t *testing.T) {
@@ -101,7 +101,7 @@ func TestAllReturnsAllTriggers(t *testing.T) {
 
     instance, _ := NewTriggerCollection(repo)
     triggers := instance.All()
-    assert.Equals(t, 2, len(triggers))
+    assert.Equal(t, 2, len(triggers))
 }
 
 func TestAddAddsTrigger(t *testing.T) {
@@ -122,7 +122,7 @@ func TestAddAddsTrigger(t *testing.T) {
     assert.Nil(t, err)
 
     d := instance.Get("abc")
-    assert.Equals(t, tr, d)
+    assert.Equal(t, tr, d)
 }
 
 func TestAddAddsTriggerWithoutRepository(t *testing.T) {
@@ -137,7 +137,7 @@ func TestAddAddsTriggerWithoutRepository(t *testing.T) {
     assert.Nil(t, err)
 
     d := instance.Get("abc")
-    assert.Equals(t, tr, d)
+    assert.Equal(t, tr, d)
 }
 
 func TestFindByEventReturnsRegisteredTriggersForEvent(t *testing.T) {
@@ -152,8 +152,8 @@ func TestFindByEventReturnsRegisteredTriggersForEvent(t *testing.T) {
 
     instance, _ := NewTriggerCollection(repo)
     triggers := instance.FindByEvent(NewTriggerEvent("foo", "bar", "baz"))
-    assert.Equals(t, 0, len(triggers))
+    assert.Equal(t, 0, len(triggers))
 
     triggers = instance.FindByEvent(NewTriggerEvent("agent1", "prop1", "val1"))
-    assert.Equals(t, 1, len(triggers))
+    assert.Equal(t, 1, len(triggers))
 }

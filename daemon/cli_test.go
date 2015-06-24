@@ -2,11 +2,11 @@ package daemon
 
 import (
     "testing"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestParseArgumentsCreatesArgumentsInstance(t *testing.T) {
     args := ParseArguments()
     assert.NotNil(t, args)
-    assert.Type(t, Arguments{}, args)
+    assert.IsType(t, Arguments{}, args)
 }

@@ -1,19 +1,19 @@
 package messages
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
 func TestConstructNewEventReturnsEvent(t *testing.T) {
     instance := NewEvent("", "", "", "")
-    assert.Type(t, new(Event), instance)
+    assert.IsType(t, new(Event), instance)
 }
 
 func TestEventHasData(t *testing.T) {
     instance := NewEvent("eventType", "sender", "propertyName", "propertyValue")
-    assert.Equals(t, "eventType", instance.Type())
-    assert.Equals(t, "sender", instance.Sender())
-    assert.Equals(t, "propertyName", instance.PropertyName())
-    assert.Equals(t, "propertyValue", instance.PropertyValue())
+    assert.Equal(t, "eventType", instance.Type())
+    assert.Equal(t, "sender", instance.Sender())
+    assert.Equal(t, "propertyName", instance.PropertyName())
+    assert.Equal(t, "propertyValue", instance.PropertyValue())
 }

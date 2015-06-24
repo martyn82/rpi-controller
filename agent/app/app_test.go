@@ -4,8 +4,8 @@ import (
     "github.com/martyn82/rpi-controller/agent"
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/network"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/socket"
+    "github.com/stretchr/testify/assert"
     "net"
     "testing"
     "time"
@@ -25,7 +25,7 @@ func TestAppInfoIsReturned(t *testing.T) {
     info := AppInfo{name: "app"}
     instance := NewApp(info)
 
-    assert.Equals(t, info, instance.Info())
+    assert.Equal(t, info, instance.Info())
 }
 
 func TestNotifyIsSent(t *testing.T) {
@@ -63,7 +63,7 @@ func TestNotifyIsSent(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    assert.Equals(t, "foo", receivedMessage)
+    assert.Equal(t, "foo", receivedMessage)
 }
 
 func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
@@ -98,5 +98,5 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.True(t, messageHandlerCalled)
-    assert.Equals(t, api.TYPE_NOTIFICATION, messageHandled.Type())
+    assert.Equal(t, api.TYPE_NOTIFICATION, messageHandled.Type())
 }

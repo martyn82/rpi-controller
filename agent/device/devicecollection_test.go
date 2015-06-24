@@ -3,8 +3,8 @@ package device
 import (
     "github.com/martyn82/rpi-controller/collection"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
+    "github.com/stretchr/testify/assert"
     "os"
     "path"
     "testing"
@@ -30,7 +30,7 @@ func TestDeviceImplementsCollectionItem(t *testing.T) {
 func TestConstructDeviceCollectionWithoutRepositoryReturnsError(t *testing.T) {
     _, err := NewDeviceCollection(nil)
     assert.NotNil(t, err)
-    assert.Equals(t, collection.ERR_NO_REPOSITORY, err.Error())
+    assert.Equal(t, collection.ERR_NO_REPOSITORY, err.Error())
 }
 
 func TestLoadConvertsAllDeviceItemsToDevices(t *testing.T) {
@@ -43,7 +43,7 @@ func TestLoadConvertsAllDeviceItemsToDevices(t *testing.T) {
 
     instance, err := NewDeviceCollection(repo)
     assert.Nil(t, err)
-    assert.Equals(t, 1, len(instance.devices))
+    assert.Equal(t, 1, len(instance.devices))
 }
 
 func TestLoadAllReturnsErrorOnLoadFailure(t *testing.T) {
@@ -67,7 +67,7 @@ func TestSizeReturnsNumberOfDevices(t *testing.T) {
     assert.Nil(t, repoErr)
 
     instance, _ := NewDeviceCollection(repo)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 }
 
 func TestGetReturnsDeviceByName(t *testing.T) {
@@ -82,7 +82,7 @@ func TestGetReturnsDeviceByName(t *testing.T) {
 
     dev := instance.Get("name").(IDevice)
     assert.NotNil(t, dev)
-    assert.Equals(t, "name", dev.Info().Name())
+    assert.Equal(t, "name", dev.Info().Name())
 }
 
 func TestGetReturnsNilIfNotFound(t *testing.T) {
@@ -107,7 +107,7 @@ func TestAllReturnsAllDevices(t *testing.T) {
 
     instance, _ := NewDeviceCollection(repo)
     devs := instance.All()
-    assert.Equals(t, 2, len(devs))
+    assert.Equal(t, 2, len(devs))
 }
 
 func TestAddAddsDevice(t *testing.T) {
@@ -119,23 +119,23 @@ func TestAddAddsDevice(t *testing.T) {
 
     instance, _ := NewDeviceCollection(repo)
     dev := new(Device)
-    dev.info = NewDeviceInfo("name", "DENON-AVR", "", "")
+    dev.info = NewDeviceInfo("name", DENON_AVR, "", "")
 
     err := instance.Add(dev)
     assert.Nil(t, err)
 
     d := instance.Get("name")
-    assert.Equals(t, dev, d)
+    assert.Equal(t, dev, d)
 }
 
 func TestAddAddsDeviceWithoutRepository(t *testing.T) {
     instance, _ := NewDeviceCollection(nil)
     dev := new(Device)
-    dev.info = NewDeviceInfo("name", "DENON-AVR", "", "")
+    dev.info = NewDeviceInfo("name", DENON_AVR, "", "")
 
     err := instance.Add(dev)
     assert.Nil(t, err)
 
     d := instance.Get("name")
-    assert.Equals(t, dev, d)
+    assert.Equal(t, dev, d)
 }

@@ -1,7 +1,7 @@
 package network
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "net"
     "testing"
 )
@@ -36,7 +36,7 @@ func TestNewConstructsDefaultInstance(t *testing.T) {
     instance := NewClient(clientSocketInfo)
 
     assert.Nil(t, instance.connection)
-    assert.Equals(t, clientSocketInfo, instance.socketInfo)
+    assert.Equal(t, clientSocketInfo, instance.socketInfo)
     assert.False(t, instance.connected)
     assert.False(t, instance.isConnected())
 }
@@ -81,7 +81,7 @@ func TestConnectingAConnectedClientReturnsError(t *testing.T) {
     err := instance.Connect()
 
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_ALREADY_CONNECTED, err.Error())
+    assert.Equal(t, ERR_ALREADY_CONNECTED, err.Error())
 }
 
 func TestDisconnectingANonConnectedClientReturnsError(t *testing.T) {
@@ -90,7 +90,7 @@ func TestDisconnectingANonConnectedClientReturnsError(t *testing.T) {
     err := instance.Disconnect()
 
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_NOT_CONNECTED, err.Error())
+    assert.Equal(t, ERR_NOT_CONNECTED, err.Error())
 }
 
 func TestErrorFromNetDialWillBeReturned(t *testing.T) {
@@ -117,14 +117,14 @@ func TestSendWillWriteToServerAndReturnResponse(t *testing.T) {
 
     message := "foo bar baz"
     response, _ := instance.Send(message)
-    assert.Equals(t, "echo " + message, response)
+    assert.Equal(t, "echo " + message, response)
 }
 
 func TestSendWhenNotConnectedReturnsError(t *testing.T) {
     instance := NewClient(clientSocketInfo)
     _, err := instance.Send("")
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_NOT_CONNECTED, err.Error())
+    assert.Equal(t, ERR_NOT_CONNECTED, err.Error())
 }
 
 func TestEmptyMessageReturnsNoResponse(t *testing.T) {
@@ -139,5 +139,5 @@ func TestEmptyMessageReturnsNoResponse(t *testing.T) {
 
     response, err := instance.Send("")
     assert.Nil(t, err)
-    assert.Equals(t, "", response)
+    assert.Equal(t, "", response)
 }

@@ -1,7 +1,7 @@
 package storage
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -20,8 +20,8 @@ func TestDeviceItemGetUnknownFieldByNameReturnsNil(t *testing.T) {
 
 func TestDeviceItemGetKnownProperties(t *testing.T) {
     instance := NewDeviceItem("name", "model", "protocol", "address")
-    assert.Equals(t, "name", instance.Get("name"))
-    assert.Equals(t, "model", instance.Get("model"))
-    assert.Equals(t, "protocol", instance.Get("protocol"))
-    assert.Equals(t, "address", instance.Get("address"))
+    assert.Equal(t, "name", instance.Get("name"))
+    assert.Equal(t, "model", instance.Get("model"))
+    assert.Equal(t, "protocol", instance.Get("protocol"))
+    assert.Equal(t, "address", instance.Get("address"))
 }

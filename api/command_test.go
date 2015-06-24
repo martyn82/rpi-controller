@@ -1,7 +1,7 @@
 package api
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -12,10 +12,10 @@ func TestNewCommandContainsValues(t *testing.T) {
 
     cmd := NewCommand(agentName, propertyName, propertyValue)
 
-    assert.Type(t, new(Command), cmd)
-    assert.Equals(t, agentName, cmd.AgentName())
-    assert.Equals(t, propertyName, cmd.PropertyName())
-    assert.Equals(t, propertyValue, cmd.PropertyValue())
+    assert.IsType(t, new(Command), cmd)
+    assert.Equal(t, agentName, cmd.AgentName())
+    assert.Equal(t, propertyName, cmd.PropertyName())
+    assert.Equal(t, propertyValue, cmd.PropertyValue())
 }
 
 func TestCommandToStringReturnsJson(t *testing.T) {
@@ -25,7 +25,7 @@ func TestCommandToStringReturnsJson(t *testing.T) {
 
     cmd := NewCommand(agentName, propertyName, propertyValue)
 
-    assert.Equals(t, "{\"" + TYPE_COMMAND + "\":{\"" + KEY_AGENT + "\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
+    assert.Equal(t, "{\"" + TYPE_COMMAND + "\":{\"" + KEY_AGENT + "\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
 }
 
 func TestCommandFromMapCreatesCommand(t *testing.T) {
@@ -37,14 +37,14 @@ func TestCommandFromMapCreatesCommand(t *testing.T) {
     cmd, err := commandFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "dev", cmd.AgentName())
-    assert.Equals(t, "prop", cmd.PropertyName())
-    assert.Equals(t, "val", cmd.PropertyValue())
+    assert.Equal(t, "dev", cmd.AgentName())
+    assert.Equal(t, "prop", cmd.PropertyName())
+    assert.Equal(t, "val", cmd.PropertyValue())
 }
 
 func TestTypeOfCommandReturnsCommand(t *testing.T) {
     msg := NewCommand("", "", "")
-    assert.Equals(t, TYPE_COMMAND, msg.Type())
+    assert.Equal(t, TYPE_COMMAND, msg.Type())
 }
 
 func TestCommandFromMapReturnsErrorIfInvalidMap(t *testing.T) {

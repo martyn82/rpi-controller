@@ -2,7 +2,7 @@ package service
 
 import (
     "github.com/martyn82/rpi-controller/config"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "net"
     "testing"
     "time"
@@ -28,5 +28,5 @@ func TestSendSendsToDaemon(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    assert.Equals(t, "true", response)
+    assert.Equal(t, "true", response)
 }

@@ -1,7 +1,7 @@
 package setup
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "os"
     "path"
     "testing"
@@ -36,7 +36,7 @@ func TestNoSchemaFilesInPathWillReturnError(t *testing.T) {
     _, err := Install(schemaPath, testDbFile)
 
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_NO_SCHEMA, err.Error())
+    assert.Equal(t, ERR_NO_SCHEMA, err.Error())
 
     removeTestDb()
 }

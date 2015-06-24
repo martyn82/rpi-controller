@@ -3,7 +3,7 @@ package daemon
 import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/network"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "net"
     "testing"
 )
@@ -33,17 +33,17 @@ func TestRegisterMessageHandlerAddsToRegisteredHandlers(t *testing.T) {
         return ""
     }
 
-    assert.Equals(t, 0, len(messageHandlers))
+    assert.Equal(t, 0, len(messageHandlers))
 
     RegisterEventMessageHandler(handler)
-    assert.Equals(t, 1, len(messageHandlers))
+    assert.Equal(t, 1, len(messageHandlers))
 }
 
 func TestMessageHandlerReturnsEmptyStringOnEmptyMessage(t *testing.T) {
     setupTest()
 
     response := handleMessage("")
-    assert.Equals(t, "", response)
+    assert.Equal(t, "", response)
 }
 
 func TestMessageHandlerReturnsEmptyStringWithoutHandler(t *testing.T) {
@@ -51,7 +51,7 @@ func TestMessageHandlerReturnsEmptyStringWithoutHandler(t *testing.T) {
 
     message := api.NewNotification("dev", "prop", "val").JSON()
     response := handleMessage(message)
-    assert.Equals(t, "", response)
+    assert.Equal(t, "", response)
 }
 
 func TestMessageHandlerCallsRegisteredHandlerForEvent(t *testing.T) {
@@ -135,16 +135,16 @@ func TestMessageHandlerCallsRegisteredHandlerForCommand(t *testing.T) {
 func TestHandleMessageReturnsEmptyStringOnError(t *testing.T) {
     message := "{\"Trigger\":{\"When\":[{\"Agent\":\"agent1\",\"prop1\":\"val1\"}]},{\"If\":[]}}"
     msg := handleMessage(message)
-    assert.Equals(t, "", msg)
+    assert.Equal(t, "", msg)
 }
 
 func TestDefaultDaemonState(t *testing.T) {
-    assert.Equals(t, STATE_STOPPED, State())
+    assert.Equal(t, STATE_STOPPED, State())
 }
 
 func TestNotifyStateChangesState(t *testing.T) {
     NotifyState(STATE_STARTED)
-    assert.Equals(t, STATE_STARTED, State())
+    assert.Equal(t, STATE_STARTED, State())
 }
 
 func TestExecuteAPIMessageCallsHandleMessage(t *testing.T) {
@@ -154,7 +154,7 @@ func TestExecuteAPIMessageCallsHandleMessage(t *testing.T) {
     handleMessageCalled := false
     RegisterEventMessageHandler(func (message api.IMessage) string {
         handleMessageCalled = true
-        assert.Equals(t, msgJson, message.JSON())
+        assert.Equal(t, msgJson, message.JSON())
         return ""
     })
 

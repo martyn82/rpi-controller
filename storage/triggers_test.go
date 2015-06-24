@@ -2,8 +2,8 @@ package storage
 
 import (
     "fmt"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
+    "github.com/stretchr/testify/assert"
     "testing"
     "os"
     "path"
@@ -25,7 +25,7 @@ func TestTriggersAddWillAddItemToRepository(t *testing.T) {
     defer db.RemoveDbFile(triggersTestDb)
 
     instance, _ := NewTriggerRepository(triggersTestDb)
-    assert.Equals(t, 0, instance.Size())
+    assert.Equal(t, 0, instance.Size())
 
     event := new(TriggerEvent)
     event.agentName = "agent1"
@@ -47,7 +47,7 @@ func TestTriggersAddWillAddItemToRepository(t *testing.T) {
     }
 
     assert.True(t, id > 0)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 }
 
 func TestTriggersFindWithExistingIdentityReturnsTheItem(t *testing.T) {
@@ -62,8 +62,8 @@ func TestTriggersFindWithExistingIdentityReturnsTheItem(t *testing.T) {
     assert.Nil(t, err)
 
     actual, err := instance.Find(identity)
-    assert.Equals(t, item, actual)
-    assert.Equals(t, identity, item.Get("id"))
+    assert.Equal(t, item, actual)
+    assert.Equal(t, identity, item.Get("id"))
     assert.Nil(t, err)
 }
 
@@ -72,20 +72,20 @@ func TestTriggersFindWithNonExistingIdentityReturnsError(t *testing.T) {
     id := int64(20)
     _, err := instance.Find(id)
 
-    assert.Equals(t, fmt.Sprintf(ERR_ITEM_NOT_FOUND, id), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_ITEM_NOT_FOUND, id), err.Error())
 }
 
 func TestTriggersAddWithErrorReturnsError(t *testing.T) {
     instance, _ := NewTriggerRepository("")
     id, err := instance.Add(NewTriggerItem(new(TriggerEvent), make([]*TriggerAction, 0)))
-    assert.Equals(t, int64(-1), id)
+    assert.Equal(t, int64(-1), id)
     assert.NotNil(t, err)
 }
 
 func TestTriggersConstructWithoutDbReturnsError(t *testing.T) {
     _, err := NewTriggerRepository("")
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_NO_DB, err.Error())
+    assert.Equal(t, ERR_NO_DB, err.Error())
 }
 
 func TestTriggersConstructLoadsFromDb(t *testing.T) {
@@ -98,20 +98,20 @@ func TestTriggersConstructLoadsFromDb(t *testing.T) {
     instance, err := NewTriggerRepository(triggersTestDb)
 
     assert.Nil(t, err)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 
     item, _ := instance.Find(1)
 
-    assert.Type(t, new(TriggerItem), item)
+    assert.IsType(t, new(TriggerItem), item)
     itm := item.(*TriggerItem)
 
-    assert.Equals(t, "abc", itm.uuid)
-    assert.Equals(t, "agent1", itm.event.agentName)
-    assert.Equals(t, "prop1", itm.event.propertyName)
-    assert.Equals(t, "val1", itm.event.propertyValue)
-    assert.Equals(t, "agent2", itm.actions[0].agentName)
-    assert.Equals(t, "prop2", itm.actions[0].propertyName)
-    assert.Equals(t, "val2", itm.actions[0].propertyValue)
+    assert.Equal(t, "abc", itm.uuid)
+    assert.Equal(t, "agent1", itm.event.agentName)
+    assert.Equal(t, "prop1", itm.event.propertyName)
+    assert.Equal(t, "val1", itm.event.propertyValue)
+    assert.Equal(t, "agent2", itm.actions[0].agentName)
+    assert.Equal(t, "prop2", itm.actions[0].propertyName)
+    assert.Equal(t, "val2", itm.actions[0].propertyValue)
 }
 
 func TestTriggersConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
@@ -136,10 +136,10 @@ func TestTriggersAllRetrievesAllItems(t *testing.T) {
     instance, err := NewTriggerRepository(triggersTestDb)
 
     assert.Nil(t, err)
-    assert.Equals(t, 2, instance.Size())
+    assert.Equal(t, 2, instance.Size())
 
     items := instance.All()
-    assert.Equals(t, 2, len(items))
+    assert.Equal(t, 2, len(items))
 }
 
 func TestTriggersSubsequentAdditionsDoNotOverwrite(t *testing.T) {
@@ -148,19 +148,19 @@ func TestTriggersSubsequentAdditionsDoNotOverwrite(t *testing.T) {
 
     instance, err := NewTriggerRepository(triggersTestDb)
     assert.Nil(t, err)
-    assert.Equals(t, 0, instance.Size())
+    assert.Equal(t, 0, instance.Size())
 
     actions := make([]*TriggerAction, 1)
     actions[0] = NewTriggerAction("agent1.2", "prop1.2", "val1.2")
     first := NewTriggerItem(NewTriggerEvent("agent1.1", "prop1.1", "val1.1"), actions)
     instance.Add(first)
-    assert.Equals(t, int64(1), first.Id())
-    assert.Equals(t, int64(1), first.event.Id())
+    assert.Equal(t, int64(1), first.Id())
+    assert.Equal(t, int64(1), first.event.Id())
 
     actions = make([]*TriggerAction, 1)
     actions[0] = NewTriggerAction("agent2.2", "prop2.2", "val2.2")
     second := NewTriggerItem(NewTriggerEvent("agent2.1", "prop2.1", "val2.1"), actions)
     instance.Add(second)
-    assert.Equals(t, int64(2), second.Id())
-    assert.Equals(t, int64(2), second.event.Id())
+    assert.Equal(t, int64(2), second.Id())
+    assert.Equal(t, int64(2), second.event.Id())
 }

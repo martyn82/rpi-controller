@@ -2,8 +2,8 @@ package storage
 
 import (
     "fmt"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
+    "github.com/stretchr/testify/assert"
     "os"
     "path"
     "testing"
@@ -25,7 +25,7 @@ func TestAppsAddWillAddItemToRepository(t *testing.T) {
     defer db.RemoveDbFile(appsTestDb)
 
     instance, _ := NewAppRepository(appsTestDb)
-    assert.Equals(t, 0, instance.Size())
+    assert.Equal(t, 0, instance.Size())
 
     item := NewAppItem("dev0", "", "")
     id, err := instance.Add(item)
@@ -35,7 +35,7 @@ func TestAppsAddWillAddItemToRepository(t *testing.T) {
     }
 
     assert.True(t, id > 0)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 }
 
 func TestAppsFindWithExistingIdentityReturnsTheItem(t *testing.T) {
@@ -50,8 +50,8 @@ func TestAppsFindWithExistingIdentityReturnsTheItem(t *testing.T) {
     assert.Nil(t, err)
 
     actual, err := instance.Find(identity)
-    assert.Equals(t, item, actual)
-    assert.Equals(t, identity, item.Get("id"))
+    assert.Equal(t, item, actual)
+    assert.Equal(t, identity, item.Get("id"))
     assert.Nil(t, err)
 }
 
@@ -60,20 +60,20 @@ func TestAppsFindWithNonExistingIdentityReturnsError(t *testing.T) {
     id := int64(20)
     _, err := instance.Find(id)
 
-    assert.Equals(t, fmt.Sprintf(ERR_ITEM_NOT_FOUND, id), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_ITEM_NOT_FOUND, id), err.Error())
 }
 
 func TestAppsAddWithErrorReturnsError(t *testing.T) {
     instance, _ := NewAppRepository("")
     id, err := instance.Add(NewAppItem("", "", ""))
-    assert.Equals(t, int64(-1), id)
+    assert.Equal(t, int64(-1), id)
     assert.NotNil(t, err)
 }
 
 func TestAppsConstructWithoutDbReturnsError(t *testing.T) {
     _, err := NewAppRepository("")
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_NO_DB, err.Error())
+    assert.Equal(t, ERR_NO_DB, err.Error())
 }
 
 func TestAppsConstructLoadsFromDb(t *testing.T) {
@@ -84,14 +84,14 @@ func TestAppsConstructLoadsFromDb(t *testing.T) {
     instance, err := NewAppRepository(appsTestDb)
 
     assert.Nil(t, err)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 
     item, _ := instance.Find(1)
 
-    assert.Type(t, new(AppItem), item)
+    assert.IsType(t, new(AppItem), item)
     itm := item.(*AppItem)
 
-    assert.Equals(t, "dev0", itm.Name())
+    assert.Equal(t, "dev0", itm.Name())
 }
 
 func TestAppsConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
@@ -112,8 +112,8 @@ func TestAppsAllRetrievesAllItems(t *testing.T) {
     instance, err := NewAppRepository(appsTestDb)
 
     assert.Nil(t, err)
-    assert.Equals(t, 2, instance.Size())
+    assert.Equal(t, 2, instance.Size())
 
     items := instance.All()
-    assert.Equals(t, 2, len(items))
+    assert.Equal(t, 2, len(items))
 }

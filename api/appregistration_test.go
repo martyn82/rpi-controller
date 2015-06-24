@@ -1,7 +1,7 @@
 package api
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -11,9 +11,9 @@ func TestNewAppRegistrationContainsValues(t *testing.T) {
 
     instance := NewAppRegistration(name, addr)
 
-    assert.Equals(t, name, instance.AgentName())
-    assert.Equals(t, addr, instance.AgentProtocol())
-    assert.Equals(t, "", instance.AgentAddress())
+    assert.Equal(t, name, instance.AgentName())
+    assert.Equal(t, addr, instance.AgentProtocol())
+    assert.Equal(t, "", instance.AgentAddress())
 }
 
 func TestNewAppRegistrationContainsAddress(t *testing.T) {
@@ -22,9 +22,9 @@ func TestNewAppRegistrationContainsAddress(t *testing.T) {
 
     instance := NewAppRegistration(name, addr)
 
-    assert.Equals(t, name, instance.AgentName())
-    assert.Equals(t, "tcp", instance.AgentProtocol())
-    assert.Equals(t, "10.0.0.1", instance.AgentAddress())
+    assert.Equal(t, name, instance.AgentName())
+    assert.Equal(t, "tcp", instance.AgentProtocol())
+    assert.Equal(t, "10.0.0.1", instance.AgentAddress())
 }
 
 func TestNewAppRegistrationContainsAddressAndPort(t *testing.T) {
@@ -33,9 +33,9 @@ func TestNewAppRegistrationContainsAddressAndPort(t *testing.T) {
 
     instance := NewAppRegistration(name, addr)
 
-    assert.Equals(t, name, instance.AgentName())
-    assert.Equals(t, "tcp", instance.AgentProtocol())
-    assert.Equals(t, "10.0.0.1:1234", instance.AgentAddress())
+    assert.Equal(t, name, instance.AgentName())
+    assert.Equal(t, "tcp", instance.AgentProtocol())
+    assert.Equal(t, "10.0.0.1:1234", instance.AgentAddress())
 }
 
 func TestAppRegistrationToStringReturnsJson(t *testing.T) {
@@ -43,7 +43,7 @@ func TestAppRegistrationToStringReturnsJson(t *testing.T) {
     agentAddress := "unix:foo.sock"
 
     cmd := NewAppRegistration(agentName, agentAddress)
-    assert.Equals(t, "{\"" + TYPE_APP_REGISTRATION + "\":{\"Name\":\"app\",\"Address\":\"unix:foo.sock\"}}", cmd.JSON())
+    assert.Equal(t, "{\"" + TYPE_APP_REGISTRATION + "\":{\"Name\":\"app\",\"Address\":\"unix:foo.sock\"}}", cmd.JSON())
 }
 
 func TestAppRegistrationFromMapCreatesAppRegistration(t *testing.T) {
@@ -55,9 +55,9 @@ func TestAppRegistrationFromMapCreatesAppRegistration(t *testing.T) {
     cmd, err := appRegistrationFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "app", cmd.AgentName())
-    assert.Equals(t, "addr", cmd.AgentProtocol())
-    assert.Equals(t, "foo", cmd.AgentAddress())
+    assert.Equal(t, "app", cmd.AgentName())
+    assert.Equal(t, "addr", cmd.AgentProtocol())
+    assert.Equal(t, "foo", cmd.AgentAddress())
 }
 
 func TestAppRegistrationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
@@ -103,5 +103,5 @@ func TestAppRegistrationIsInvalidIfItMissesNameAndAddress(t *testing.T) {
 
 func TestTypeOfReturnsAppRegistration(t *testing.T) {
     msg := NewAppRegistration("", "")
-    assert.Equals(t, TYPE_APP_REGISTRATION, msg.Type())
+    assert.Equal(t, TYPE_APP_REGISTRATION, msg.Type())
 }

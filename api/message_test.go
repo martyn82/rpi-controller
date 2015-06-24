@@ -2,7 +2,7 @@ package api
 
 import (
     "fmt"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -15,12 +15,12 @@ func TestParseJSONCreatesCommandFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Type(t, new(Command), msg)
+    assert.IsType(t, new(Command), msg)
 
     cmd := msg.(*Command)
-    assert.Equals(t, "dev", cmd.AgentName())
-    assert.Equals(t, "prop", cmd.PropertyName())
-    assert.Equals(t, "val", cmd.PropertyValue())
+    assert.Equal(t, "dev", cmd.AgentName())
+    assert.Equal(t, "prop", cmd.PropertyName())
+    assert.Equal(t, "val", cmd.PropertyValue())
 }
 
 func TestParseJSONCreatesNotificationFromString(t *testing.T) {
@@ -32,12 +32,12 @@ func TestParseJSONCreatesNotificationFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Type(t, new(Notification), msg)
+    assert.IsType(t, new(Notification), msg)
 
     not := msg.(*Notification)
-    assert.Equals(t, "dev", not.AgentName())
-    assert.Equals(t, "prop", not.PropertyName())
-    assert.Equals(t, "val", not.PropertyValue())
+    assert.Equal(t, "dev", not.AgentName())
+    assert.Equal(t, "prop", not.PropertyName())
+    assert.Equal(t, "val", not.PropertyValue())
 }
 
 func TestParseJSONCreatesDeviceRegistrationFromString(t *testing.T) {
@@ -49,13 +49,13 @@ func TestParseJSONCreatesDeviceRegistrationFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Type(t, new(DeviceRegistration), msg)
+    assert.IsType(t, new(DeviceRegistration), msg)
 
     dr := msg.(*DeviceRegistration)
-    assert.Equals(t, "dev", dr.DeviceName())
-    assert.Equals(t, "model", dr.DeviceModel())
-    assert.Equals(t, "addr", dr.DeviceProtocol())
-    assert.Equals(t, "foo", dr.DeviceAddress())
+    assert.Equal(t, "dev", dr.DeviceName())
+    assert.Equal(t, "model", dr.DeviceModel())
+    assert.Equal(t, "addr", dr.DeviceProtocol())
+    assert.Equal(t, "foo", dr.DeviceAddress())
 }
 
 func TestParseJSONCreatesAppRegistrationFromString(t *testing.T) {
@@ -67,12 +67,12 @@ func TestParseJSONCreatesAppRegistrationFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Type(t, new(AppRegistration), msg)
+    assert.IsType(t, new(AppRegistration), msg)
 
     ar := msg.(*AppRegistration)
-    assert.Equals(t, "app", ar.AgentName())
-    assert.Equals(t, "addr", ar.AgentProtocol())
-    assert.Equals(t, "foo", ar.AgentAddress())
+    assert.Equal(t, "app", ar.AgentName())
+    assert.Equal(t, "addr", ar.AgentProtocol())
+    assert.Equal(t, "foo", ar.AgentAddress())
 }
 
 func TestParseJSONCreatesTriggerRegistrationFromString(t *testing.T) {
@@ -88,16 +88,16 @@ func TestParseJSONCreatesTriggerRegistrationFromString(t *testing.T) {
     }
 
     assert.NotNil(t, msg)
-    assert.Type(t, new(TriggerRegistration), msg)
+    assert.IsType(t, new(TriggerRegistration), msg)
 
     ar := msg.(*TriggerRegistration)
-    assert.Equals(t, "agent1", ar.When().AgentName())
-    assert.Equals(t, "prop1", ar.When().PropertyName())
-    assert.Equals(t, "val1", ar.When().PropertyValue())
+    assert.Equal(t, "agent1", ar.When().AgentName())
+    assert.Equal(t, "prop1", ar.When().PropertyName())
+    assert.Equal(t, "val1", ar.When().PropertyValue())
 
-    assert.Equals(t, "agent2", ar.Then()[0].AgentName())
-    assert.Equals(t, "prop2", ar.Then()[0].PropertyName())
-    assert.Equals(t, "val2", ar.Then()[0].PropertyValue())
+    assert.Equal(t, "agent2", ar.Then()[0].AgentName())
+    assert.Equal(t, "prop2", ar.Then()[0].PropertyName())
+    assert.Equal(t, "val2", ar.Then()[0].PropertyValue())
 }
 
 func TestParseJSONReturnsErrorOnUnknownSimpleMessageType(t *testing.T) {
@@ -106,7 +106,7 @@ func TestParseJSONReturnsErrorOnUnknownSimpleMessageType(t *testing.T) {
 
     assert.NotNil(t, err)
     assert.Nil(t, msg)
-    assert.Equals(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "foo"), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "foo"), err.Error())
 }
 
 func TestParseJSONReturnsErrorOnUnknownComplexMessageType(t *testing.T) {
@@ -115,7 +115,7 @@ func TestParseJSONReturnsErrorOnUnknownComplexMessageType(t *testing.T) {
 
     assert.NotNil(t, err)
     assert.Nil(t, msg)
-    assert.Equals(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "far"), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_UNSUPPORTED_TYPE, "far"), err.Error())
 }
 
 func TestParseJSONReturnsErrorOnInvalidMessageFormat(t *testing.T) {
@@ -134,8 +134,8 @@ func TestParseJSONCreatesQueryFromString(t *testing.T) {
 
     assert.Nil(t, err)
     assert.NotNil(t, qry)
-    assert.Type(t, new(Query), qry)
+    assert.IsType(t, new(Query), qry)
 
-    assert.Equals(t, "agent", qry.AgentName())
-    assert.Equals(t, "prop", qry.PropertyName())
+    assert.Equal(t, "agent", qry.AgentName())
+    assert.Equal(t, "prop", qry.PropertyName())
 }

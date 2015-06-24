@@ -1,7 +1,7 @@
 package storage
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -39,15 +39,15 @@ func TestTriggerItemSetKnownProperties(t *testing.T) {
     instance := NewTriggerItem(new(TriggerEvent), make([]*TriggerAction, 0))
 
     instance.Set("id", int64(1))
-    assert.Equals(t, int64(1), instance.Id())
+    assert.Equal(t, int64(1), instance.Id())
 
     instance.Set("event", event)
-    assert.Equals(t, event, instance.Get("event"))
+    assert.Equal(t, event, instance.Get("event"))
 
     instance.Set("actions", actions)
     getActions := instance.Get("actions")
-    assert.Equals(t, actions[0], getActions.([]*TriggerAction)[0])
+    assert.Equal(t, actions[0], getActions.([]*TriggerAction)[0])
 
     instance.Set("uuid", "foo")
-    assert.Equals(t, "foo", instance.Get("uuid"))
+    assert.Equal(t, "foo", instance.Get("uuid"))
 }

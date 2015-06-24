@@ -3,7 +3,7 @@ package api
 import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/service"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -12,7 +12,7 @@ func TestFromArgumentsUnknownTypeReturnsError(t *testing.T) {
     _, err := FromArguments(args)
 
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_UNKNOWN_MESSAGE, err.Error())
+    assert.Equal(t, ERR_UNKNOWN_MESSAGE, err.Error())
 }
 
 func TestFromArgumentsCommandReturnsCommand(t *testing.T) {
@@ -23,7 +23,7 @@ func TestFromArgumentsCommandReturnsCommand(t *testing.T) {
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.Command), cmd)
+    assert.IsType(t, new(api.Command), cmd)
 }
 
 func TestFromArgumentsEventReturnsNotification(t *testing.T) {
@@ -34,7 +34,7 @@ func TestFromArgumentsEventReturnsNotification(t *testing.T) {
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.Notification), cmd)
+    assert.IsType(t, new(api.Notification), cmd)
 }
 
 func TestFromArgumentsDeviceRegistrationReturnsDeviceRegistration(t *testing.T) {
@@ -47,7 +47,7 @@ func TestFromArgumentsDeviceRegistrationReturnsDeviceRegistration(t *testing.T) 
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.DeviceRegistration), cmd)
+    assert.IsType(t, new(api.DeviceRegistration), cmd)
 }
 
 func TestFromArgumentsAppRegistrationReturnsAppRegistration(t *testing.T) {
@@ -59,7 +59,7 @@ func TestFromArgumentsAppRegistrationReturnsAppRegistration(t *testing.T) {
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.AppRegistration), cmd)
+    assert.IsType(t, new(api.AppRegistration), cmd)
 }
 
 func TestFromArgumentsReturnsNilIfNotCompatible(t *testing.T) {
@@ -83,14 +83,14 @@ func TestFromArgumentsTriggerRegistrationReturnsTriggerRegistration(t *testing.T
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.TriggerRegistration), cmd)
+    assert.IsType(t, new(api.TriggerRegistration), cmd)
 
-    assert.Equals(t, len(args.Actions), len(cmd.(*api.TriggerRegistration).Then()))
+    assert.Equal(t, len(args.Actions), len(cmd.(*api.TriggerRegistration).Then()))
 
     action := cmd.(*api.TriggerRegistration).Then()[0]
-    assert.Equals(t, args.Actions[0].ActionAgentName, action.AgentName())
-    assert.Equals(t, args.Actions[0].ActionPropertyName, action.PropertyName())
-    assert.Equals(t, args.Actions[0].ActionPropertyValue, action.PropertyValue())
+    assert.Equal(t, args.Actions[0].ActionAgentName, action.AgentName())
+    assert.Equal(t, args.Actions[0].ActionPropertyName, action.PropertyName())
+    assert.Equal(t, args.Actions[0].ActionPropertyValue, action.PropertyValue())
 }
 
 func TestFromArgumentsQueryReturnsQuery(t *testing.T) {
@@ -101,5 +101,5 @@ func TestFromArgumentsQueryReturnsQuery(t *testing.T) {
     cmd, _ := FromArguments(args)
 
     assert.NotNil(t, cmd)
-    assert.Type(t, new(api.Query), cmd)
+    assert.IsType(t, new(api.Query), cmd)
 }

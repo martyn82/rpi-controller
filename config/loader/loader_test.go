@@ -2,7 +2,7 @@ package loader
 
 import (
     "testing"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "io"
     "os"
 )
@@ -91,7 +91,7 @@ func TestReadConfigFromFile(t *testing.T) {
     err := FromFile(&actual, testFileName)
     assert.Nil(t, err)
 
-    assert.Equals(t, expected, actual)
+    assert.Equal(t, expected, actual)
 
     removeTestFile(t, testFileName)
 }

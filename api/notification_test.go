@@ -1,7 +1,7 @@
 package api
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -12,10 +12,10 @@ func TestNewNotificationContainsValues(t *testing.T) {
 
     cmd := NewNotification(agentName, propertyName, propertyValue)
 
-    assert.Type(t, new(Notification), cmd)
-    assert.Equals(t, agentName, cmd.AgentName())
-    assert.Equals(t, propertyName, cmd.PropertyName())
-    assert.Equals(t, propertyValue, cmd.PropertyValue())
+    assert.IsType(t, new(Notification), cmd)
+    assert.Equal(t, agentName, cmd.AgentName())
+    assert.Equal(t, propertyName, cmd.PropertyName())
+    assert.Equal(t, propertyValue, cmd.PropertyValue())
 }
 
 func TestNotificationToStringReturnsJson(t *testing.T) {
@@ -25,7 +25,7 @@ func TestNotificationToStringReturnsJson(t *testing.T) {
 
     cmd := NewNotification(agentName, propertyName, propertyValue)
 
-    assert.Equals(t, "{\"" + TYPE_NOTIFICATION + "\":{\"Agent\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
+    assert.Equal(t, "{\"" + TYPE_NOTIFICATION + "\":{\"Agent\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
 }
 
 func TestNotificationFromMapCreatesNotification(t *testing.T) {
@@ -37,9 +37,9 @@ func TestNotificationFromMapCreatesNotification(t *testing.T) {
     cmd, err := notificationFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "dev", cmd.AgentName())
-    assert.Equals(t, "prop", cmd.PropertyName())
-    assert.Equals(t, "val", cmd.PropertyValue())
+    assert.Equal(t, "dev", cmd.AgentName())
+    assert.Equal(t, "prop", cmd.PropertyName())
+    assert.Equal(t, "val", cmd.PropertyValue())
 }
 
 func TestNotificationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
@@ -85,5 +85,5 @@ func TestNotificationIsInvalidIfItMissesAgentAndProperty(t *testing.T) {
 
 func TestTypeOfNotificationReturnsNotification(t *testing.T) {
     msg := NewNotification("", "", "")
-    assert.Equals(t, TYPE_NOTIFICATION, msg.Type())
+    assert.Equal(t, TYPE_NOTIFICATION, msg.Type())
 }

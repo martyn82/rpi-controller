@@ -6,7 +6,7 @@ import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/messages"
     "github.com/martyn82/rpi-controller/network"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "github.com/martyn82/rpi-controller/testing/socket"
     "net"
     "testing"
@@ -39,7 +39,7 @@ func TestNewDeviceCreatesSimpleDevice(t *testing.T) {
     devInfo := NewDeviceInfo("name", "", "", "")
     instance := NewDevice(devInfo, nil, nil, nil)
 
-    assert.Equals(t, devInfo, instance.Info())
+    assert.Equal(t, devInfo, instance.Info())
 }
 
 func TestDeviceSupportsNetworkIfProtocolAndAddressAreSet(t *testing.T) {
@@ -52,7 +52,7 @@ func TestDeviceInfoIsReturned(t *testing.T) {
     info := DeviceInfo{name: "dev"}
     instance := CreateGenericDevice(info)
 
-    assert.Equals(t, info, instance.Info())
+    assert.Equal(t, info, instance.Info())
 }
 
 func TestCommandIsSent(t *testing.T) {
@@ -91,7 +91,7 @@ func TestCommandIsSent(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    assert.Equals(t, "foo", receivedMessage)
+    assert.Equal(t, "foo", receivedMessage)
 }
 
 func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
@@ -129,7 +129,7 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.True(t, messageHandlerCalled)
-    assert.Equals(t, api.TYPE_NOTIFICATION, messageHandled)
+    assert.Equal(t, api.TYPE_NOTIFICATION, messageHandled)
 }
 
 func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
@@ -164,7 +164,7 @@ func TestMessageHandlerIsNotCalledIfNoEventProcessorForDevice(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.False(t, messageHandlerCalled)
-    assert.Equals(t, "", messageHandled)
+    assert.Equal(t, "", messageHandled)
 }
 
 func TestCommandReturnsErrorIfNoCommandProcessorDefined(t *testing.T) {
@@ -178,7 +178,7 @@ func TestCommandReturnsErrorIfNoCommandProcessorDefined(t *testing.T) {
     err := instance.Command(api.NewCommand("", "", ""))
 
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_NO_COMMAND_PROCESSOR, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_NO_COMMAND_PROCESSOR, instance.Info().String()), err.Error())
 }
 
 func TestQueryReturnsErrorIfNoQueryProcessorIsDefined(t *testing.T) {
@@ -192,7 +192,7 @@ func TestQueryReturnsErrorIfNoQueryProcessorIsDefined(t *testing.T) {
     err := instance.Query(api.NewQuery("", ""))
 
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_NO_QUERY_PROCESSOR, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_NO_QUERY_PROCESSOR, instance.Info().String()), err.Error())
 }
 
 func TestQueryIsSent(t *testing.T) {
@@ -231,5 +231,5 @@ func TestQueryIsSent(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    assert.Equals(t, "foo", receivedMessage)
+    assert.Equal(t, "foo", receivedMessage)
 }

@@ -3,7 +3,7 @@ package device
 import (
     "fmt"
     "github.com/martyn82/rpi-controller/agent"
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -16,14 +16,14 @@ func TestDeviceInfoImplementsIAgentInfo(t *testing.T) {
 
 func TestDeviceInfoReturnsValues(t *testing.T) {
     instance := NewDeviceInfo("name", "model", "protocol", "address")
-    assert.Equals(t, "name", instance.Name())
-    assert.Equals(t, "model", instance.Model())
-    assert.Equals(t, "protocol", instance.Protocol())
-    assert.Equals(t, "address", instance.Address())
+    assert.Equal(t, "name", instance.Name())
+    assert.Equal(t, "model", instance.Model())
+    assert.Equal(t, "protocol", instance.Protocol())
+    assert.Equal(t, "address", instance.Address())
 }
 
 func TestDeviceInfoToString(t *testing.T) {
     instance := NewDeviceInfo("name", "model", "protocol", "address")
     expected := fmt.Sprintf("Device{name=%s, model=%s, protocol=%s, address=%s}", "name", "model", "protocol", "address")
-    assert.Equals(t, expected, instance.String())
+    assert.Equal(t, expected, instance.String())
 }

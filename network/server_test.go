@@ -1,7 +1,7 @@
 package network
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "io"
     "net"
     "testing"
@@ -15,7 +15,7 @@ func TestServerNewConstructsDefaultInstance(t *testing.T) {
     instance := NewServer(serverSocketInfo, nil)
 
     assert.Nil(t, instance.listener)
-    assert.Equals(t, serverSocketInfo, instance.socketInfo)
+    assert.Equal(t, serverSocketInfo, instance.socketInfo)
     assert.False(t, instance.listening)
     assert.False(t, instance.isListening())
 }
@@ -51,7 +51,7 @@ func TestStartingAListeningServerReturnsError(t *testing.T) {
     err := instance.Start()
 
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_LISTENER_ALREADY_LISTENING, err.Error())
+    assert.Equal(t, ERR_LISTENER_ALREADY_LISTENING, err.Error())
 }
 
 func TestStoppingANonListeningServerReturnsError(t *testing.T) {
@@ -60,7 +60,7 @@ func TestStoppingANonListeningServerReturnsError(t *testing.T) {
     err := instance.Stop()
 
     assert.NotNil(t, err)
-    assert.Equals(t, ERR_LISTENER_NOT_LISTENING, err.Error())
+    assert.Equal(t, ERR_LISTENER_NOT_LISTENING, err.Error())
 }
 
 func TestErrorFromNetListenWillBeReturned(t *testing.T) {
@@ -118,7 +118,7 @@ func TestNewSessionWillListenOnInputFromClient(t *testing.T) {
     bytesWritten, writeErr := client.Write(message)
 
     assert.Nil(t, writeErr)
-    assert.Equals(t, len(message), bytesWritten)
+    assert.Equal(t, len(message), bytesWritten)
 }
 
 func TestMessageHandlerGetsCalledOnIncomingCommand(t *testing.T) {
@@ -143,5 +143,5 @@ func TestMessageHandlerGetsCalledOnIncomingCommand(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.True(t, handlerCalled)
-    assert.Equals(t, message, messageHandled)
+    assert.Equal(t, message, messageHandled)
 }

@@ -4,8 +4,8 @@ import (
     "github.com/martyn82/rpi-controller/agent/app"
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/socket"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -15,7 +15,7 @@ func TestOnAppRegistrationRegistersApp(t *testing.T) {
 
     response := OnAppRegistration(msg, apps)
     assert.True(t, response.Result())
-    assert.Equals(t, 1, apps.Size())
+    assert.Equal(t, 1, apps.Size())
 }
 
 func TestOnAppRegistrationWithAppSupportingNetwork(t *testing.T) {

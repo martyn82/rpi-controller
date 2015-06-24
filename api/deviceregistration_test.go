@@ -1,7 +1,7 @@
 package api
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -12,10 +12,10 @@ func TestNewDeviceRegistrationContainsValues(t *testing.T) {
 
     instance := NewDeviceRegistration(name, model, addr)
 
-    assert.Equals(t, name, instance.DeviceName())
-    assert.Equals(t, model, instance.DeviceModel())
-    assert.Equals(t, addr, instance.DeviceProtocol())
-    assert.Equals(t, "", instance.DeviceAddress())
+    assert.Equal(t, name, instance.DeviceName())
+    assert.Equal(t, model, instance.DeviceModel())
+    assert.Equal(t, addr, instance.DeviceProtocol())
+    assert.Equal(t, "", instance.DeviceAddress())
 }
 
 func TestNewDeviceRegistrationContainsAddress(t *testing.T) {
@@ -25,10 +25,10 @@ func TestNewDeviceRegistrationContainsAddress(t *testing.T) {
 
     instance := NewDeviceRegistration(name, model, addr)
 
-    assert.Equals(t, name, instance.DeviceName())
-    assert.Equals(t, model, instance.DeviceModel())
-    assert.Equals(t, "tcp", instance.DeviceProtocol())
-    assert.Equals(t, "10.0.0.1", instance.DeviceAddress())
+    assert.Equal(t, name, instance.DeviceName())
+    assert.Equal(t, model, instance.DeviceModel())
+    assert.Equal(t, "tcp", instance.DeviceProtocol())
+    assert.Equal(t, "10.0.0.1", instance.DeviceAddress())
 }
 
 func TestNewDeviceRegistrationContainsAddressAndPort(t *testing.T) {
@@ -38,10 +38,10 @@ func TestNewDeviceRegistrationContainsAddressAndPort(t *testing.T) {
 
     instance := NewDeviceRegistration(name, model, addr)
 
-    assert.Equals(t, name, instance.DeviceName())
-    assert.Equals(t, model, instance.DeviceModel())
-    assert.Equals(t, "tcp", instance.DeviceProtocol())
-    assert.Equals(t, "10.0.0.1:1234", instance.DeviceAddress())
+    assert.Equal(t, name, instance.DeviceName())
+    assert.Equal(t, model, instance.DeviceModel())
+    assert.Equal(t, "tcp", instance.DeviceProtocol())
+    assert.Equal(t, "10.0.0.1:1234", instance.DeviceAddress())
 }
 
 func TestToStringReturnsJson(t *testing.T) {
@@ -50,7 +50,7 @@ func TestToStringReturnsJson(t *testing.T) {
     deviceAddress := "unix:foo.sock"
 
     cmd := NewDeviceRegistration(deviceName, deviceModel, deviceAddress)
-    assert.Equals(t, "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"dev\",\"Model\":\"model\",\"Address\":\"unix:foo.sock\"}}", cmd.JSON())
+    assert.Equal(t, "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"dev\",\"Model\":\"model\",\"Address\":\"unix:foo.sock\"}}", cmd.JSON())
 }
 
 func TestFromMapCreatesDeviceRegistration(t *testing.T) {
@@ -63,10 +63,10 @@ func TestFromMapCreatesDeviceRegistration(t *testing.T) {
     cmd, err := deviceRegistrationFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "dev", cmd.DeviceName())
-    assert.Equals(t, "model", cmd.DeviceModel())
-    assert.Equals(t, "addr", cmd.DeviceProtocol())
-    assert.Equals(t, "foo", cmd.DeviceAddress())
+    assert.Equal(t, "dev", cmd.DeviceName())
+    assert.Equal(t, "model", cmd.DeviceModel())
+    assert.Equal(t, "addr", cmd.DeviceProtocol())
+    assert.Equal(t, "foo", cmd.DeviceAddress())
 }
 
 func TestFromMapReturnsErrorIfInvalidMap(t *testing.T) {
@@ -112,5 +112,5 @@ func TestIsInvalidIfItMissesDeviceAndProperty(t *testing.T) {
 
 func TestTypeOfReturnsDeviceRegistration(t *testing.T) {
     msg := NewDeviceRegistration("", "", "")
-    assert.Equals(t, TYPE_DEVICE_REGISTRATION, msg.Type())
+    assert.Equal(t, TYPE_DEVICE_REGISTRATION, msg.Type())
 }

@@ -1,7 +1,7 @@
 package api
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -12,9 +12,9 @@ func TestNewActionContainsValues(t *testing.T) {
 
     instance := NewAction(agent, propertyName, propertyValue)
 
-    assert.Equals(t, agent, instance.AgentName())
-    assert.Equals(t, propertyName, instance.PropertyName())
-    assert.Equals(t, propertyValue, instance.PropertyValue())
+    assert.Equal(t, agent, instance.AgentName())
+    assert.Equal(t, propertyName, instance.PropertyName())
+    assert.Equal(t, propertyValue, instance.PropertyValue())
 }
 
 func TestNewTriggerRegistrationContainsValues(t *testing.T) {
@@ -34,12 +34,12 @@ func TestNewTriggerRegistrationContainsValues(t *testing.T) {
 
     instance := NewTriggerRegistration(when, then)
 
-    assert.Equals(t, whenAgent, instance.when.AgentName())
-    assert.Equals(t, whenPropName, instance.when.PropertyName())
-    assert.Equals(t, whenPropValue, instance.when.PropertyValue())
-    assert.Equals(t, thenAgent, instance.then[0].AgentName())
-    assert.Equals(t, thenPropName, instance.then[0].PropertyName())
-    assert.Equals(t, thenPropValue, instance.then[0].PropertyValue())
+    assert.Equal(t, whenAgent, instance.when.AgentName())
+    assert.Equal(t, whenPropName, instance.when.PropertyName())
+    assert.Equal(t, whenPropValue, instance.when.PropertyValue())
+    assert.Equal(t, thenAgent, instance.then[0].AgentName())
+    assert.Equal(t, thenPropName, instance.then[0].PropertyName())
+    assert.Equal(t, thenPropValue, instance.then[0].PropertyValue())
 }
 
 func TestTriggerRegistrationToStringReturnsJson(t *testing.T) {
@@ -67,7 +67,7 @@ func TestTriggerRegistrationToStringReturnsJson(t *testing.T) {
     expectedJson += "\"" + thenPropName + "\":\"" + thenPropValue + "\"}]"
     expectedJson += "}}"
 
-    assert.Equals(t, expectedJson, instance.JSON())
+    assert.Equal(t, expectedJson, instance.JSON())
 }
 
 func TestTriggerRegistrationFromMapCreatesTriggerRegistration(t *testing.T) {
@@ -85,13 +85,13 @@ func TestTriggerRegistrationFromMapCreatesTriggerRegistration(t *testing.T) {
     cmd, err := triggerRegistrationFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "agent1", cmd.When().AgentName())
-    assert.Equals(t, "prop1", cmd.When().PropertyName())
-    assert.Equals(t, "val1", cmd.When().PropertyValue())
+    assert.Equal(t, "agent1", cmd.When().AgentName())
+    assert.Equal(t, "prop1", cmd.When().PropertyName())
+    assert.Equal(t, "val1", cmd.When().PropertyValue())
 
-    assert.Equals(t, "agent2", cmd.Then()[0].AgentName())
-    assert.Equals(t, "prop2", cmd.Then()[0].PropertyName())
-    assert.Equals(t, "val2", cmd.Then()[0].PropertyValue())
+    assert.Equal(t, "agent2", cmd.Then()[0].AgentName())
+    assert.Equal(t, "prop2", cmd.Then()[0].PropertyName())
+    assert.Equal(t, "val2", cmd.Then()[0].PropertyValue())
 }
 
 func TestTriggerRegistrationFromMapReturnsErrorIfInvalidMap(t *testing.T) {
@@ -147,5 +147,5 @@ func TestTriggerRegistrationIsValidIfItMissesWhenPropertyValue(t *testing.T) {
 
 func TestTypeOfReturnsTriggerRegistration(t *testing.T) {
     instance := NewTriggerRegistration(NewNotification("", "", ""), make([]*Action, 1))
-    assert.Equals(t, TYPE_TRIGGER_REGISTRATION, instance.Type())
+    assert.Equal(t, TYPE_TRIGGER_REGISTRATION, instance.Type())
 }

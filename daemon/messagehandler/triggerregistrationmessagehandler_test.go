@@ -3,8 +3,8 @@ package messagehandler
 import (
     "github.com/martyn82/rpi-controller/api"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/trigger"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 

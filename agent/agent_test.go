@@ -3,8 +3,8 @@ package agent
 import (
     "fmt"
     "github.com/martyn82/rpi-controller/network"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/socket"
+    "github.com/stretchr/testify/assert"
     "net"
     "testing"
     "time"
@@ -42,7 +42,7 @@ func TestAgentInfoIsReturned(t *testing.T) {
     instance := new(Agent)
     instance.info = info
 
-    assert.Equals(t, info, instance.Info())
+    assert.Equal(t, info, instance.Info())
 }
 
 func TestAgentSetupValuesAreStored(t *testing.T) {
@@ -54,10 +54,10 @@ func TestAgentSetupValuesAreStored(t *testing.T) {
     instance := new(Agent)
     SetupAgent(instance, AgentInfo{}, idleTimeout, connectTimeout, readBufferSize, autoReconnect)
 
-    assert.Equals(t, autoReconnect, instance.autoReconnect)
-    assert.Equals(t, connectTimeout, instance.connectTimeout)
-    assert.Equals(t, readBufferSize, instance.bufferSize)
-    assert.Equals(t, idleTimeout, instance.wait)
+    assert.Equal(t, autoReconnect, instance.autoReconnect)
+    assert.Equal(t, connectTimeout, instance.connectTimeout)
+    assert.Equal(t, readBufferSize, instance.bufferSize)
+    assert.Equal(t, idleTimeout, instance.wait)
 }
 
 func TestAgentSupportsNetworkIfProtocolAndAddressAreSet(t *testing.T) {
@@ -116,7 +116,7 @@ func TestConnectReturnsErrorIfNetworkNotSupported(t *testing.T) {
     err := instance.Connect()
 
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_AGENT_NO_NETWORK, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_AGENT_NO_NETWORK, instance.Info().String()), err.Error())
 }
 
 func TestConnectReturnsErrorIfAlreadyConnected(t *testing.T) {
@@ -143,7 +143,7 @@ func TestConnectReturnsErrorIfAlreadyConnected(t *testing.T) {
     err := instance.Connect()
 
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_AGENT_ALREADY_CONNECTED, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_AGENT_ALREADY_CONNECTED, instance.Info().String()), err.Error())
 }
 
 func TestListeningStopsOnReadError(t *testing.T) {
@@ -212,7 +212,7 @@ func TestDisconnectWhenNotConnectedReturnsError(t *testing.T) {
     err := instance.Disconnect()
 
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_AGENT_NOT_CONNECTED, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_AGENT_NOT_CONNECTED, instance.Info().String()), err.Error())
 }
 
 func TestSendReturnsErrorIfNotConnected(t *testing.T) {
@@ -221,7 +221,7 @@ func TestSendReturnsErrorIfNotConnected(t *testing.T) {
 
     err := instance.Send([]byte(""))
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_AGENT_NOT_CONNECTED, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_AGENT_NOT_CONNECTED, instance.Info().String()), err.Error())
 }
 
 func TestSendReconnectsIfDisconnectedAndAutoReconnectIsEnabled(t *testing.T) {
@@ -231,7 +231,7 @@ func TestSendReconnectsIfDisconnectedAndAutoReconnectIsEnabled(t *testing.T) {
 
     err := instance.Send([]byte(""))
     assert.NotNil(t, err)
-    assert.Equals(t, fmt.Sprintf(ERR_AGENT_NO_NETWORK, instance.Info().String()), err.Error())
+    assert.Equal(t, fmt.Sprintf(ERR_AGENT_NO_NETWORK, instance.Info().String()), err.Error())
 }
 
 func TestSendMessageIsSent(t *testing.T) {
@@ -271,7 +271,7 @@ func TestSendMessageIsSent(t *testing.T) {
 
     time.Sleep(waitTimeout)
 
-    assert.Equals(t, "foo", receivedMessage)
+    assert.Equal(t, "foo", receivedMessage)
 }
 
 func TestWaitTimeoutAfterSend(t *testing.T) {
@@ -311,7 +311,7 @@ func TestWaitTimeoutAfterSend(t *testing.T) {
     assert.Nil(t, err)
 
     time.Sleep(waitTimeout)
-    assert.Equals(t, "foo", receivedMessage)
+    assert.Equal(t, "foo", receivedMessage)
 }
 
 func TestOnMessageReceivedHandlerIsCalledOnIncomingMessage(t *testing.T) {
@@ -348,5 +348,5 @@ func TestOnMessageReceivedHandlerIsCalledOnIncomingMessage(t *testing.T) {
     time.Sleep(waitTimeout)
 
     assert.True(t, messageHandlerCalled)
-    assert.Equals(t, "foo", messageHandled)
+    assert.Equal(t, "foo", messageHandled)
 }

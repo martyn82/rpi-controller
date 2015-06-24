@@ -3,9 +3,9 @@ package app
 import (
     "github.com/martyn82/rpi-controller/collection"
     "github.com/martyn82/rpi-controller/storage"
-    "github.com/martyn82/rpi-controller/testing/assert"
     "github.com/martyn82/rpi-controller/testing/db"
     "github.com/martyn82/rpi-controller/testing/socket"
+    "github.com/stretchr/testify/assert"
     "os"
     "path"
     "testing"
@@ -31,7 +31,7 @@ func TestAppImplementsCollectionItem(t *testing.T) {
 func TestConstructAppCollectionWithoutRepositoryReturnsError(t *testing.T) {
     _, err := NewAppCollection(nil)
     assert.NotNil(t, err)
-    assert.Equals(t, collection.ERR_NO_REPOSITORY, err.Error())
+    assert.Equal(t, collection.ERR_NO_REPOSITORY, err.Error())
 }
 
 func TestLoadConvertsAllAppItemsToApps(t *testing.T) {
@@ -44,7 +44,7 @@ func TestLoadConvertsAllAppItemsToApps(t *testing.T) {
 
     instance, err := NewAppCollection(repo)
     assert.Nil(t, err)
-    assert.Equals(t, 1, len(instance.apps))
+    assert.Equal(t, 1, len(instance.apps))
 }
 
 func TestSizeReturnsNumberOfApps(t *testing.T) {
@@ -56,7 +56,7 @@ func TestSizeReturnsNumberOfApps(t *testing.T) {
     assert.Nil(t, repoErr)
 
     instance, _ := NewAppCollection(repo)
-    assert.Equals(t, 1, instance.Size())
+    assert.Equal(t, 1, instance.Size())
 }
 
 func TestGetReturnsAppByName(t *testing.T) {
@@ -71,7 +71,7 @@ func TestGetReturnsAppByName(t *testing.T) {
 
     app := instance.Get("name").(IApp)
     assert.NotNil(t, app)
-    assert.Equals(t, "name", app.Info().Name())
+    assert.Equal(t, "name", app.Info().Name())
 }
 
 func TestGetReturnsNilIfNotFound(t *testing.T) {
@@ -96,7 +96,7 @@ func TestAllReturnsAllApps(t *testing.T) {
 
     instance, _ := NewAppCollection(repo)
     apps := instance.All()
-    assert.Equals(t, 2, len(apps))
+    assert.Equal(t, 2, len(apps))
 }
 
 func TestAddAddsApp(t *testing.T) {
@@ -114,7 +114,7 @@ func TestAddAddsApp(t *testing.T) {
     assert.Nil(t, err)
 
     d := instance.Get("name")
-    assert.Equals(t, app, d)
+    assert.Equal(t, app, d)
 }
 
 func TestAddAddsAppWithoutRepository(t *testing.T) {
@@ -126,7 +126,7 @@ func TestAddAddsAppWithoutRepository(t *testing.T) {
     assert.Nil(t, err)
 
     d := instance.Get("name")
-    assert.Equals(t, app, d)
+    assert.Equal(t, app, d)
 }
 
 func TestBroadcastNotifiesAllApps(t *testing.T) {
@@ -151,5 +151,5 @@ func TestBroadcastNotifiesAllApps(t *testing.T) {
     notified := instance.Broadcast("hi")
     count := instance.Size()
 
-    assert.Equals(t, count, notified)
+    assert.Equal(t, count, notified)
 }

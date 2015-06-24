@@ -1,7 +1,7 @@
 package api
 
 import (
-    "github.com/martyn82/rpi-controller/testing/assert"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -11,9 +11,9 @@ func TestNewQueryContainsValues(t *testing.T) {
 
     qry := NewQuery(agentName, propertyName)
 
-    assert.Type(t, new(Query), qry)
-    assert.Equals(t, agentName, qry.AgentName())
-    assert.Equals(t, propertyName, qry.PropertyName())
+    assert.IsType(t, new(Query), qry)
+    assert.Equal(t, agentName, qry.AgentName())
+    assert.Equal(t, propertyName, qry.PropertyName())
 }
 
 func TestQueryToStringReturnsJson(t *testing.T) {
@@ -22,7 +22,7 @@ func TestQueryToStringReturnsJson(t *testing.T) {
 
     qry := NewQuery(agentName, propertyName)
 
-    assert.Equals(t, "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"dev\",\"Property\":\"prop\"}}", qry.JSON())
+    assert.Equal(t, "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"dev\",\"Property\":\"prop\"}}", qry.JSON())
 }
 
 func TestQueryFromMapCreatesQuery(t *testing.T) {
@@ -34,8 +34,8 @@ func TestQueryFromMapCreatesQuery(t *testing.T) {
     qry, err := queryFromMap(obj)
 
     assert.Nil(t, err)
-    assert.Equals(t, "dev", qry.AgentName())
-    assert.Equals(t, "prop", qry.PropertyName())
+    assert.Equal(t, "dev", qry.AgentName())
+    assert.Equal(t, "prop", qry.PropertyName())
 }
 
 func TestQueryFromMapReturnsErrorIfInvalidMap(t *testing.T) {
@@ -81,5 +81,5 @@ func TestQueryIsInvalidIfItMissesAgentAndProperty(t *testing.T) {
 
 func TestTypeOfQueryReturnsQuery(t *testing.T) {
     msg := NewQuery("", "")
-    assert.Equals(t, TYPE_QUERY, msg.Type())
+    assert.Equal(t, TYPE_QUERY, msg.Type())
 }
