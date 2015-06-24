@@ -13,7 +13,7 @@ import (
 
 var appsTestDb = "/tmp/apps_db.data"
 var cwd, _ = os.Getwd()
-var schemaDir = path.Join(cwd, "..", "..", "server", "schema")
+var schemaDir = path.Join(cwd, "..", "..", "schema")
 
 func checkAppCollectionImplementsCollection(c collection.Collection) {}
 func checkAppImplementsCollectionItem(c collection.Item) {}

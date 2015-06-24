@@ -11,7 +11,7 @@ import (
 
 var appsTestDb = "/tmp/apps_db.data"
 var appsCwd, _ = os.Getwd()
-var appsSchemaDir = path.Join(appsCwd, "..", "server", "schema")
+var appsSchemaDir = path.Join(appsCwd, "..", "schema")
 
 func checkAppsImplementsRespository(repo Repository) {}
 

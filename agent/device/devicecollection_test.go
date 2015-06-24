@@ -12,7 +12,7 @@ import (
 
 var devicesTestDb = "/tmp/devices_db.data"
 var cwd, _ = os.Getwd()
-var schemaDir = path.Join(cwd, "..", "..", "server", "schema")
+var schemaDir = path.Join(cwd, "..", "..", "schema")
 
 func checkDeviceCollectionImplementsCollection(c collection.Collection) {}
 func checkDeviceImplementsCollectionItem(c collection.Item) {}

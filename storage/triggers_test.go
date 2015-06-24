@@ -11,7 +11,7 @@ import (
 
 var triggersTestDb = "/tmp/triggers_db.data"
 var triggersCwd, _ = os.Getwd()
-var triggersSchemaDir = path.Join(triggersCwd, "..", "server", "schema")
+var triggersSchemaDir = path.Join(triggersCwd, "..", "schema")
 
 func checkTriggersImplementsRespository(repo Repository) {}
 

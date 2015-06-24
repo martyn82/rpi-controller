@@ -12,7 +12,7 @@ import (
 
 var triggersTestDb = "/tmp/triggercollection_db.data"
 var cwd, _ = os.Getwd()
-var schemaDir = path.Join(cwd, "..", "server", "schema")
+var schemaDir = path.Join(cwd, "..", "schema")
 
 func checkTriggerCollectionImplementsCollection(c collection.Collection) {}
 func checkTriggerImplementsCollectionItem(c collection.Item) {}

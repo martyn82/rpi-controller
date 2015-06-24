@@ -11,7 +11,7 @@ import (
 
 var devicesTestDb = "/tmp/devices_db.data"
 var devicesCwd, _ = os.Getwd()
-var devicesSchemaDir = path.Join(devicesCwd, "..", "server", "schema")
+var devicesSchemaDir = path.Join(devicesCwd, "..", "schema")
 
 func checkDevicesImplementsRespository(repo Repository) {}
 
