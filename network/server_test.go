@@ -8,7 +8,7 @@ import (
     "time"
 )
 
-var waitTimeout = time.Millisecond
+var waitTimeout = time.Millisecond * 10
 var serverSocketInfo = SocketInfo{"unix", "/tmp/server_test.sock"}
 
 func TestServerNewConstructsDefaultInstance(t *testing.T) {
