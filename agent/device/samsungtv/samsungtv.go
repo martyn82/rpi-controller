@@ -74,6 +74,4 @@ func GetRemoteControlInfo() *RemoteControlInfo {
     remoteControlInfo.MacAddress = network.MacAddress()
     remoteControlInfo.AppName = remoteControlInfo.Name + APP_SUFFIX
     return remoteControlInfo
-
-    return nil
 }
