@@ -44,6 +44,14 @@ func TestAssertEquals(t *testing.T) {
     Equals(t, nil, nil)
 }
 
+func TestAssertNotEquals(t *testing.T) {
+    if isEqual("a", "b") {
+        t.Errorf("Expected two strings to be not equal.")
+    }
+
+    NotEquals(t, "a", "b")
+}
+
 func TestAssertType(t *testing.T) {
     if !isType(1, 121) {
         t.Errorf("Expected two integers to be of equal type.")

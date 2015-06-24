@@ -51,6 +51,12 @@ func Equals(t *testing.T, expected interface{}, actual interface{}) {
     }
 }
 
+func NotEquals(t *testing.T, expected interface{}, actual interface{}) {
+    if isEqual(expected, actual) {
+        t.Errorf("Failed to assert that two arguments are not equal:\nexpected:\n%q\nactual\n%q", expected, actual)
+    }
+}
+
 func Type(t *testing.T, expected interface{}, actual interface{}) {
     if !isType(actual, expected) {
         t.Errorf("Failed to assert that two arguments are of the same type:\nexpected:\n%T\nactual:\n%T", expected, actual)
