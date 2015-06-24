@@ -20,8 +20,6 @@ func CreateSamsungTv(info IDeviceInfo) *SamsungTv {
     instance.info = info
     instance.SetOnMessageReceivedHandler(instance.onMessageReceived)
     instance.commandProcessor = samsungtv.CommandProcessor
-//    instance.eventProcessor = samsungtv.EventProcessor
-//    instance.queryProcessor = samsungtv.QueryProcessor
 
     return instance
 }
