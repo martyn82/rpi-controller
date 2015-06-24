@@ -15,7 +15,7 @@ func CreateSamsungTv(info IDeviceInfo) *SamsungTv {
     connectTimeout, _ := time.ParseDuration(agent.DEFAULT_CONNECT_TIMEOUT)
 
     instance := new(SamsungTv)
-    agent.SetupAgent(&instance.Agent, info, time.Second, connectTimeout, agent.DEFAULT_BUFFER_SIZE, true)
+    agent.SetupAgent(&instance.Agent, info, time.Microsecond, connectTimeout, agent.DEFAULT_BUFFER_SIZE, true)
 
     instance.info = info
     instance.SetOnMessageReceivedHandler(instance.onMessageReceived)
