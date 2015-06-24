@@ -90,7 +90,7 @@ func loadConfig(configFile string) daemon.DaemonConfig {
         log.Fatal(err)
     }
 
-    log.Printf("Using database located at: '%s'", settings.DatabaseFile)
+    log.Printf("Using database located at: '%s'", conf.DatabaseFile)
     log.Printf("Configuration loaded")
     return conf
 }
