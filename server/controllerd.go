@@ -1,8 +1,6 @@
 package main
 
 import (
-    "errors"
-    "fmt"
     "github.com/martyn82/rpi-controller/agent/app"
     "github.com/martyn82/rpi-controller/agent/device"
     "github.com/martyn82/rpi-controller/api"
@@ -118,7 +116,7 @@ func initDaemon(socketInfo network.SocketInfo) {
     /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
         log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnEventNotification(message.(*api.Notification)).JSON()
+        return messagehandler.OnEventNotification(message.(*api.Notification), triggers).JSON()
     })
 
     /* api.IMessage: api.DeviceRegistration */
