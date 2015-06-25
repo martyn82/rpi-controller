@@ -18,14 +18,20 @@ func TestNewCommandContainsValues(t *testing.T) {
     assert.Equal(t, propertyValue, cmd.PropertyValue())
 }
 
-func TestCommandToStringReturnsJson(t *testing.T) {
+func TestCommandMapify(t *testing.T) {
     agentName := "dev"
     propertyName := "prop"
     propertyValue := "val"
 
     cmd := NewCommand(agentName, propertyName, propertyValue)
 
-    assert.Equal(t, "{\"" + TYPE_COMMAND + "\":{\"" + KEY_AGENT + "\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
+    expected := map[string]map[string]string {
+        TYPE_COMMAND: {
+            KEY_AGENT: "dev",
+            "prop": "val",
+        },
+    }
+    assert.Equal(t, expected, cmd.Mapify())
 }
 
 func TestCommandFromMapCreatesCommand(t *testing.T) {

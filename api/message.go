@@ -23,7 +23,7 @@ const (
 type IMessage interface {
     Type() string
     IsValid() (bool, error)
-    JSON() string
+    Mapify() interface{}
 }
 
 /* Parse JSON message */
@@ -99,4 +99,10 @@ func parseJSONComplex(message string) (IMessage, error, int) {
     }
 
     return nil, errors.New(fmt.Sprintf(ERR_UNSUPPORTED_TYPE, msgType)), ERR_LEVEL_OTHER
+}
+
+/* Converts the message to JSON string */
+func ToJSON(message IMessage) string {
+    v, _ := json.Marshal(message.Mapify())
+    return string(v)
 }

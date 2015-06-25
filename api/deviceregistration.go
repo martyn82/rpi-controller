@@ -110,15 +110,21 @@ func (this *DeviceRegistration) IsValid() (bool, error) {
     return true, nil
 }
 
-/* Convert the message to JSON */
-func (this *DeviceRegistration) JSON() string {
+/* Convert the message to map */
+func (this *DeviceRegistration) Mapify() interface{} {
     addr := this.deviceProtocol
 
     if this.deviceAddress != "" {
         addr += ":" + this.deviceAddress
     }
 
-    return "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"" + this.deviceName + "\",\"Model\":\"" + this.deviceModel + "\",\"Address\":\"" + addr + "\"}}"
+    return map[string]map[string]string {
+        TYPE_DEVICE_REGISTRATION: {
+            "Name": this.deviceName,
+            "Model": this.deviceModel,
+            "Address": addr,
+        },
+    }
 }
 
 /* Retrieves the message type */

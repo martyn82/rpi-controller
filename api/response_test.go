@@ -11,16 +11,29 @@ func TestResponseConstructorCreatesResponseInstance(t *testing.T) {
     assert.IsType(t, new(Response), instance)
 }
 
-func TestResponseNoErrorsToJSONIsOK(t *testing.T) {
+func TestResponseMapifyNoErrorsIsOK(t *testing.T) {
     instance := NewResponse([]error{})
-    expected := "{\"Response\":{\"Result\":\"OK\",\"Errors\":[]}}"
-    assert.Equal(t, expected, instance.JSON())
+    expected := map[string]map[string]interface{} {
+        TYPE_RESPONSE: {
+            "Result": "OK",
+            "Errors": []string{},
+        },
+    }
+    assert.Equal(t, expected, instance.Mapify())
 }
 
-func TestResponseWithErrorsToJSONIsError(t *testing.T) {
+func TestResponseMapifyWithErrorsIsError(t *testing.T) {
     instance := NewResponse([]error{errors.New("Some error"), errors.New("Some other error")})
-    expected := "{\"Response\":{\"Result\":\"Error\",\"Errors\":[\"Some error\",\"Some other error\"]}}"
-    assert.Equal(t, expected, instance.JSON())
+    expected := map[string]map[string]interface{} {
+        TYPE_RESPONSE: {
+            "Result": "Error",
+            "Errors": []string{
+                "Some error",
+                "Some other error",
+            },
+        },
+    }
+    assert.Equal(t, expected, instance.Mapify())
 }
 
 func TestResponseResultWithNoErrorsIsTrue(t *testing.T) {
@@ -45,4 +58,10 @@ func TestResponseReturnsErrors(t *testing.T) {
 func TestResponseTypeIsResponse(t *testing.T) {
     instance := NewResponse([]error{})
     assert.Equal(t, TYPE_RESPONSE, instance.Type())
+}
+
+func TestResponseIsValid(t *testing.T) {
+    instance := NewResponse([]error{})
+    valid, _ := instance.IsValid()
+    assert.True(t, valid)
 }

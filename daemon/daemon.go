@@ -70,7 +70,7 @@ func RegisterTriggerRegistrationMessageHandler(handler MessageHandler) {
 
 /* Handles an API message */
 func ExecuteAPIMessage(message api.IMessage) string {
-    return handleMessage(message.JSON())
+    return handleMessage(api.ToJSON(message))
 }
 
 /* Handles a service message */

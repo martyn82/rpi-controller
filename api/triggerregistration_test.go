@@ -42,7 +42,7 @@ func TestNewTriggerRegistrationContainsValues(t *testing.T) {
     assert.Equal(t, thenPropValue, instance.then[0].PropertyValue())
 }
 
-func TestTriggerRegistrationToStringReturnsJson(t *testing.T) {
+func TestTriggerRegistrationMapify(t *testing.T) {
     whenAgent := "agent1"
     whenPropName := "prop1"
     whenPropValue := "val1"
@@ -58,16 +58,24 @@ func TestTriggerRegistrationToStringReturnsJson(t *testing.T) {
     then[0].propertyValue = thenPropValue
 
     instance := NewTriggerRegistration(when, then)
-    expectedJson := "{\"" + TYPE_TRIGGER_REGISTRATION + "\":{"
-    expectedJson += "\"When\":[{"
-    expectedJson += "\"" + KEY_AGENT + "\":\"" + whenAgent + "\","
-    expectedJson += "\"" + whenPropName + "\":\"" + whenPropValue + "\"}],"
-    expectedJson += "\"Then\":[{"
-    expectedJson += "\"" + KEY_AGENT + "\":\"" + thenAgent + "\"," 
-    expectedJson += "\"" + thenPropName + "\":\"" + thenPropValue + "\"}]"
-    expectedJson += "}}"
+    expected := map[string]map[string][]map[string]string {
+        TYPE_TRIGGER_REGISTRATION: {
+            "When": {
+                {
+                    KEY_AGENT: whenAgent,
+                    whenPropName: whenPropValue,
+                },
+            },
+            "Then": {
+                {
+                    KEY_AGENT: thenAgent,
+                    thenPropName: thenPropValue,
+                },
+            },
+        },
+    }
 
-    assert.Equal(t, expectedJson, instance.JSON())
+    assert.Equal(t, expected, instance.Mapify())
 }
 
 func TestTriggerRegistrationFromMapCreatesTriggerRegistration(t *testing.T) {

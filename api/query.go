@@ -73,7 +73,12 @@ func (this *Query) Type() string {
     return TYPE_QUERY
 }
 
-/* Converts the Query to string */
-func (this *Query) JSON() string {
-     return "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"" + this.agentName + "\",\"" + KEY_PROPERTY + "\":\"" + this.propertyName + "\"}}"
+/* Converts the Query to map */
+func (this *Query) Mapify() interface{} {
+    return map[string]map[string]string {
+        TYPE_QUERY: {
+            KEY_AGENT: this.agentName,
+            KEY_PROPERTY: this.propertyName,
+        },
+    }
 }

@@ -44,13 +44,20 @@ func TestNewDeviceRegistrationContainsAddressAndPort(t *testing.T) {
     assert.Equal(t, "10.0.0.1:1234", instance.DeviceAddress())
 }
 
-func TestToStringReturnsJson(t *testing.T) {
+func TestDeviceRegistrationMapify(t *testing.T) {
     deviceName := "dev"
     deviceModel := "model"
     deviceAddress := "unix:foo.sock"
 
     cmd := NewDeviceRegistration(deviceName, deviceModel, deviceAddress)
-    assert.Equal(t, "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Name\":\"dev\",\"Model\":\"model\",\"Address\":\"unix:foo.sock\"}}", cmd.JSON())
+    expected := map[string]map[string]string {
+        TYPE_DEVICE_REGISTRATION: {
+            "Name": "dev",
+            "Model": "model",
+            "Address": "unix:foo.sock",
+        },
+    }
+    assert.Equal(t, expected, cmd.Mapify())
 }
 
 func TestFromMapCreatesDeviceRegistration(t *testing.T) {

@@ -1,6 +1,7 @@
 package api
 
 import (
+    "errors"
     "fmt"
     "github.com/stretchr/testify/assert"
     "testing"
@@ -138,4 +139,56 @@ func TestParseJSONCreatesQueryFromString(t *testing.T) {
 
     assert.Equal(t, "agent", qry.AgentName())
     assert.Equal(t, "prop", qry.PropertyName())
+}
+
+func TestToJSONAppRegistration(t *testing.T) {
+    message := NewAppRegistration("name", "address")
+    expected := "{\"" + TYPE_APP_REGISTRATION + "\":{\"Address\":\"address\",\"Name\":\"name\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONCommand(t *testing.T) {
+    message := NewCommand("agent", "prop", "val")
+    expected := "{\"" + TYPE_COMMAND + "\":{\"" + KEY_AGENT + "\":\"agent\",\"prop\":\"val\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONDeviceRegistration(t *testing.T) {
+    message := NewDeviceRegistration("name", "model", "addr")
+    expected := "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Address\":\"addr\",\"Model\":\"model\",\"Name\":\"name\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONNotification(t *testing.T) {
+    message := NewNotification("agent", "prop", "val")
+    expected := "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_AGENT + "\":\"agent\",\"prop\":\"val\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONQuery(t *testing.T) {
+    message := NewQuery("agent", "prop")
+    expected := "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"agent\",\"" + KEY_PROPERTY + "\":\"prop\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONResponseWithoutErrors(t *testing.T) {
+    message := NewResponse([]error{})
+    expected := "{\"" + TYPE_RESPONSE + "\":{\"Errors\":[],\"Result\":\"OK\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONResponseWithErrors(t *testing.T) {
+    message := NewResponse([]error{errors.New("error")})
+    expected := "{\"" + TYPE_RESPONSE + "\":{\"Errors\":[\"error\"],\"Result\":\"Error\"}}"
+    assert.Equal(t, expected, ToJSON(message))
+}
+
+func TestToJSONTriggerRegistration(t *testing.T) {
+    when := NewNotification("agent1", "prop1", "val1")
+    then := make([]*Action, 1)
+    then[0] = NewAction("agent2", "prop2", "val2")
+
+    message := NewTriggerRegistration(when, then)
+    expected := "{\"" + TYPE_TRIGGER_REGISTRATION + "\":{\"Then\":[{\"" + KEY_AGENT + "\":\"agent2\",\"prop2\":\"val2\"}],\"When\":[{\"" + KEY_AGENT + "\":\"agent1\",\"prop1\":\"val1\"}]}}"
+    assert.Equal(t, expected, ToJSON(message))
 }

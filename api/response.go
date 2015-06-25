@@ -25,13 +25,18 @@ func (this *Response) Errors() []error {
     return this.errors
 }
 
+/* Validates the message */
+func (this *Response) IsValid() (bool, error) {
+    return true, nil
+}
+
 /* Retrieves the message type */
 func (this *Response) Type() string {
     return TYPE_RESPONSE
 }
 
-/* Converts the message to JSON */
-func (this *Response) JSON() string {
+/* Converts the message to map */
+func (this *Response) Mapify() interface{} {
     resultString := ""
 
     if this.result {
@@ -40,15 +45,18 @@ func (this *Response) JSON() string {
         resultString = "Error"
     }
 
-    errorsString := ""
+    errorsString := make([]string, len(this.errors))
+    index := 0
 
     for _, err := range this.errors {
-        if errorsString != "" {
-            errorsString += ","
-        }
-
-        errorsString += "\"" + err.Error() + "\""
+        errorsString[index] = err.Error()
+        index += 1
     }
 
-    return "{\"" + TYPE_RESPONSE + "\":{\"Result\":\"" + resultString + "\",\"Errors\":[" + errorsString + "]}}"
+    return map[string]map[string]interface{} {
+        TYPE_RESPONSE: {
+            "Result": resultString,
+            "Errors": errorsString,
+        },
+    }
 }

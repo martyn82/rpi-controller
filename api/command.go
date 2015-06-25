@@ -84,7 +84,12 @@ func (this *Command) Type() string {
     return TYPE_COMMAND
 }
 
-/* Convert command to string */
-func (this *Command) JSON() string {
-    return "{\"" + TYPE_COMMAND + "\":{\"" + KEY_AGENT + "\":\"" + this.agentName + "\",\"" + this.propertyName + "\":\"" + this.propertyValue + "\"}}"
+/* Convert command to map */
+func (this *Command) Mapify() interface{} {
+    return map[string]map[string]string {
+        TYPE_COMMAND: {
+            KEY_AGENT: this.agentName,
+            this.propertyName: this.propertyValue,
+        },
+    }
 }

@@ -103,38 +103,38 @@ func initDaemon(socketInfo network.SocketInfo) {
 
     /* api.IMessage: api.Command */
     daemon.RegisterCommandMessageHandler(func (message api.IMessage) string {
-        log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnCommand(message.(*api.Command), devices).JSON()
+        log.Println("Received API message: " + api.ToJSON(message))
+        return api.ToJSON(messagehandler.OnCommand(message.(*api.Command), devices))
     })
 
     /* api.IMessage: api.Query */
     daemon.RegisterQueryMessageHandler(func (message api.IMessage) string {
-        log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnQuery(message.(*api.Query), devices).JSON()
+        log.Println("Received API message: " + api.ToJSON(message))
+        return api.ToJSON(messagehandler.OnQuery(message.(*api.Query), devices))
     })
 
     /* api.IMessage: api.Notification */
     daemon.RegisterEventMessageHandler(func (message api.IMessage) string {
-        log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnEventNotification(message.(*api.Notification), triggers).JSON()
+        log.Println("Received API message: " + api.ToJSON(message))
+        return api.ToJSON(messagehandler.OnEventNotification(message.(*api.Notification), triggers))
     })
 
     /* api.IMessage: api.DeviceRegistration */
     daemon.RegisterDeviceRegistrationMessageHandler(func (message api.IMessage) string {
-        log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnDeviceRegistration(message.(*api.DeviceRegistration), devices).JSON()
+        log.Println("Received API message: " + api.ToJSON(message))
+        return api.ToJSON(messagehandler.OnDeviceRegistration(message.(*api.DeviceRegistration), devices))
     })
 
     /* api.IMessage: api.AppRegistration */
     daemon.RegisterAppRegistrationMessageHandler(func (message api.IMessage) string {
-        log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnAppRegistration(message.(*api.AppRegistration), apps).JSON()
+        log.Println("Received API message: " + api.ToJSON(message))
+        return api.ToJSON(messagehandler.OnAppRegistration(message.(*api.AppRegistration), apps))
     })
 
     /* api.IMessage: api.TriggerRegistration */
     daemon.RegisterTriggerRegistrationMessageHandler(func (message api.IMessage) string {
-        log.Println("Received API message: " + message.JSON())
-        return messagehandler.OnTriggerRegistration(message.(*api.TriggerRegistration), triggers).JSON()
+        log.Println("Received API message: " + api.ToJSON(message))
+        return api.ToJSON(messagehandler.OnTriggerRegistration(message.(*api.TriggerRegistration), triggers))
     })
 
     daemon.Start(socketInfo)
@@ -180,10 +180,10 @@ func initDevices(databaseFile string) {
             connectedCount++
 
             d.SetMessageHandler(func (sender device.IDevice, message api.IMessage) {
-                log.Printf("Device %s says: %s", sender.Info().String(), message.JSON())
+                log.Printf("Device %s says: %s", sender.Info().String(), api.ToJSON(message))
 
                 log.Printf("Broadcasting message to apps...")
-                notified := apps.Broadcast(message.JSON())
+                notified := apps.Broadcast(api.ToJSON(message))
                 log.Printf("%d apps notified.", notified)
 
                 notification := message.(api.INotification)
@@ -245,7 +245,7 @@ func initApps(databaseFile string) {
             connectedCount++
 
             a.SetMessageHandler(func (sender app.IApp, message api.IMessage) {
-                log.Printf("App %s says: %s", sender.Info().String(), message.JSON())
+                log.Printf("App %s says: %s", sender.Info().String(), api.ToJSON(message))
             })
         }
     }

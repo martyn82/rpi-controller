@@ -18,14 +18,19 @@ func TestNewNotificationContainsValues(t *testing.T) {
     assert.Equal(t, propertyValue, cmd.PropertyValue())
 }
 
-func TestNotificationToStringReturnsJson(t *testing.T) {
+func TestNotificationMapify(t *testing.T) {
     agentName := "dev"
     propertyName := "prop"
     propertyValue := "val"
 
     cmd := NewNotification(agentName, propertyName, propertyValue)
-
-    assert.Equal(t, "{\"" + TYPE_NOTIFICATION + "\":{\"Agent\":\"dev\",\"prop\":\"val\"}}", cmd.JSON())
+    expected := map[string]map[string]string {
+        TYPE_NOTIFICATION: {
+            KEY_AGENT: "dev",
+            "prop": "val",
+        },
+    }
+    assert.Equal(t, expected, cmd.Mapify())
 }
 
 func TestNotificationFromMapCreatesNotification(t *testing.T) {

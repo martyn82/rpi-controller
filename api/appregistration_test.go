@@ -38,14 +38,6 @@ func TestNewAppRegistrationContainsAddressAndPort(t *testing.T) {
     assert.Equal(t, "10.0.0.1:1234", instance.AgentAddress())
 }
 
-func TestAppRegistrationToStringReturnsJson(t *testing.T) {
-    agentName := "app"
-    agentAddress := "unix:foo.sock"
-
-    cmd := NewAppRegistration(agentName, agentAddress)
-    assert.Equal(t, "{\"" + TYPE_APP_REGISTRATION + "\":{\"Name\":\"app\",\"Address\":\"unix:foo.sock\"}}", cmd.JSON())
-}
-
 func TestAppRegistrationFromMapCreatesAppRegistration(t *testing.T) {
     obj := map[string]string{
         KEY_NAME: "app",
@@ -104,4 +96,18 @@ func TestAppRegistrationIsInvalidIfItMissesNameAndAddress(t *testing.T) {
 func TestTypeOfReturnsAppRegistration(t *testing.T) {
     msg := NewAppRegistration("", "")
     assert.Equal(t, TYPE_APP_REGISTRATION, msg.Type())
+}
+
+func TestAppRegistrationMapifyReturnsMap(t *testing.T) {
+    msg := NewAppRegistration("foo", "bar:baz")
+    actual := msg.Mapify()
+
+    expected := map[string]map[string]string{
+        TYPE_APP_REGISTRATION: {
+            "Name": "foo",
+            "Address": "bar:baz",
+        },
+    }
+
+    assert.Equal(t, expected, actual)
 }

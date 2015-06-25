@@ -147,17 +147,26 @@ func (this *TriggerRegistration) IsValid() (bool, error) {
     return true, nil
 }
 
-/* Converts the trigger registration to JSON */
-func (this *TriggerRegistration) JSON() string {
-    result := "{\"" + TYPE_TRIGGER_REGISTRATION + "\":{\"When\":[{\"" + KEY_AGENT + "\":\""
-    result += this.when.AgentName() + "\",\""
-    result += this.when.PropertyName() + "\":\""
-    result += this.when.PropertyValue() + "\"}],\"Then\":["
+/* Converts the trigger registration to map */
+func (this *TriggerRegistration) Mapify() interface{} {
+    then := make([]map[string]string, len(this.then))
 
-    for _, a := range this.then {
-        result += "{\"" + KEY_AGENT + "\":\"" + a.AgentName() + "\",\"" + a.PropertyName() + "\":\"" + a.PropertyValue() + "\"}"
+    for i, a := range this.then {
+        then[i] = map[string]string {
+            KEY_AGENT: a.AgentName(),
+            a.PropertyName(): a.PropertyValue(),
+        }
     }
 
-    result += "]}}"
-    return result
+    return map[string]map[string][]map[string]string {
+        TYPE_TRIGGER_REGISTRATION: {
+            "When": []map[string]string {
+                {
+                    KEY_AGENT: this.when.AgentName(),
+                    this.when.PropertyName(): this.when.PropertyValue(),
+                },
+            },
+            "Then": then,
+        },
+    }
 }

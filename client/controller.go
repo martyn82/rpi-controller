@@ -35,7 +35,7 @@ func main() {
         os.Exit(ERR_WRONG_USAGE)
     }
 
-    response := sendMessageToDaemon(command.JSON())
+    response := sendMessageToDaemon(api.ToJSON(command))
     StdOut.Write([]byte(response + "\n"))
 }
 

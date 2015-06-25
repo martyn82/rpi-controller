@@ -16,13 +16,18 @@ func TestNewQueryContainsValues(t *testing.T) {
     assert.Equal(t, propertyName, qry.PropertyName())
 }
 
-func TestQueryToStringReturnsJson(t *testing.T) {
+func TestQueryMapify(t *testing.T) {
     agentName := "dev"
     propertyName := "prop"
 
     qry := NewQuery(agentName, propertyName)
-
-    assert.Equal(t, "{\"" + TYPE_QUERY + "\":{\"" + KEY_AGENT + "\":\"dev\",\"Property\":\"prop\"}}", qry.JSON())
+    expected := map[string]map[string]string {
+        TYPE_QUERY: {
+            KEY_AGENT: "dev",
+            KEY_PROPERTY: "prop",
+        },
+    }
+    assert.Equal(t, expected, qry.Mapify())
 }
 
 func TestQueryFromMapCreatesQuery(t *testing.T) {

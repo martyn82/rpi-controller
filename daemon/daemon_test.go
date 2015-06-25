@@ -49,7 +49,7 @@ func TestMessageHandlerReturnsEmptyStringOnEmptyMessage(t *testing.T) {
 func TestMessageHandlerReturnsEmptyStringWithoutHandler(t *testing.T) {
     setupTest()
 
-    message := api.NewNotification("dev", "prop", "val").JSON()
+    message := api.ToJSON(api.NewNotification("dev", "prop", "val"))
     response := handleMessage(message)
     assert.Equal(t, "", response)
 }
@@ -64,7 +64,7 @@ func TestMessageHandlerCallsRegisteredHandlerForEvent(t *testing.T) {
     }
 
     RegisterEventMessageHandler(handler)
-    handleMessage(api.NewNotification("dev", "prop", "").JSON())
+    handleMessage(api.ToJSON(api.NewNotification("dev", "prop", "")))
 
     assert.True(t, handlerCalled)
 }
@@ -79,7 +79,7 @@ func TestMessageHandlerCallsRegisteredHandlerForDeviceRegistration(t *testing.T)
     }
 
     RegisterDeviceRegistrationMessageHandler(handler)
-    handleMessage(api.NewDeviceRegistration("dev", "model", "addr").JSON())
+    handleMessage(api.ToJSON(api.NewDeviceRegistration("dev", "model", "addr")))
 
     assert.True(t, handlerCalled)
 }
@@ -94,7 +94,7 @@ func TestMessageHandlerCallsRegisteredHandlerForAppRegistration(t *testing.T) {
     }
 
     RegisterAppRegistrationMessageHandler(handler)
-    handleMessage(api.NewAppRegistration("app", "addr").JSON())
+    handleMessage(api.ToJSON(api.NewAppRegistration("app", "addr")))
 
     assert.True(t, handlerCalled)
 }
@@ -112,7 +112,7 @@ func TestMessageHandlerCallsRegisteredHandlerForTriggerRegistration(t *testing.T
 
     actions := make([]*api.Action, 1)
     actions[0] = api.NewAction("agent2", "prop2", "val2")
-    handleMessage(api.NewTriggerRegistration(api.NewNotification("agent1", "prop1", "val1"), actions).JSON())
+    handleMessage(api.ToJSON(api.NewTriggerRegistration(api.NewNotification("agent1", "prop1", "val1"), actions)))
 
     assert.True(t, handlerCalled)
 }
@@ -127,7 +127,7 @@ func TestMessageHandlerCallsRegisteredHandlerForCommand(t *testing.T) {
     }
 
     RegisterCommandMessageHandler(handler)
-    handleMessage(api.NewCommand("dev", "prop", "val").JSON())
+    handleMessage(api.ToJSON(api.NewCommand("dev", "prop", "val")))
 
     assert.True(t, handlerCalled)
 }
@@ -149,12 +149,12 @@ func TestNotifyStateChangesState(t *testing.T) {
 
 func TestExecuteAPIMessageCallsHandleMessage(t *testing.T) {
     message := api.NewNotification("agent", "prop", "val")
-    msgJson := message.JSON()
+    msgJson := api.ToJSON(message)
 
     handleMessageCalled := false
     RegisterEventMessageHandler(func (message api.IMessage) string {
         handleMessageCalled = true
-        assert.Equal(t, msgJson, message.JSON())
+        assert.Equal(t, msgJson, api.ToJSON(message))
         return ""
     })
 
@@ -171,7 +171,7 @@ func TestMessageHandlerCallsRegisteredHandlerForQuery(t *testing.T) {
     }
 
     RegisterQueryMessageHandler(handler)
-    handleMessage(api.NewQuery("agent", "prop").JSON())
+    handleMessage(api.ToJSON(api.NewQuery("agent", "prop")))
 
     assert.True(t, handlerCalled)
 }

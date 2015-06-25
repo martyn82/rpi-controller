@@ -84,7 +84,12 @@ func (this *Notification) Type() string {
     return TYPE_NOTIFICATION
 }
 
-/* Convert notification to string */
-func (this *Notification) JSON() string {
-    return "{\"" + TYPE_NOTIFICATION + "\":{\"" + KEY_AGENT + "\":\"" + this.agentName + "\",\"" + this.propertyName + "\":\"" + this.propertyValue + "\"}}"
+/* Convert notification to map */
+func (this *Notification) Mapify() interface{} {
+    return map[string]map[string]string {
+        TYPE_NOTIFICATION: {
+            KEY_AGENT: this.agentName,
+            this.propertyName: this.propertyValue,
+        },
+    }
 }

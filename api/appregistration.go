@@ -95,15 +95,20 @@ func (this *AppRegistration) IsValid() (bool, error) {
     return true, nil
 }
 
-/* Convert the message to JSON */
-func (this *AppRegistration) JSON() string {
+/* Converts this message to a map */
+func (this *AppRegistration) Mapify() interface{} {
     addr := this.agentProtocol
 
     if this.agentAddress != "" {
         addr += ":" + this.agentAddress
     }
 
-    return "{\"" + TYPE_APP_REGISTRATION + "\":{\"Name\":\"" + this.agentName + "\",\"Address\":\"" + addr + "\"}}"
+    return map[string]map[string]string {
+        TYPE_APP_REGISTRATION: {
+            "Name": this.agentName,
+            "Address": addr,
+        },
+    }
 }
 
 /* Retrieves the message type */
