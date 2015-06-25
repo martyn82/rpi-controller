@@ -1,4 +1,4 @@
-RPi-Controller
+RPi Controller
 ==============
 
-A daemon with a message API to control registered devices in your home.
+A Home Automation controller designed for Raspberry Pi.
