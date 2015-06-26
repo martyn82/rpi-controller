@@ -35,7 +35,7 @@ const (
 )
 
 /* Process a command for Denon */
-func CommandProcessor(sender string, command api.ICommand) (string, error) {
+func CommandProcessor(deviceInfo map[string]string, command api.ICommand) (string, error) {
     property := command.PropertyName()
     value := command.PropertyValue()
 
@@ -69,26 +69,26 @@ func CommandProcessor(sender string, command api.ICommand) (string, error) {
             return SOURCE_INPUT + value + PAUSE_CHAR, nil
     }
 
-    return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_COMMAND, property + ":" + value, DEVICE_TYPE, sender))
+    return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_COMMAND, property + ":" + value, DEVICE_TYPE, deviceInfo["Name"]))
 }
 
 /* Processes a Denon event */
-func EventProcessor(sender string, event []byte) (messages.IEvent, error) {
+func EventProcessor(deviceInfo map[string]string, event []byte) (messages.IEvent, error) {
     eventString := strings.TrimSpace(string(event))
 
     // state events
     switch eventString {
         case POWER_ON:
-            return messages.NewEvent(messages.EVENT_POWER_ON, sender, api.PROPERTY_POWER, api.VALUE_ON), nil
+            return messages.NewEvent(messages.EVENT_POWER_ON, deviceInfo["Name"], api.PROPERTY_POWER, api.VALUE_ON), nil
 
         case POWER_OFF:
-            return messages.NewEvent(messages.EVENT_POWER_OFF, sender, api.PROPERTY_POWER, api.VALUE_OFF), nil
+            return messages.NewEvent(messages.EVENT_POWER_OFF, deviceInfo["Name"], api.PROPERTY_POWER, api.VALUE_OFF), nil
 
         case MUTE_ON:
-            return messages.NewEvent(messages.EVENT_MUTE_ON, sender, api.PROPERTY_MUTE, api.VALUE_ON), nil
+            return messages.NewEvent(messages.EVENT_MUTE_ON, deviceInfo["Name"], api.PROPERTY_MUTE, api.VALUE_ON), nil
 
         case MUTE_OFF:
-            return messages.NewEvent(messages.EVENT_MUTE_OFF, sender, api.PROPERTY_MUTE, api.VALUE_OFF), nil
+            return messages.NewEvent(messages.EVENT_MUTE_OFF, deviceInfo["Name"], api.PROPERTY_MUTE, api.VALUE_OFF), nil
     }
 
     // property events
@@ -107,20 +107,20 @@ func EventProcessor(sender string, event []byte) (messages.IEvent, error) {
                 matches = r.FindStringSubmatch(matches[2])
 
                 if len(matches) == 2 {
-                    return messages.NewEvent(messages.EVENT_VOLUME_CHANGED, sender, api.PROPERTY_VOLUME, matches[1]), nil
+                    return messages.NewEvent(messages.EVENT_VOLUME_CHANGED, deviceInfo["Name"], api.PROPERTY_VOLUME, matches[1]), nil
                 }
                 break
 
             case SOURCE_INPUT:
-                return messages.NewEvent(messages.EVENT_SOURCE_CHANGED, sender, api.PROPERTY_SOURCE, matches[2]), nil
+                return messages.NewEvent(messages.EVENT_SOURCE_CHANGED, deviceInfo["Name"], api.PROPERTY_SOURCE, matches[2]), nil
         }
     }
 
-    return nil, errors.New(fmt.Sprintf(ERR_UNKNOWN_EVENT, eventString, DEVICE_TYPE, sender))
+    return nil, errors.New(fmt.Sprintf(ERR_UNKNOWN_EVENT, eventString, DEVICE_TYPE, deviceInfo["Name"]))
 }
 
 /* Processes a Denon query */
-func QueryProcessor(sender string, query api.IQuery) (string, error) {
+func QueryProcessor(deviceInfo map[string]string, query api.IQuery) (string, error) {
     property := query.PropertyName()
 
     switch property {
@@ -137,5 +137,5 @@ func QueryProcessor(sender string, query api.IQuery) (string, error) {
             return QUERY_SOURCE_INPUT + PAUSE_CHAR, nil
     }
 
-    return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_QUERY, property, DEVICE_TYPE, sender))
+    return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_QUERY, property, DEVICE_TYPE, deviceInfo["Name"]))
 }

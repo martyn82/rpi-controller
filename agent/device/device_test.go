@@ -25,10 +25,10 @@ func CreateGenericDevice(info IDeviceInfo) *Device {
 
     instance.SetOnMessageReceivedHandler(instance.onMessageReceived)
     instance.info = info
-    instance.commandProcessor = func (sender string, command api.ICommand) (string, error) {
+    instance.commandProcessor = func (deviceInfo map[string]string, command api.ICommand) (string, error) {
         return command.PropertyName() + command.PropertyValue(), nil
     }
-    instance.queryProcessor = func (sender string, query api.IQuery) (string, error) {
+    instance.queryProcessor = func (deviceInfo map[string]string, query api.IQuery) (string, error) {
         return query.PropertyName(), nil
     }
 
@@ -36,14 +36,14 @@ func CreateGenericDevice(info IDeviceInfo) *Device {
 }
 
 func TestNewDeviceCreatesSimpleDevice(t *testing.T) {
-    devInfo := NewDeviceInfo("name", "", "", "")
+    devInfo := NewDeviceInfo("name", "", "", "", "")
     instance := NewDevice(devInfo, nil, nil, nil)
 
     assert.Equal(t, devInfo, instance.Info())
 }
 
 func TestDeviceSupportsNetworkIfProtocolAndAddressAreSet(t *testing.T) {
-    devInfo := NewDeviceInfo("name", "model", "protocol", "address")
+    devInfo := NewDeviceInfo("name", "model", "protocol", "address", "extra")
     instance := NewDevice(devInfo, nil, nil, nil)
     assert.True(t, instance.SupportsNetwork())
 }
@@ -114,8 +114,8 @@ func TestMessageHandlerIsCalledOnIncomingMessage(t *testing.T) {
     time.Sleep(waitTimeout)
 
     instance := CreateGenericDevice(DeviceInfo{name: "dev", model: "mod", protocol: deviceSocketInfo.Type, address: deviceSocketInfo.Address})
-    instance.eventProcessor = func (sender string, event []byte) (messages.IEvent, error) {
-        return messages.NewEvent(string(event), sender, "", ""), nil
+    instance.eventProcessor = func (deviceInfo map[string]string, event []byte) (messages.IEvent, error) {
+        return messages.NewEvent(string(event), deviceInfo["Name"], "", ""), nil
     }
 
     messageHandlerCalled := false

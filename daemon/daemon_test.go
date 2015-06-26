@@ -79,7 +79,7 @@ func TestMessageHandlerCallsRegisteredHandlerForDeviceRegistration(t *testing.T)
     }
 
     RegisterDeviceRegistrationMessageHandler(handler)
-    handleMessage(api.ToJSON(api.NewDeviceRegistration("dev", "model", "addr")))
+    handleMessage(api.ToJSON(api.NewDeviceRegistration("dev", "model", "addr", "extra")))
 
     assert.True(t, handlerCalled)
 }

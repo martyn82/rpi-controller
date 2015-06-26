@@ -8,20 +8,21 @@ import (
 func checkDeviceItemImplementsItem(itm Item) {}
 
 func TestDeviceItemImplementsItem(t *testing.T) {
-    instance := NewDeviceItem("", "", "", "")
+    instance := NewDeviceItem("", "", "", "", "")
     checkDeviceItemImplementsItem(instance)
 }
 
 func TestDeviceItemGetUnknownFieldByNameReturnsNil(t *testing.T) {
-    instance := NewDeviceItem("", "", "", "")
+    instance := NewDeviceItem("", "", "", "", "")
     val := instance.Get("foo")
     assert.Nil(t, val)
 }
 
 func TestDeviceItemGetKnownProperties(t *testing.T) {
-    instance := NewDeviceItem("name", "model", "protocol", "address")
+    instance := NewDeviceItem("name", "model", "protocol", "address", "extra")
     assert.Equal(t, "name", instance.Get("name"))
     assert.Equal(t, "model", instance.Get("model"))
     assert.Equal(t, "protocol", instance.Get("protocol"))
     assert.Equal(t, "address", instance.Get("address"))
+    assert.Equal(t, "extra", instance.Get("extra"))
 }

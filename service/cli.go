@@ -32,6 +32,7 @@ const (
     ARG_NAME = "name"
     ARG_MODEL = "model"
     ARG_ADDRESS = "address"
+    ARG_EXTRA = "extra"
 
     ARG_REGISTER_APP = "register-app"
 
@@ -52,6 +53,7 @@ type Arguments struct {
     DeviceName string
     DeviceModel string
     DeviceAddress string
+    DeviceExtra string
 
     RegisterApp bool
     AppName string
@@ -88,6 +90,7 @@ var registerDevice = flag.Bool(ARG_REGISTER_DEVICE, false, "Specify to request a
 var deviceName = flag.String(ARG_NAME, "", "Specify the unique name.")
 var deviceModel = flag.String(ARG_MODEL, "", "Specify the device model.")
 var deviceAddress = flag.String(ARG_ADDRESS, "", "Specify the address (e.g., tcp:1.2.3.4:1234).")
+var deviceExtra = flag.String(ARG_EXTRA, "", "Specify extra information for device that requires it.")
 
 // app registration args
 var registerApp = flag.Bool(ARG_REGISTER_APP, false, "Specify to request an app registration.")
@@ -117,6 +120,7 @@ func ParseArguments() Arguments {
     args.DeviceModel = *deviceModel
     args.DeviceName = *deviceName
     args.DeviceAddress = *deviceAddress
+    args.DeviceExtra = *deviceExtra
 
     args.RegisterApp = *registerApp
     args.AppName = *appName

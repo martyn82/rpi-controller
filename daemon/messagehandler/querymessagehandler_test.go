@@ -12,7 +12,7 @@ func TestOnQueryQueriesDevice(t *testing.T) {
     socket.StartFakeServer("unix", "/tmp/devqry.sock")
     defer socket.RemoveSocket("/tmp/devqry.sock")
 
-    dev := device.NewDevice(device.NewDeviceInfo("dev", "", "unix", "/tmp/devqry.sock"), nil, nil, func (sender string, query api.IQuery) (string, error) {
+    dev := device.NewDevice(device.NewDeviceInfo("dev", "", "unix", "/tmp/devqry.sock", ""), nil, nil, func (deviceInfo map[string]string, query api.IQuery) (string, error) {
         return "", nil
     })
 
@@ -35,7 +35,7 @@ func TestOnQueryWithUnknownDeviceReturnsError(t *testing.T) {
 func TestOnQueryReturnsErrorIfDeviceQueryFails(t *testing.T) {
     devices, _ := device.NewDeviceCollection(nil)
 
-    dev := device.NewDevice(device.NewDeviceInfo("dev", "", "unix", "/tmp/devqry.sock"), nil, nil, nil)
+    dev := device.NewDevice(device.NewDeviceInfo("dev", "", "unix", "/tmp/devqry.sock", ""), nil, nil, nil)
     devices.Add(dev)
 
     msg := api.NewQuery("dev", "prop")

@@ -9,6 +9,8 @@ const (
     TYPE_DEVICE_REGISTRATION = "Device"
 
     ERR_INVALID_DEVICE_REGISTRATION = "Invalid device registration; missing device name and/or model."
+
+    KEY_EXTRA = "Extra"
 )
 
 type IDeviceRegistration interface {
@@ -18,6 +20,7 @@ type IDeviceRegistration interface {
     DeviceModel() string
     DeviceProtocol() string
     DeviceAddress() string
+    DeviceExtra() string
 }
 
 type DeviceRegistration struct {
@@ -25,6 +28,7 @@ type DeviceRegistration struct {
     deviceModel string
     deviceProtocol string
     deviceAddress string
+    deviceExtra string
 }
 
 /* Create a DeviceRegistration from map */
@@ -32,6 +36,7 @@ func deviceRegistrationFromMap(message map[string]string) (*DeviceRegistration, 
     var deviceName string
     var deviceModel string
     var deviceAddress string
+    var deviceExtra string
 
     for k, v := range message {
         switch k {
@@ -46,10 +51,14 @@ func deviceRegistrationFromMap(message map[string]string) (*DeviceRegistration, 
             case KEY_ADDRESS:
                 deviceAddress = v
                 break
+
+            case KEY_EXTRA:
+                deviceExtra = v
+                break
         }
     }
 
-    result := NewDeviceRegistration(deviceName, deviceModel, deviceAddress)
+    result := NewDeviceRegistration(deviceName, deviceModel, deviceAddress, deviceExtra)
 
     if _, err := result.IsValid(); err != nil {
         return nil, err
@@ -59,10 +68,11 @@ func deviceRegistrationFromMap(message map[string]string) (*DeviceRegistration, 
 }
 
 /* Creates a new device registration */
-func NewDeviceRegistration(name string, model string, address string) *DeviceRegistration {
+func NewDeviceRegistration(name string, model string, address string, extra string) *DeviceRegistration {
     instance := new(DeviceRegistration)
     instance.deviceModel = model
     instance.deviceName = name
+    instance.deviceExtra = extra
 
     parts := strings.Split(address, ":")
     
@@ -101,6 +111,11 @@ func (this *DeviceRegistration) DeviceAddress() string {
     return this.deviceAddress
 }
 
+/* Retrieves the device extra info */
+func (this *DeviceRegistration) DeviceExtra() string {
+    return this.deviceExtra
+}
+
 /* Validates the message */
 func (this *DeviceRegistration) IsValid() (bool, error) {
     if this.deviceName == "" || this.deviceModel == "" {
@@ -123,6 +138,7 @@ func (this *DeviceRegistration) Mapify() interface{} {
             "Name": this.deviceName,
             "Model": this.deviceModel,
             "Address": addr,
+            "Extra": this.deviceExtra,
         },
     }
 }

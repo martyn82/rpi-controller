@@ -11,7 +11,7 @@ func OnDeviceRegistration(message *api.DeviceRegistration, devices *device.Devic
     var err error
     var response *api.Response
 
-    dev, err := device.CreateDevice(device.NewDeviceInfo(message.DeviceName(), message.DeviceModel(), message.DeviceProtocol(), message.DeviceAddress()))
+    dev, err := device.CreateDevice(device.NewDeviceInfo(message.DeviceName(), message.DeviceModel(), message.DeviceProtocol(), message.DeviceAddress(), message.DeviceExtra()))
 
     if err != nil {
         response = api.NewResponse([]error{err})

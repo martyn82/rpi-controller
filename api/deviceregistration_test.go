@@ -9,52 +9,60 @@ func TestNewDeviceRegistrationContainsValues(t *testing.T) {
     name := "name"
     model := "model"
     addr := "tcp"
+    extra := "extra"
 
-    instance := NewDeviceRegistration(name, model, addr)
+    instance := NewDeviceRegistration(name, model, addr, extra)
 
     assert.Equal(t, name, instance.DeviceName())
     assert.Equal(t, model, instance.DeviceModel())
     assert.Equal(t, addr, instance.DeviceProtocol())
     assert.Equal(t, "", instance.DeviceAddress())
+    assert.Equal(t, extra, instance.DeviceExtra())
 }
 
 func TestNewDeviceRegistrationContainsAddress(t *testing.T) {
     name := "name"
     model := "model"
     addr := "tcp:10.0.0.1"
+    extra := "extra"
 
-    instance := NewDeviceRegistration(name, model, addr)
+    instance := NewDeviceRegistration(name, model, addr, extra)
 
     assert.Equal(t, name, instance.DeviceName())
     assert.Equal(t, model, instance.DeviceModel())
     assert.Equal(t, "tcp", instance.DeviceProtocol())
     assert.Equal(t, "10.0.0.1", instance.DeviceAddress())
+    assert.Equal(t, extra, instance.DeviceExtra())
 }
 
 func TestNewDeviceRegistrationContainsAddressAndPort(t *testing.T) {
     name := "name"
     model := "model"
     addr := "tcp:10.0.0.1:1234"
+    extra := "extra"
 
-    instance := NewDeviceRegistration(name, model, addr)
+    instance := NewDeviceRegistration(name, model, addr, extra)
 
     assert.Equal(t, name, instance.DeviceName())
     assert.Equal(t, model, instance.DeviceModel())
     assert.Equal(t, "tcp", instance.DeviceProtocol())
     assert.Equal(t, "10.0.0.1:1234", instance.DeviceAddress())
+    assert.Equal(t, extra, instance.DeviceExtra())
 }
 
 func TestDeviceRegistrationMapify(t *testing.T) {
     deviceName := "dev"
     deviceModel := "model"
     deviceAddress := "unix:foo.sock"
+    deviceExtra := "extra"
 
-    cmd := NewDeviceRegistration(deviceName, deviceModel, deviceAddress)
+    cmd := NewDeviceRegistration(deviceName, deviceModel, deviceAddress, deviceExtra)
     expected := map[string]map[string]string {
         TYPE_DEVICE_REGISTRATION: {
             "Name": "dev",
             "Model": "model",
             "Address": "unix:foo.sock",
+            "Extra": deviceExtra,
         },
     }
     assert.Equal(t, expected, cmd.Mapify())
@@ -65,6 +73,7 @@ func TestFromMapCreatesDeviceRegistration(t *testing.T) {
         KEY_NAME: "dev",
         KEY_MODEL: "model",
         KEY_ADDRESS: "addr:foo",
+        KEY_EXTRA: "extra",
     }
 
     cmd, err := deviceRegistrationFromMap(obj)
@@ -74,6 +83,7 @@ func TestFromMapCreatesDeviceRegistration(t *testing.T) {
     assert.Equal(t, "model", cmd.DeviceModel())
     assert.Equal(t, "addr", cmd.DeviceProtocol())
     assert.Equal(t, "foo", cmd.DeviceAddress())
+    assert.Equal(t, "extra", cmd.DeviceExtra())
 }
 
 func TestFromMapReturnsErrorIfInvalidMap(t *testing.T) {
@@ -86,7 +96,7 @@ func TestFromMapReturnsErrorIfInvalidMap(t *testing.T) {
 }
 
 func TestIsValidIfItContainsDeviceAndModel(t *testing.T) {
-    msg := NewDeviceRegistration("dev", "model", "")
+    msg := NewDeviceRegistration("dev", "model", "", "")
     ok, err := msg.IsValid()
 
     assert.True(t, ok)
@@ -94,7 +104,7 @@ func TestIsValidIfItContainsDeviceAndModel(t *testing.T) {
 }
 
 func TestIsInvalidIfItMissesDeviceName(t *testing.T) {
-    msg := NewDeviceRegistration("", "model", "")
+    msg := NewDeviceRegistration("", "model", "", "")
     ok, err := msg.IsValid()
 
     assert.False(t, ok)
@@ -102,7 +112,7 @@ func TestIsInvalidIfItMissesDeviceName(t *testing.T) {
 }
 
 func TestIsInvalidIfItMissesProperty(t *testing.T) {
-    msg := NewDeviceRegistration("dev", "", "")
+    msg := NewDeviceRegistration("dev", "", "", "")
     ok, err := msg.IsValid()
 
     assert.False(t, ok)
@@ -110,7 +120,7 @@ func TestIsInvalidIfItMissesProperty(t *testing.T) {
 }
 
 func TestIsInvalidIfItMissesDeviceAndProperty(t *testing.T) {
-    msg := NewDeviceRegistration("", "", "")
+    msg := NewDeviceRegistration("", "", "", "")
     ok, err := msg.IsValid()
 
     assert.False(t, ok)
@@ -118,6 +128,6 @@ func TestIsInvalidIfItMissesDeviceAndProperty(t *testing.T) {
 }
 
 func TestTypeOfReturnsDeviceRegistration(t *testing.T) {
-    msg := NewDeviceRegistration("", "", "")
+    msg := NewDeviceRegistration("", "", "", "")
     assert.Equal(t, TYPE_DEVICE_REGISTRATION, msg.Type())
 }

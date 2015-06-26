@@ -6,15 +6,17 @@ type DeviceItem struct {
     model string
     protocol string
     address string
+    extra string
 }
 
 /* Constructs a new DeviceItem */
-func NewDeviceItem(name string, model string, protocol string, address string) *DeviceItem {
+func NewDeviceItem(name string, model string, protocol string, address string, extra string) *DeviceItem {
     instance := new(DeviceItem)
     instance.name = name
     instance.model = model
     instance.protocol = protocol
     instance.address = address
+    instance.extra = extra
     return instance
 }
 
@@ -31,6 +33,8 @@ func (this *DeviceItem) Get(field string) interface{} {
             return this.Protocol()
         case "address":
             return this.Address()
+        case "extra":
+            return this.Extra()
     }
 
     return nil
@@ -73,4 +77,9 @@ func (this *DeviceItem) Protocol() string {
 /* Retrieves the address */
 func (this *DeviceItem) Address() string {
     return this.address
+}
+
+/* Retrieves the extra */
+func (this *DeviceItem) Extra() string {
+    return this.extra
 }

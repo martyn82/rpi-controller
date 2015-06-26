@@ -25,7 +25,7 @@ const (
 var remoteControlInfo *RemoteControlInfo
 
 /* Process a command */
-func CommandProcessor(sender string, command api.ICommand) (string, error) {
+func CommandProcessor(deviceInfo map[string]string, command api.ICommand) (string, error) {
     property := command.PropertyName()
     value := command.PropertyValue()
 
@@ -56,7 +56,7 @@ func CommandProcessor(sender string, command api.ICommand) (string, error) {
     }
 
     if key == "" {
-        return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_COMMAND, property + ":" + value, DEVICE_TYPE, sender))
+        return "", errors.New(fmt.Sprintf(ERR_UNKNOWN_COMMAND, property + ":" + value, DEVICE_TYPE, deviceInfo["Name"]))
     }
 
     return CreateKeyMessage(GetRemoteControlInfo(), key), nil

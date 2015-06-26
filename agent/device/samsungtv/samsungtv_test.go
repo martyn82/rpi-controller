@@ -23,19 +23,28 @@ func TestRemoteControlInfoGetTVAppName(t *testing.T) {
 }
 
 func TestCommandProcessorUnknownCommandReturnsError(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", "foo", "bar"))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", "foo", "bar"))
     assert.Equal(t, "", cmd)
     assert.Equal(t, fmt.Sprintf(ERR_UNKNOWN_COMMAND, "foo:bar", DEVICE_TYPE, "name"), err.Error())
 }
 
 func TestCommandProcessorUnknownPowerValueReturnsError(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_POWER, "foo"))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_POWER, "foo"))
     assert.Equal(t, "", cmd)
     assert.Equal(t, fmt.Sprintf(ERR_UNKNOWN_COMMAND, api.PROPERTY_POWER + ":foo", DEVICE_TYPE, "name"), err.Error())
 }
 
 func TestCommandProcessorPowerOn(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_POWER, api.VALUE_ON))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_POWER, api.VALUE_ON))
     assert.Nil(t, err)
 
     rc := GetRemoteControlInfo()
@@ -43,7 +52,10 @@ func TestCommandProcessorPowerOn(t *testing.T) {
 }
 
 func TestCommandProcessorPowerOff(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_POWER, api.VALUE_OFF))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_POWER, api.VALUE_OFF))
     assert.Nil(t, err)
 
     rc := GetRemoteControlInfo()
@@ -51,7 +63,10 @@ func TestCommandProcessorPowerOff(t *testing.T) {
 }
 
 func TestCommandProcessorMuteToggle(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_MUTE, api.VALUE_ON))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_MUTE, api.VALUE_ON))
     assert.Nil(t, err)
 
     rc := GetRemoteControlInfo()
@@ -59,7 +74,10 @@ func TestCommandProcessorMuteToggle(t *testing.T) {
 }
 
 func TestCommandProcessorVolumeUp(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_VOLUME, "10"))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_VOLUME, "10"))
     assert.Nil(t, err)
 
     rc := GetRemoteControlInfo()
@@ -67,7 +85,10 @@ func TestCommandProcessorVolumeUp(t *testing.T) {
 }
 
 func TestCommandProcessorVolumeDown(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_VOLUME, "-10"))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_VOLUME, "-10"))
     assert.Nil(t, err)
 
     rc := GetRemoteControlInfo()
@@ -75,7 +96,10 @@ func TestCommandProcessorVolumeDown(t *testing.T) {
 }
 
 func TestCommandProcessorVolumeMustBeNumeric(t *testing.T) {
-    cmd, err := CommandProcessor("name", api.NewCommand("name", api.PROPERTY_VOLUME, "M 70"))
+    info := map[string]string {
+        "Name": "name",
+    }
+    cmd, err := CommandProcessor(info, api.NewCommand("name", api.PROPERTY_VOLUME, "M 70"))
     assert.Equal(t, "", cmd)
     assert.Equal(t, fmt.Sprintf(ERR_UNKNOWN_COMMAND, api.PROPERTY_VOLUME + ":M 70", DEVICE_TYPE, "name"), err.Error())
 }

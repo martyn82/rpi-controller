@@ -90,7 +90,7 @@ func (this *Devices) store(item *DeviceItem) error {
 
     if db, err = sql.Open("sqlite3", this.dbFile); err == nil {
         defer db.Close()
-        result, err = db.Exec("REPLACE INTO devices (name, model, protocol, address) VALUES (?, ?, ?, ?)", item.Name(), item.Model(), item.Protocol(), item.Address())
+        result, err = db.Exec("REPLACE INTO devices (name, model, protocol, address, extra) VALUES (?, ?, ?, ?, ?)", item.Name(), item.Model(), item.Protocol(), item.Address(), item.Extra())
     }
 
     if err == nil {
@@ -106,7 +106,7 @@ func (this *Devices) loadAllFromDb(db *sql.DB) error {
     var err error
     var rows *sql.Rows
 
-    if rows, err = db.Query("SELECT id, name, model, protocol, address FROM devices"); err == nil {
+    if rows, err = db.Query("SELECT id, name, model, protocol, address, extra FROM devices"); err == nil {
         defer rows.Close()
         err = this.loadRows(rows)
     }
@@ -123,14 +123,15 @@ func (this *Devices) loadRows(rows *sql.Rows) error {
         model string
         protocol string
         address string
+        extra string
     )
 
     for rows.Next() {
-        if err = rows.Scan(&id, &name, &model, &protocol, &address); err != nil {
+        if err = rows.Scan(&id, &name, &model, &protocol, &address, &extra); err != nil {
             return err
         }
 
-        item := NewDeviceItem(name, model, protocol, address)
+        item := NewDeviceItem(name, model, protocol, address, extra)
         item.SetId(id)
 
         this.items = append(this.items, item)

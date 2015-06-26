@@ -46,7 +46,7 @@ func (this *DeviceCollection) load(item *storage.DeviceItem) error {
     var err error
     var dev IDevice
 
-    if dev, err = CreateDevice(DeviceInfo{name: item.Name(), model: item.Model(), protocol: item.Protocol(), address: item.Address()}); err == nil {
+    if dev, err = CreateDevice(DeviceInfo{name: item.Name(), model: item.Model(), protocol: item.Protocol(), address: item.Address(), extra: item.Extra()}); err == nil {
         this.devices[item.Name()] = dev
     }
 
@@ -63,7 +63,7 @@ func (this *DeviceCollection) Add(item collection.Item) error {
     var err error
 
     device := item.(IDevice)
-    devItem := storage.NewDeviceItem(device.Info().Name(), device.Info().Model(), device.Info().Protocol(), device.Info().Address())
+    devItem := storage.NewDeviceItem(device.Info().Name(), device.Info().Model(), device.Info().Protocol(), device.Info().Address(), device.Info().Extra())
 
     if this.repository != nil {
         if _, err = this.repository.Add(devItem); err == nil {

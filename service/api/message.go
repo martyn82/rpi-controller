@@ -17,7 +17,7 @@ func FromArguments(args service.Arguments) (api.IMessage, error) {
     } else if args.IsQuery() {
         return api.NewQuery(args.QueryDevice, args.Property), nil
     } else if args.IsDeviceRegistration() {
-        return api.NewDeviceRegistration(args.DeviceName, args.DeviceModel, args.DeviceAddress), nil
+        return api.NewDeviceRegistration(args.DeviceName, args.DeviceModel, args.DeviceAddress, args.DeviceExtra), nil
     } else if args.IsAppRegistration() {
         return api.NewAppRegistration(args.AppName, args.AppAddress), nil
     } else if args.IsTriggerRegistration() {

@@ -154,8 +154,8 @@ func TestToJSONCommand(t *testing.T) {
 }
 
 func TestToJSONDeviceRegistration(t *testing.T) {
-    message := NewDeviceRegistration("name", "model", "addr")
-    expected := "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Address\":\"addr\",\"Model\":\"model\",\"Name\":\"name\"}}"
+    message := NewDeviceRegistration("name", "model", "addr", "extra")
+    expected := "{\"" + TYPE_DEVICE_REGISTRATION + "\":{\"Address\":\"addr\",\"Extra\":\"extra\",\"Model\":\"model\",\"Name\":\"name\"}}"
     assert.Equal(t, expected, ToJSON(message))
 }
 

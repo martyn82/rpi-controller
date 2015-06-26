@@ -14,9 +14,10 @@ const (
     ERR_NO_QUERY_PROCESSOR = "Device has no query processor: %s"
 )
 
-type CommandProcessor func (sender string, command api.ICommand) (string, error)
-type EventProcessor func (sender string, event []byte) (messages.IEvent, error)
-type QueryProcessor func (sender string, query api.IQuery) (string, error)
+type CommandProcessor func (deviceInfo map[string]string, command api.ICommand) (string, error)
+type EventProcessor func (deviceInfo map[string]string, event []byte) (messages.IEvent, error)
+type QueryProcessor func (deviceInfo map[string]string, query api.IQuery) (string, error)
+
 type MessageHandler func (sender IDevice, message api.IMessage)
 
 type IDevice interface {
@@ -70,7 +71,7 @@ func (this *Device) Command(command api.ICommand) error {
     var err error
     var commandString string
 
-    if commandString, err = this.commandProcessor(this.Info().Name(), command); err == nil {
+    if commandString, err = this.commandProcessor(this.Info().Mapify(), command); err == nil {
         err = this.Send([]byte(commandString))
     }
 
@@ -86,7 +87,7 @@ func (this *Device) Query(query api.IQuery) error {
     var err error
     var queryString string
 
-    if queryString, err = this.queryProcessor(this.Info().Name(), query); err == nil {
+    if queryString, err = this.queryProcessor(this.Info().Mapify(), query); err == nil {
         err = this.Send([]byte(queryString))
     }
 
@@ -115,7 +116,7 @@ func (this *Device) mapEvent(event []byte) (api.INotification, error) {
     var msg api.INotification
     var err error
 
-    if evt ,err = this.eventProcessor(this.Info().Name(), event); err == nil {
+    if evt ,err = this.eventProcessor(this.Info().Mapify(), event); err == nil {
         msg = api.NewNotification(evt.Sender(), evt.PropertyName(), evt.PropertyValue())
     }
 

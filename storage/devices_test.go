@@ -27,7 +27,7 @@ func TestDevicesAddWillAddItemToRepository(t *testing.T) {
     instance, _ := NewDeviceRepository(devicesTestDb)
     assert.Equal(t, 0, instance.Size())
 
-    item := NewDeviceItem("dev0", "model", "", "")
+    item := NewDeviceItem("dev0", "model", "", "", "")
     id, err := instance.Add(item)
 
     if err != nil {
@@ -44,7 +44,7 @@ func TestDevicesFindWithExistingIdentityReturnsTheItem(t *testing.T) {
 
     instance, _ := NewDeviceRepository(devicesTestDb)
 
-    item := NewDeviceItem("dev0", "model", "", "")
+    item := NewDeviceItem("dev0", "model", "", "", "")
     identity, err := instance.Add(item)
 
     assert.Nil(t, err)
@@ -65,7 +65,7 @@ func TestDevicesFindWithNonExistingIdentityReturnsError(t *testing.T) {
 
 func TestDevicesAddWithErrorReturnsError(t *testing.T) {
     instance, _ := NewDeviceRepository("")
-    id, err := instance.Add(NewDeviceItem("", "", "", ""))
+    id, err := instance.Add(NewDeviceItem("", "", "", "", ""))
     assert.Equal(t, int64(-1), id)
     assert.NotNil(t, err)
 }
@@ -78,7 +78,7 @@ func TestDevicesConstructWithoutDbReturnsError(t *testing.T) {
 
 func TestDevicesConstructLoadsFromDb(t *testing.T) {
     db.SetupDb(devicesTestDb, devicesSchemaDir)
-    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')", devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address, extra) VALUES (1, 'dev0', 'mod0', '', '', '')", devicesTestDb)
     defer db.RemoveDbFile(devicesTestDb)
 
     instance, err := NewDeviceRepository(devicesTestDb)
@@ -96,7 +96,7 @@ func TestDevicesConstructLoadsFromDb(t *testing.T) {
 }
 
 func TestDevicesConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
-    db.QueryDb("CREATE TABLE devices (id INT NOT NULL PRIMARY KEY, name TEXT, model TEXT, protocol TEXT, address TEXT);", devicesTestDb)
+    db.QueryDb("CREATE TABLE devices (id INT NOT NULL PRIMARY KEY, name TEXT, model TEXT, protocol TEXT, address TEXT, extra TEXT);", devicesTestDb)
     db.QueryDb("INSERT INTO devices (id, name) VALUES (1, NULL)", devicesTestDb)
     defer db.RemoveDbFile(devicesTestDb)
 
@@ -106,8 +106,8 @@ func TestDevicesConstructReturnsErrorOnInvalidSchemaScan(t *testing.T) {
 
 func TestDevicesAllRetrievesAllItems(t *testing.T) {
     db.SetupDb(devicesTestDb, devicesSchemaDir)
-    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (1, 'dev0', 'mod0', '', '')", devicesTestDb)
-    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address) VALUES (2, 'dev1', 'mod1', '', '')", devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address, extra) VALUES (1, 'dev0', 'mod0', '', '', '')", devicesTestDb)
+    db.QueryDb("INSERT INTO devices (id, name, model, protocol, address, extra) VALUES (2, 'dev1', 'mod1', '', '', '')", devicesTestDb)
     defer db.RemoveDbFile(devicesTestDb)
 
     instance, err := NewDeviceRepository(devicesTestDb)

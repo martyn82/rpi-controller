@@ -119,7 +119,7 @@ func TestAddAddsDevice(t *testing.T) {
 
     instance, _ := NewDeviceCollection(repo)
     dev := new(Device)
-    dev.info = NewDeviceInfo("name", DENON_AVR, "", "")
+    dev.info = NewDeviceInfo("name", DENON_AVR, "", "", "")
 
     err := instance.Add(dev)
     assert.Nil(t, err)
@@ -131,7 +131,7 @@ func TestAddAddsDevice(t *testing.T) {
 func TestAddAddsDeviceWithoutRepository(t *testing.T) {
     instance, _ := NewDeviceCollection(nil)
     dev := new(Device)
-    dev.info = NewDeviceInfo("name", DENON_AVR, "", "")
+    dev.info = NewDeviceInfo("name", DENON_AVR, "", "", "")
 
     err := instance.Add(dev)
     assert.Nil(t, err)
